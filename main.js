@@ -1,206 +1,279 @@
 enchant();
-
+var socket = io();
+var server = 'http://localhost:3000';
 //ゲームに使う設定値
 var SCREEN_WIDTH = 1280; //スクリーン幅
 var SCREEN_HEIGHT = 800; //スクリーン高さ
-var GAME_FPS = 20; //ゲームのFPS, いくつがいいんだ…?
+var GAME_FPS = 20000; //ゲームのFPS, いくつがいいんだ…?
 var TOWER_HEIGHT = 180; // タワーの枚数
-var card_image_width = 201; //元card imageの幅
-var card_image_height = 290; //元card imageの高さ
-var card_scale = 0.6; //card imageをscale倍にする, ちょうどいい画像が欲しい
+var card_image_width = 121; //元card imageの幅
+var card_image_height = 174; //元card imageの高さ
+var card_scale = 1; //card imageをscale倍にする, ちょうどいい画像が欲しい
+gameID = 0;
+ft = 0 //今がタワーの何枚目か数えてる
+//socket = io.connect('http://localhost:3000'); // サーバに接続
+socket.on('msg setID', function (msg) { 
+    console.log("GameID:"+msg); 
+    gameID = msg; //game ID set
+  });
+
+
+
+
 
 
 window.onload = function(){
-    var core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT);
-	var genRand = new Array;
-	var handList = []; //手札のカードリスト、一番左が0番
-	var fieldList = []; //盤面のリスト
-	var landList = []; //土地のリスト
-	ft = 0; //今のカードがタワーの何枚目かカウントしているグローバル変数
-	for (var i = 0; i<TOWER_HEIGHT; i++){
-		var preRand = Math.floor(Math.random()*TOWER_HEIGHT+1);
-		for (var j = 0; j<genRand.length; j++){
-			if (preRand == genRand[j]){
-				preRand = Math.floor(Math.random()*TOWER_HEIGHT+1);
-				j = j-1;
-			};
-		};
-		genRand[i] = preRand;
-	};
+    core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT);
+	scene = core.rootScene;
+	scene.backgroundColor = "green";
+
 	for (var i = 1; i<TOWER_HEIGHT; i++){
 		precard = './cards/tower ('+i+').jpg';
 		core.preload(precard);
 	};
 	
 	core.preload('./back_image.jpg');
-    core.fps = GAME_FPS;
-    core.onload = function(){
-    	var scene = core.rootScene;
-    	scene.backgroundColor = "green";
-    	
-		// 手札のカード処理タブ作成
-		var playCard = new Entity();	// 生成
-    	var setland  = new Entity();
-    	var cancel = new Entity();
-		playCard.width = 100;		// 幅を設定
-		playCard.height= 40;		// 高さを設定
-		playCard.backgroundColor = "red";	// 背景色を設定
-		setland.width = 100;		// 幅を設定
-		setland.height= 40;		// 高さを設定
-		setland.backgroundColor = "blue";	// 背景色を設定
-    	cancel.width = 100;		// 幅を設定
-		cancel.height= 40;		// 高さを設定
-		cancel.backgroundColor = "gray";	// 背景色を設定
-    	
-    	//手札、盤面、土地のy値を設定
-    	var cardx = 0;
-    	var cardy = 550;
-    	var fieldy = 150;
-    	var landy = 400;
 
-    	//デバッグ用のLabel
-    	var label = new Label();
-    	label.x = 300;
-    	label.y = 5;
-    	label.color =  'red';
-    	label.font ='14px "Arial"';
-    	label.text =genRand.length+","+ft;
-    	
-    	//タワーのカードイメージ設定
-    	var backImage = new Sprite(124,172);
-    	backImage.image = core.assets['./back_image.jpg'];
-    	backImage.moveTo(0,0);
-    	
-    	//手札のカードをプレイする処理
-    	var playFunc = function(){
-    		var selectCardx = this.x - 100;
-    		for (var i = 0; i<handList.length; ++i){
-    			var discard = handList[i];
-    			if (selectCardx == discard.x){
-    				var discard_num = i;
-    				var selectCard = handList[discard_num];
-    			};
-    		};
-    		
-    		selectCard.moveTo(cardx + fieldList.length*Math.ceil(card_image_width*card_scale),fieldy);
-    		fieldList.push(selectCard);
-    		for (var j = discard_num+1; j<handList.length; ++j){
-    			var move_card = handList[j];
-    			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), cardy);
-    			handList[j-1] = handList[j];
-    			
-    		};
-    		handList.pop();
-    		label.text =genRand.length+","+ft;
-    		console.log(discard_num);
-    		this.parentNode.removeChild(this);
-    		setland.parentNode.removeChild(setland);
-    		cancel.parentNode.removeChild(cancel);
-    	};
-    	
-    	//手札のカードを土地にする処理
-    	var setLandFunc = function(){
-    		var selectCardx = this.x - 100;
-    		for (var i = 0; i<handList.length; ++i){
-    			var discard = handList[i];
-    			if (selectCardx == discard.x){
-    				var discard_num = i;
-    				var selectCard = handList[discard_num];
-    			};
-    		};
-    		selectCard.parentNode.removeChild(selectCard);
-    		var land = new Sprite(124,172);
-    		land.image = core.assets['./back_image.jpg'];
-    		land.scaleX = 0.75;
-    		land.scaleY = 0.75;
-    		land.moveTo(cardx + landList.length*Math.ceil(card_image_width*card_scale),landy);
-    		land.ontouchstart = landRotFunc;
-    		scene.addChild(land);
-    		landList.push(selectCard);
-    		for (var j = discard_num+1; j<handList.length; ++j){
-    			var move_card = handList[j];
-    			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), cardy);
-    			handList[j-1] = handList[j];
-    			
-    		};
-    		handList.pop();
-    		label.text =genRand.length+","+ft;
-    		console.log(discard_num);
-    		this.parentNode.removeChild(this);
-    		playCard.parentNode.removeChild(playCard);
-    		cancel.parentNode.removeChild(cancel);
-    	};
-    	
-    	//土地のマナ出し処理
-    	var landRotFunc = function(){
-    		if (this.rotation == 0){
-    			this.rotation += 30;
-    		} else {
-    			this.rotation -= 30;
-    		};
-    	};
-    	//選択キャンセルの処理
-    	var cancelFunc = function(){
-    		this.parentNode.removeChild(this);
-    		playCard.parentNode.removeChild(playCard);
-    		setland.parentNode.removeChild(setland);
-    	};
-    	var touchFunc = function(){
-    		playCard.x = this.x + 100;
-    		playCard.y = this.y - 20;
-    		setland.x = playCard.x;
-    		setland.y = playCard.y + 40;
-    		cancel.x = playCard.x
-    		cancel.y = playCard.y + 80;
-    		playCard.ontouchstart = playFunc;
-    		setland.ontouchstart = setLandFunc;
-    		cancel.ontouchstart = cancelFunc;
-    		scene.addChild(playCard);		// シーンに追加
-    		scene.addChild(setland);
-    		scene.addChild(cancel);
-    		//this.parentNode.removeChild(this);
-    		
-    	};
-    	for (var i = 0; i<7; ++i){
-    		var card = new Sprite(card_image_width, card_image_height);
-    		card.image = core.assets['./cards/tower ('+genRand[fromtop()]+').jpg'];
-    		card.scaleX = card_scale;
-    		card.scaleY = card_scale;
-    		card.moveTo(cardx + i*Math.ceil(card_image_width*card_scale), cardy);
-    		card.ontouchstart = touchFunc;
-    		scene.addChild(card);
-    		handList.push(card);
-    	};
- 
-    	label.text =genRand.length+","+ft;
- 		backImage.addEventListener('touchstart', function(){
-    		var card = new Sprite(card_image_width, card_image_height);
-    		card.image = core.assets['./cards/tower ('+genRand[fromtop()]+').jpg'];
-    		card.scaleX = card_scale;
-    		card.scaleY = card_scale;
-    		card.moveTo(cardx + handList.length*Math.ceil(card_image_width*card_scale), cardy);
-    		card.ontouchstart = touchFunc;
-    		scene.addChild(card);
-    		handList.push(card);
-    	});
-    	core.rootScene.addChild(backImage);
-    	core.rootScene.addChild(label);
-    	scene.addEventListener("touchstart", function(e) {
-	    // sprite.x = e.x;
-	    // sprite.y = e.y;
-	    // タッチした位置に移動
-	    //var x = e.x - (card.width/2);	// スプライト幅の半分の値を引くことで中央にする
-	    //var y = e.y - (card.height/2);	// スプライト高さの半分の値を引くことで中央にする
-	    //card.moveTo(x, y);
-	});
-    };
+	core.onload = function(){
+	enterRobby() //マッチング処理
+      // バトル申し込みを受け取ったら
+      socket.on('battle proposal', function(data) {
+      	if(data.to == socket.id){
+			matchedScene(function(){
+			core.popScene();
+			battleStart(socket.id, data.from, data.battleId, data.nickname); //datafrom = enemyID, data.battleID = battleID
+			});
+      		
+		}
+	  });
 	
+	}//end console onload
     core.start();
-	
-};
+}
 
+
+
+function battleStart(myId, enemyId, battleId, enemyName){
+// バトルスタート
+// まずロビーを離脱
+socket.emit('leave robby', {id: socket.id});
+
+//game.started = false;
+//game.emittedStartSignal = false; わからん
+
+// ゲームスタート待機
+//game.begin();
+//game.ready(); わからん
+
+// 新しく、http://localhost:3000/battle/:battleID と接続
+battle = io.connect(server + '/battle/' + battleId);
+// バトルルームとの接続が確立されたら
+battle.on('connect', function() {
+	console.log('battle connect');
+waiting = true;
+});
+
+// ゲームが始まった通知を受け取ったら
+battle.on('game start', function() {
+console.log('game start');
+core.popScene();
+});
+tower(battleId, enemyName); //call tower function
+}; //end function battlestart
+
+
+
+function enterRobby(){
+// 接続できたというメッセージを受け取ったら
+	socket.emit('connect robby', gameID);
+	socket.on('connected robby', function() {
+	socket.emit('enter robby',{'nickname': prompt("enter your nickname (only Alphabet)")});
+	waiting = true;
+	matchingScene(); //おそらくマッチング用の画面を出すのか？
+	});
+	
+	// ロビーに入ったというメッセージを受け取ったら
+	socket.on('robby entered', function(id){
+	socket.id = id;
+	console.log(socket.id);
+	});
+
+	// 他のユーザが接続を解除したら
+	socket.on('user disconected', function(data) {
+	console.log('user disconnected:', data.id);
+	});
+	
+	// ロビーのユーザ一覧を受け取ったら
+	socket.on('robby info', function(robbyInfo) {
+	var robbyList = Object.keys(robbyInfo);
+	console.log('robby info', robbyList[0]);
+	for(var nn in robbyInfo){
+		// 誰かいたら無条件でバトル申し込み
+		console.log(nn, socket.id);
+		if(nn != socket.id){
+			var enemyId = nn;
+			var enemyNick = robbyInfo[nn];
+			break;
+		}
+	}
+	if(enemyId){
+		// バトル申し込みのメッセージを送信
+		socket.emit('battle proposal', {to: enemyId}, function(data){
+		// 返信がきたときのコールバック
+		waiting = false;
+		var that = data;
+		// マッチング完了のというシーンを表示
+			matchedScene(function(){
+				core.popScene();
+				battleStart(socket.id, enemyId, that.battleId, enemyNick);
+			});
+		})
+	}
+	});
+}; //end function enter robby
+
+// ゲームが始めた通知を送る
+//sendStart = function(){
+//battle.emit('game start', {});
+//}
+
+
+function matchingScene(){
+	// マッチング中の画面を表示
+	var matchingScene = new Scene();
+	//matchingScene.image = core.assets['images/matching.jpg'];
+	matchingScene.backgroundColor = '#fcc800';
+	var title = new Label('Tower matching');                     // ラベルを作る
+    title.textAlign = 'center';                             // 文字を中央寄せ
+    title.color = '#ffffff';                                // 文字を白色に
+    title.x = 0;                                            // 横位置調整
+    title.y = 96;                                           // 縦位置調整
+    title.font = '28px sans-serif';                         // 28pxのゴシック体にする
+    matchingScene.addChild(title);                                  // シーンに追加
+    core.pushScene(matchingScene); //マッチングシーンを一番上に重ねる
+} //end matching Scene
+
+// マッチング成立の画面を表示し、2秒後に引数の関数を呼ぶ
+function matchedScene(func){
+	core.popScene();
+
+	var matchingScene = new Scene();
+	//matchingScene.image = core.assets['images/matching.jpg'];
+	matchingScene.backgroundColor = '#fcc800';
+	var title = new Label('Tower');                     // ラベルを作る
+    title.textAlign = 'center';                             // 文字を中央寄せ
+    title.color = '#ffffff';                                // 文字を白色に
+    title.x = 0;                                            // 横位置調整
+    title.y = 96;                                           // 縦位置調整
+    title.font = '28px sans-serif';                         // 28pxのゴシック体にする
+    matchingScene.addChild(title);                           
+	core.pushScene(matchingScene);
+	setTimeout(func, 2000);
+} // end matched Scene
+
+function tower(battleId, enemyName){
+	var towerDeck = new Array;
+	var handList = []; //手札のカードリスト、一番左が0番, カードそのもの
+	var handListNum = []; //手札のカードナンバーのリスト
+	var opntHandList = [];
+	var opHandListNum = [];
+	var cardx = 50;
+    var cardy = 560;
+	var op_cardx = 50
+	var op_cardy = 50
+	towerNum = new Label
+	towerNum.textAlign = 'center';                             // 文字を中央寄せ
+    towerNum.color = '#ffffff';                                // 文字を白色に
+    towerNum.x = SCREEN_WIDTH*0.1;                                            // 横位置調整
+    towerNum.y = SCREEN_HEIGHT*0.35;                                         // 縦位置調整
+    towerNum.font = '28px sans-serif';                         // 28pxのゴシック体にする
+
+	console.log('call tower battleId', battleId);
+	var label = new Label('Opponent = ' + enemyName);                     // ラベルを作る
+    label.textAlign = 'center';                             // 文字を中央寄せ
+    label.color = '#ffffff';                                // 文字を白色に
+    label.x = 0;                                            // 横位置調整
+    label.y = 15;                                           // 縦位置調整
+    label.font = '28px sans-serif';                         // 28pxのゴシック体にする
+	scene.addChild(label);
+		socket.on('draw card', function(msg){
+			console.log('opponent draw card')
+			if(msg == battleId){
+				scene.removeChild(towerNum);
+				var card = new Sprite(card_image_width, card_image_height);
+    			card.image = core.assets['./cards/tower ('+towerDeck[fromtop()]+').jpg'];
+    			card.scaleX = card_scale;
+    			card.scaleY = card_scale;
+    			card.moveTo(op_cardx + opntHandList.length*Math.ceil(card_image_width*card_scale), op_cardy);
+    			//card.ontouchstart = touchFunc;
+    			scene.addChild(card);
+    			opntHandList.push(card);
+		    };
+		});
+		socket.on('discard', function(data){
+			if(data.battleId == battleId){
+				var op_discard = opntHandList[data.num];
+				op_discard.parentNode.removeChild(op_discard);
+				for (var j = data.num+1; j<opntHandList.length; ++j){
+    			  var op_move_card = opntHandList[j];
+    			  op_move_card.moveTo(op_move_card.x - Math.ceil(card_image_width*card_scale), op_cardy);
+    			  opntHandList[j-1] = opntHandList[j];
+    			
+    		    };
+				console.log('bf discard', opntHandList.length);
+    		    opntHandList.pop();
+				console.log('af discard', opntHandList.length);
+			};
+		});
+		socket.emit('make tower',{battleId: battleId, socketId: socket.id});
+		socket.on('send tower', function(data){
+			if(data.socketId == socket.id) {
+			  towerDeck = data.tower;
+			  console.log('send tower', battleId, towerDeck.length);
+			};
+			console.log('get tower', towerDeck[1], towerDeck.length);
+		});
+	var backImage = new Sprite(124,172);
+    backImage.image = core.assets['./back_image.jpg'];
+    backImage.moveTo(SCREEN_WIDTH*0.4,SCREEN_HEIGHT*0.35);
+	backImage.addEventListener('touchstart', function(){
+		scene.removeChild(towerNum);
+    	var card = new Sprite(card_image_width, card_image_height);
+    	card.image = core.assets['./cards/tower ('+towerDeck[fromtop()]+').jpg'];
+ 		socket.emit('draw card', battleId);
+    	card.scaleX = card_scale;
+    	card.scaleY = card_scale;
+    	card.moveTo(cardx + handList.length*Math.ceil(card_image_width*card_scale), cardy);
+    	card.ontouchstart = touchFunc;
+    	scene.addChild(card);
+    	handList.push(card);
+    });
+	scene.addChild(backImage);
+	
+	var touchFunc = function(){
+		console.log('card touch');
+    	for (var i = 0; i<handList.length; ++i){
+    		var discard = handList[i];
+    			if (this.x == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+			socket.emit('discard', {num:discard_num, battleId:battleId});
+    		this.parentNode.removeChild(this);
+    		for (var j = discard_num+1; j<handList.length; ++j){
+    			var move_card = handList[j];
+    			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), cardy);
+    			handList[j-1] = handList[j];
+    			
+    		};
+    		handList.pop();
+    	};
+}; //end function tower
 function fromtop(){
 	
 	ft = ft+1;
+	towerNum.text = TOWER_HEIGHT - ft
+	scene.addChild(towerNum);
 	return ft
 }
+
