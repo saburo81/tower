@@ -1,279 +1,332 @@
-enchant();
+enchant(); // enchantjs ãŠã¾ã˜ãªã„
 var socket = io();
-var server = 'http://localhost:3000';
-//ƒQ[ƒ€‚Ég‚¤İ’è’l
-var SCREEN_WIDTH = 1280; //ƒXƒNƒŠ[ƒ“•
-var SCREEN_HEIGHT = 800; //ƒXƒNƒŠ[ƒ“‚‚³
-var GAME_FPS = 20000; //ƒQ[ƒ€‚ÌFPS, ‚¢‚­‚Â‚ª‚¢‚¢‚ñ‚¾c?
-var TOWER_HEIGHT = 180; // ƒ^ƒ[‚Ì–‡”
-var card_image_width = 121; //Œ³card image‚Ì•
-var card_image_height = 174; //Œ³card image‚Ì‚‚³
-var card_scale = 1; //card image‚ğscale”{‚É‚·‚é, ‚¿‚å‚¤‚Ç‚¢‚¢‰æ‘œ‚ª—~‚µ‚¢
-gameID = 0;
-ft = 0 //¡‚ªƒ^ƒ[‚Ì‰½–‡–Ú‚©”‚¦‚Ä‚é
-//socket = io.connect('http://localhost:3000'); // ƒT[ƒo‚ÉÚ‘±
-socket.on('msg setID', function (msg) { 
-    console.log("GameID:"+msg); 
-    gameID = msg; //game ID set
-  });
+var SCREEN_WIDTH = 1680; //ã‚¹ã‚¯ãƒªãƒ¼ãƒ³å¹…
+var SCREEN_HEIGHT = 960; //ã‚¹ã‚¯ãƒªãƒ¼ãƒ³é«˜ã•
+var GAME_FPS = 20000; //ã‚²ãƒ¼ãƒ ã®FPS, ã„ãã¤ãŒã„ã„ã‚“ã â€¦?
+var towerHeight = 159;
 
 
+  
+window.onload = function() {
+    var core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT);
+    var towerDeck = new Array;
+	var handList = []; //æ‰‹æœ­ã®ã‚«ãƒ¼ãƒ‰ãƒªã‚¹ãƒˆã€ä¸€ç•ªå·¦ãŒ0ç•ª, ã‚«ãƒ¼ãƒ‰ãã®ã‚‚ã®
+	var handListNum = []; //æ‰‹æœ­ã®ã‚«ãƒ¼ãƒ‰ãƒŠãƒ³ãƒãƒ¼ã®ãƒªã‚¹ãƒˆ
+	var landList =[];
+	var landListNum = [];
+	var fieldList =[];
+	var fieldListNum =[];
+	var card_image_width = 223;
+	var card_image_height = 311;
+	var card_scale = 0.7;
+	var cardx = 100;
+	var cardy = 700;
+	var landx = 0;
+	var landy = 300;
+	var land_image_width = 431;
+	var land_image_height = 599
+	var land_scale = 0.35;
+	var play_cardx = 100;
+	var play_cardy = 200;
+    scene = core.rootScene;
+    scene.backgroundColor = "green";
+    core.preload('back_image.jpg');
+	core.preload('make_tower.jpg');
+	core.preload('tower_land.jpg');
+	core.preload('setland.jpg');
+	core.preload('play.jpg');
+	core.preload('discard.jpg');
+	core.preload('cancel.jpg');
+	core.preload('tap.jpg');
+	core.preload('reset.jpg');
 
-
-
-
-window.onload = function(){
-    core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT);
-	scene = core.rootScene;
-	scene.backgroundColor = "green";
-
-	for (var i = 1; i<TOWER_HEIGHT; i++){
+	for (var i = 1; i<towerHeight; i++){
 		precard = './cards/tower ('+i+').jpg';
 		core.preload(precard);
 	};
-	
-	core.preload('./back_image.jpg');
-
-	core.onload = function(){
-	enterRobby() //ƒ}ƒbƒ`ƒ“ƒOˆ—
-      // ƒoƒgƒ‹\‚µ‚İ‚ğó‚¯æ‚Á‚½‚ç
-      socket.on('battle proposal', function(data) {
-      	if(data.to == socket.id){
-			matchedScene(function(){
-			core.popScene();
-			battleStart(socket.id, data.from, data.battleId, data.nickname); //datafrom = enemyID, data.battleID = battleID
-			});
-      		
-		}
-	  });
-	
-	}//end console onload
-    core.start();
-}
-
-
-
-function battleStart(myId, enemyId, battleId, enemyName){
-// ƒoƒgƒ‹ƒXƒ^[ƒg
-// ‚Ü‚¸ƒƒr[‚ğ—£’E
-socket.emit('leave robby', {id: socket.id});
-
-//game.started = false;
-//game.emittedStartSignal = false; ‚í‚©‚ç‚ñ
-
-// ƒQ[ƒ€ƒXƒ^[ƒg‘Ò‹@
-//game.begin();
-//game.ready(); ‚í‚©‚ç‚ñ
-
-// V‚µ‚­Ahttp://localhost:3000/battle/:battleID ‚ÆÚ‘±
-battle = io.connect(server + '/battle/' + battleId);
-// ƒoƒgƒ‹ƒ‹[ƒ€‚Æ‚ÌÚ‘±‚ªŠm—§‚³‚ê‚½‚ç
-battle.on('connect', function() {
-	console.log('battle connect');
-waiting = true;
-});
-
-// ƒQ[ƒ€‚ªn‚Ü‚Á‚½’Ê’m‚ğó‚¯æ‚Á‚½‚ç
-battle.on('game start', function() {
-console.log('game start');
-core.popScene();
-});
-tower(battleId, enemyName); //call tower function
-}; //end function battlestart
-
-
-
-function enterRobby(){
-// Ú‘±‚Å‚«‚½‚Æ‚¢‚¤ƒƒbƒZ[ƒW‚ğó‚¯æ‚Á‚½‚ç
-	socket.emit('connect robby', gameID);
-	socket.on('connected robby', function() {
-	socket.emit('enter robby',{'nickname': prompt("enter your nickname (only Alphabet)")});
-	waiting = true;
-	matchingScene(); //‚¨‚»‚ç‚­ƒ}ƒbƒ`ƒ“ƒO—p‚Ì‰æ–Ê‚ğo‚·‚Ì‚©H
-	});
-	
-	// ƒƒr[‚É“ü‚Á‚½‚Æ‚¢‚¤ƒƒbƒZ[ƒW‚ğó‚¯æ‚Á‚½‚ç
-	socket.on('robby entered', function(id){
-	socket.id = id;
-	console.log(socket.id);
-	});
-
-	// ‘¼‚Ìƒ†[ƒU‚ªÚ‘±‚ğ‰ğœ‚µ‚½‚ç
-	socket.on('user disconected', function(data) {
-	console.log('user disconnected:', data.id);
-	});
-	
-	// ƒƒr[‚Ìƒ†[ƒUˆê——‚ğó‚¯æ‚Á‚½‚ç
-	socket.on('robby info', function(robbyInfo) {
-	var robbyList = Object.keys(robbyInfo);
-	console.log('robby info', robbyList[0]);
-	for(var nn in robbyInfo){
-		// ’N‚©‚¢‚½‚ç–³ğŒ‚Åƒoƒgƒ‹\‚µ‚İ
-		console.log(nn, socket.id);
-		if(nn != socket.id){
-			var enemyId = nn;
-			var enemyNick = robbyInfo[nn];
-			break;
-		}
-	}
-	if(enemyId){
-		// ƒoƒgƒ‹\‚µ‚İ‚ÌƒƒbƒZ[ƒW‚ğ‘—M
-		socket.emit('battle proposal', {to: enemyId}, function(data){
-		// •ÔM‚ª‚«‚½‚Æ‚«‚ÌƒR[ƒ‹ƒoƒbƒN
-		waiting = false;
-		var that = data;
-		// ƒ}ƒbƒ`ƒ“ƒOŠ®—¹‚Ì‚Æ‚¢‚¤ƒV[ƒ“‚ğ•\¦
-			matchedScene(function(){
-				core.popScene();
-				battleStart(socket.id, enemyId, that.battleId, enemyNick);
-			});
-		})
-	}
-	});
-}; //end function enter robby
-
-// ƒQ[ƒ€‚ªn‚ß‚½’Ê’m‚ğ‘—‚é
-//sendStart = function(){
-//battle.emit('game start', {});
-//}
-
-
-function matchingScene(){
-	// ƒ}ƒbƒ`ƒ“ƒO’†‚Ì‰æ–Ê‚ğ•\¦
-	var matchingScene = new Scene();
-	//matchingScene.image = core.assets['images/matching.jpg'];
-	matchingScene.backgroundColor = '#fcc800';
-	var title = new Label('Tower matching');                     // ƒ‰ƒxƒ‹‚ğì‚é
-    title.textAlign = 'center';                             // •¶š‚ğ’†‰›Šñ‚¹
-    title.color = '#ffffff';                                // •¶š‚ğ”’F‚É
-    title.x = 0;                                            // ‰¡ˆÊ’u’²®
-    title.y = 96;                                           // cˆÊ’u’²®
-    title.font = '28px sans-serif';                         // 28px‚ÌƒSƒVƒbƒN‘Ì‚É‚·‚é
-    matchingScene.addChild(title);                                  // ƒV[ƒ“‚É’Ç‰Á
-    core.pushScene(matchingScene); //ƒ}ƒbƒ`ƒ“ƒOƒV[ƒ“‚ğˆê”Ôã‚Éd‚Ë‚é
-} //end matching Scene
-
-// ƒ}ƒbƒ`ƒ“ƒO¬—§‚Ì‰æ–Ê‚ğ•\¦‚µA2•bŒã‚Éˆø”‚ÌŠÖ”‚ğŒÄ‚Ô
-function matchedScene(func){
-	core.popScene();
-
-	var matchingScene = new Scene();
-	//matchingScene.image = core.assets['images/matching.jpg'];
-	matchingScene.backgroundColor = '#fcc800';
-	var title = new Label('Tower');                     // ƒ‰ƒxƒ‹‚ğì‚é
-    title.textAlign = 'center';                             // •¶š‚ğ’†‰›Šñ‚¹
-    title.color = '#ffffff';                                // •¶š‚ğ”’F‚É
-    title.x = 0;                                            // ‰¡ˆÊ’u’²®
-    title.y = 96;                                           // cˆÊ’u’²®
-    title.font = '28px sans-serif';                         // 28px‚ÌƒSƒVƒbƒN‘Ì‚É‚·‚é
-    matchingScene.addChild(title);                           
-	core.pushScene(matchingScene);
-	setTimeout(func, 2000);
-} // end matched Scene
-
-function tower(battleId, enemyName){
-	var towerDeck = new Array;
-	var handList = []; //èD‚ÌƒJ[ƒhƒŠƒXƒgAˆê”Ô¶‚ª0”Ô, ƒJ[ƒh‚»‚Ì‚à‚Ì
-	var handListNum = []; //èD‚ÌƒJ[ƒhƒiƒ“ƒo[‚ÌƒŠƒXƒg
-	var opntHandList = [];
-	var opHandListNum = [];
-	var cardx = 50;
-    var cardy = 560;
-	var op_cardx = 50
-	var op_cardy = 50
-	towerNum = new Label
-	towerNum.textAlign = 'center';                             // •¶š‚ğ’†‰›Šñ‚¹
-    towerNum.color = '#ffffff';                                // •¶š‚ğ”’F‚É
-    towerNum.x = SCREEN_WIDTH*0.1;                                            // ‰¡ˆÊ’u’²®
-    towerNum.y = SCREEN_HEIGHT*0.35;                                         // cˆÊ’u’²®
-    towerNum.font = '28px sans-serif';                         // 28px‚ÌƒSƒVƒbƒN‘Ì‚É‚·‚é
-
-	console.log('call tower battleId', battleId);
-	var label = new Label('Opponent = ' + enemyName);                     // ƒ‰ƒxƒ‹‚ğì‚é
-    label.textAlign = 'center';                             // •¶š‚ğ’†‰›Šñ‚¹
-    label.color = '#ffffff';                                // •¶š‚ğ”’F‚É
-    label.x = 0;                                            // ‰¡ˆÊ’u’²®
-    label.y = 15;                                           // cˆÊ’u’²®
-    label.font = '28px sans-serif';                         // 28px‚ÌƒSƒVƒbƒN‘Ì‚É‚·‚é
-	scene.addChild(label);
-		socket.on('draw card', function(msg){
-			console.log('opponent draw card')
-			if(msg == battleId){
-				scene.removeChild(towerNum);
-				var card = new Sprite(card_image_width, card_image_height);
-    			card.image = core.assets['./cards/tower ('+towerDeck[fromtop()]+').jpg'];
-    			card.scaleX = card_scale;
-    			card.scaleY = card_scale;
-    			card.moveTo(op_cardx + opntHandList.length*Math.ceil(card_image_width*card_scale), op_cardy);
-    			//card.ontouchstart = touchFunc;
-    			scene.addChild(card);
-    			opntHandList.push(card);
-		    };
-		});
-		socket.on('discard', function(data){
-			if(data.battleId == battleId){
-				var op_discard = opntHandList[data.num];
-				op_discard.parentNode.removeChild(op_discard);
-				for (var j = data.num+1; j<opntHandList.length; ++j){
-    			  var op_move_card = opntHandList[j];
-    			  op_move_card.moveTo(op_move_card.x - Math.ceil(card_image_width*card_scale), op_cardy);
-    			  opntHandList[j-1] = opntHandList[j];
-    			
-    		    };
-				console.log('bf discard', opntHandList.length);
-    		    opntHandList.pop();
-				console.log('af discard', opntHandList.length);
-			};
-		});
-		socket.emit('make tower',{battleId: battleId, socketId: socket.id});
-		socket.on('send tower', function(data){
-			if(data.socketId == socket.id) {
-			  towerDeck = data.tower;
-			  console.log('send tower', battleId, towerDeck.length);
-			};
-			console.log('get tower', towerDeck[1], towerDeck.length);
-		});
-	var backImage = new Sprite(124,172);
-    backImage.image = core.assets['./back_image.jpg'];
-    backImage.moveTo(SCREEN_WIDTH*0.4,SCREEN_HEIGHT*0.35);
-	backImage.addEventListener('touchstart', function(){
-		scene.removeChild(towerNum);
-    	var card = new Sprite(card_image_width, card_image_height);
-    	card.image = core.assets['./cards/tower ('+towerDeck[fromtop()]+').jpg'];
- 		socket.emit('draw card', battleId);
-    	card.scaleX = card_scale;
-    	card.scaleY = card_scale;
-    	card.moveTo(cardx + handList.length*Math.ceil(card_image_width*card_scale), cardy);
-    	card.ontouchstart = touchFunc;
-    	scene.addChild(card);
-    	handList.push(card);
-    });
-	scene.addChild(backImage);
-	
-	var touchFunc = function(){
-		console.log('card touch');
-    	for (var i = 0; i<handList.length; ++i){
-    		var discard = handList[i];
-    			if (this.x == discard.x){
+    
+    core.onload = function() {
+        var backImage = new Sprite(223,319);
+        backImage.image = core.assets['back_image.jpg'];
+        backImage.x = SCREEN_WIDTH/2-50;
+        backImage.y = -50
+    	backImage.scaleX = 0.75;
+    	backImage.scaleY = 0.75;
+    	backImage.rotation = 90;
+        backImage.addEventListener('touchstart', function(){
+            socket.emit('drawcard');
+            
+         });
+    	var makeTower = new Sprite(210,99);
+        makeTower.image = core.assets['make_tower.jpg'];
+        makeTower.x = 0;
+        makeTower.y = 0;
+    	makeTower.addEventListener('touchstart', function(){
+            socket.emit('maketower');
+            
+         });
+    	
+    	var resetImage = new Sprite(217,94);
+        resetImage.image = core.assets['reset.jpg'];
+        resetImage.x = 0;
+        resetImage.y = 100;
+    	resetImage.addEventListener('touchstart', function(){
+            for (var i = 0; i<handList.length; ++i){
+    		    var discard = handList[i];
+      		    core.rootScene.removeChild(discard);
+    		};
+    		
+    		for (var i = 0; i<fieldList.length; ++i){
+    		    var discard = fieldList[i];
+      		    core.rootScene.removeChild(discard);
+    		};
+    		
+    		for (var i = 0; i<landList.length; ++i){
+    		    var discard = landList[i];
+      		    core.rootScene.removeChild(discard);
+    		};
+            handList = [];
+    		handListNum = [];
+    		fieldList = [];
+    		fieldListNum = [];
+    		landList = [];
+    		
+         });
+    	socket.on('draw',function(data){
+    	    var card = new Sprite(card_image_width, card_image_height);
+    	    var card_name = './cards/tower ('+data+').jpg';
+          	card.image = core.assets[card_name];
+    	    card.scaleX = card_scale;
+    	    card.scaleY = card_scale;
+    	    card.moveTo(cardx + handList.length*Math.ceil(card_image_width*card_scale), cardy);
+    	    card.ontouchstart = touchFuncHand;
+    	    scene.addChild(card);
+    	    handList.push(card);
+    		handListNum.push(data);
+        });
+    	
+    	socket.on('opplay',function(data){
+    		var opplay = new Sprite(card_image_width, card_image_height);
+    		var opplay_name = './cards/tower ('+data+').jpg';
+    		var op_label = new Label('opponent play');
+    		opplay.image = core.assets[opplay_name];
+    	    opplay.scaleX = card_scale;
+    	    opplay.scaleY = card_scale;
+    	    opplay.x = 1200;
+    		opplay.y = 0;
+    		op_label.x = 1200;
+    		op_label.y = 275;
+    		op_label.color = "#FC9";
+	        op_label.font = "normal normal 30px/1.0 monospace";
+    		opplay.addEventListener('touchstart', function(){
+    	    this.parentNode.removeChild(this);
+    		core.rootScene.removeChild(op_label);
+    		});
+    	    scene.addChild(opplay);
+    		scene.addChild(op_label);
+    	});
+    	
+    	var touchFuncHand = function(){
+    		var setland = new Sprite(179,65);
+    	    var discardImage = new Sprite(173,65);
+    	    var playImage = new Sprite(162,63);
+    		var cancelImage = new Sprite(181,69);
+    		setland.image = core.assets['setland.jpg'];
+    		discardImage.image = core.assets['discard.jpg'];
+    		playImage.image = core.assets['play.jpg'];
+    		cancelImage.image = core.assets['cancel.jpg'];
+    		setland.x = this.x - 100;
+            setland.y = this.y+100
+    	    discardImage.x = this.x + 150;
+            discardImage.y = this.y+100;
+            playImage.x = this.x+30;
+            playImage.y = this.y-20;
+    		cancelImage.x = this.x+30;
+    		cancelImage.y = this.y+170;
+    		handcard_x = this.x
+    		
+    		playImage.addEventListener('touchstart', function(){
+        	console.log("play",handcard_x);
+    			for (var i = 0; i<handList.length; ++i){
+    		        var discard = handList[i];
+    		    	if (handcard_x == discard.x){
     				var discard_num = i;
+    		    		console.log("discaard_num",discard_num);
     			};
     		};
-			socket.emit('discard', {num:discard_num, battleId:battleId});
-    		this.parentNode.removeChild(this);
+    		var play_card_Num = handListNum[discard_num];
+    		socket.emit('play',play_card_Num);
+    		var play_card = new Sprite(card_image_width, card_image_height);
+    		var play_card_name = './cards/tower ('+play_card_Num+').jpg';
+          	play_card.image = core.assets[play_card_name];
+    	    play_card.scaleX = card_scale;
+    	    play_card.scaleY = card_scale;
+    	    play_card.moveTo(play_cardx + fieldList.length*Math.ceil(card_image_width*card_scale), play_cardy);
+    	    play_card.ontouchstart = touchFuncPlay;
+    	    core.rootScene.addChild(play_card);
+    	    fieldList.push(play_card);
+    		fieldListNum.push(play_card_Num);
+    		
+    		var discard_set = handList[discard_num];
+    		core.rootScene.removeChild(discard_set);
     		for (var j = discard_num+1; j<handList.length; ++j){
     			var move_card = handList[j];
     			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), cardy);
     			handList[j-1] = handList[j];
+    			handListNum[j-1] =handListNum[j]
+    		};
+    		handList.pop();
+    			handListNum.pop();
+    			core.rootScene.removeChild(setland);
+                core.rootScene.removeChild(discardImage);
+    			core.rootScene.removeChild(playImage);
+    			core.rootScene.removeChild(cancelImage);
+            });
+    		setland.addEventListener('touchstart', function(){
+    			var towerland = new Sprite(land_image_width,land_image_height);
+    			towerland.image = core.assets['tower_land.jpg'];
+    			towerland.scaleX = land_scale;
+    			towerland.scaleY = land_scale;
+    			towerland.moveTo(landx + landList.length*Math.ceil(land_image_width*land_scale), landy);
+    	        towerland.ontouchstart = touchFuncLand;
+    	        core.rootScene.addChild(towerland);
+    	        landList.push(towerland);
+    			
+    			for (var i = 0; i<handList.length; ++i){
+    		        var discard = handList[i];
+    		    	if (handcard_x == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		var discard_set = handList[discard_num];
+    		core.rootScene.removeChild(discard_set);
+    		for (var j = discard_num+1; j<handList.length; ++j){
+    			var move_card = handList[j];
+    			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), cardy);
+    			handList[j-1] = handList[j];
+    			handListNum[j-1] =handListNum[j]
     			
     		};
     		handList.pop();
+    			handListNum.pop();
+    			core.rootScene.removeChild(setland);
+                core.rootScene.removeChild(discardImage);
+    			core.rootScene.removeChild(playImage);
+    			core.rootScene.removeChild(cancelImage);
+            });
+    		
+    		discardImage.addEventListener('touchstart', function(){
+    			for (var i = 0; i<handList.length; ++i){
+    		        var discard = handList[i];
+    		    	if (handcard_x == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		var discard_set = handList[discard_num];
+    		core.rootScene.removeChild(discard_set);
+    		for (var j = discard_num+1; j<handList.length; ++j){
+    			var move_card = handList[j];
+    			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), cardy);
+    			handList[j-1] = handList[j];
+    			handListNum[j-1] =handListNum[j]
+    		};
+    		handList.pop();
+    		handListNum.pop();
+    		
+    		core.rootScene.removeChild(setland);
+            core.rootScene.removeChild(discardImage);
+    		core.rootScene.removeChild(playImage);
+    		core.rootScene.removeChild(cancelImage);
+            });
+    		
+    		cancelImage.addEventListener('touchstart', function(){
+    			core.rootScene.removeChild(setland);
+                core.rootScene.removeChild(discardImage);
+    			core.rootScene.removeChild(playImage);
+    			core.rootScene.removeChild(cancelImage);
+            });
+    		
+    		core.rootScene.addChild(setland);
+    		core.rootScene.addChild(discardImage);
+    		core.rootScene.addChild(playImage);
+    		core.rootScene.addChild(cancelImage);
+    		
     	};
-}; //end function tower
-function fromtop(){
-	
-	ft = ft+1;
-	towerNum.text = TOWER_HEIGHT - ft
-	scene.addChild(towerNum);
-	return ft
-}
-
+    	var touchFuncPlay = function(){
+    	  var discardImage = new Sprite(173,65);
+    	  var tapImage = new Sprite(177,71);
+    	  var cancelImage = new Sprite(181,69);
+    	  discardImage.image = core.assets['discard.jpg'];
+    	  tapImage.image = core.assets['tap.jpg'];
+          cancelImage.image = core.assets['cancel.jpg'];
+    	  discardImage.x = this.x + 150;
+          discardImage.y = this.y+100;
+    	  tapImage.x = this.x - 150;
+          tapImage.y = this.y+100;
+    	  cancelImage.x = this.x+30;
+    	  cancelImage.y = this.y+170;
+    	  ftargetx = this.x
+    	  discardImage.addEventListener('touchstart', function(){
+    			for (var i = 0; i<fieldList.length; ++i){
+    		        var discard = fieldList[i];
+    		    	if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		var discard_set = fieldList[discard_num];
+    		core.rootScene.removeChild(discard_set);
+    		for (var j = discard_num+1; j<fieldList.length; ++j){
+    			var move_card = fieldList[j];
+    			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), play_cardy);
+    			fieldList[j-1] = fieldList[j];
+    			fieldListNum[j-1] =fieldListNum[j]
+    		};
+    		fieldList.pop();
+    		fieldListNum.pop();
+    	  	
+            core.rootScene.removeChild(discardImage);
+    	  	core.rootScene.removeChild(cancelImage);
+    		core.rootScene.removeChild(tapImage);
+          });
+    	  
+    	  cancelImage.addEventListener('touchstart', function(){
+                core.rootScene.removeChild(discardImage);
+    			core.rootScene.removeChild(tapImage);
+    			core.rootScene.removeChild(cancelImage);
+          });
+    	  
+    	  tapImage.addEventListener('touchstart', function(){
+    	  	for (var i = 0; i<fieldList.length; ++i){
+    		    var discard = fieldList[i];
+    		    if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		var tapcard = fieldList[discard_num];
+    	  	if (tapcard.rotation == 90){
+    	  		tapcard.rotate(-90);
+    	  	} else {
+    	  		tapcard.rotate(90);
+    	  	};
+                core.rootScene.removeChild(discardImage);
+    			core.rootScene.removeChild(tapImage);
+    			core.rootScene.removeChild(cancelImage);
+          });
+    	core.rootScene.addChild(discardImage);
+    	core.rootScene.addChild(tapImage);
+    	core.rootScene.addChild(cancelImage);
+    	  
+    	};
+    	var touchFuncLand = function(){
+    		if (this.rotation == 90){
+    	  		this.rotate(-90);
+    	  	} else {
+    	  		this.rotate(90);
+    	  	};
+    	};
+        core.rootScene.addChild(backImage);
+    	core.rootScene.addChild(makeTower);
+    	core.rootScene.addChild(resetImage);
+       };
+      core.start();
+};
