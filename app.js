@@ -10,7 +10,7 @@ app.get('/' , function(req, res){
    res.sendFile(__dirname + '/index.html');
 });
 
-var towerHeight = 159;
+var towerHeight = 200;
 var topcardNum = 0;
 var ft = 0; // from top
 var tower = [];

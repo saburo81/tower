@@ -2,8 +2,8 @@ enchant(); // enchantjs おまじない
 var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
 var SCREEN_HEIGHT = 960; //スクリーン高さ
-var GAME_FPS = 20000; //ゲームのFPS, いくつがいいんだ…?
-var towerHeight = 159;
+var GAME_FPS = 30; //ゲームのFPS, いくつがいいんだ…?
+var towerHeight = 200;
 
 
   
@@ -25,7 +25,7 @@ window.onload = function() {
 	var landy = 300;
 	var land_image_width = 431;
 	var land_image_height = 599
-	var land_scale = 0.35;
+	var land_scale = 0.30;
 	var play_cardx = 100;
 	var play_cardy = 200;
     scene = core.rootScene;
@@ -39,7 +39,14 @@ window.onload = function() {
 	core.preload('cancel.jpg');
 	core.preload('tap.jpg');
 	core.preload('reset.jpg');
-
+    core.preload('return_hand.jpg');
+	core.preload('untap.jpg');
+	core.preload('plus.jpg');
+	core.preload('minus.jpg');
+    core.preload('left.jpg');
+	core.preload('right.jpg');
+	core.preload('token.jpg');
+	core.preload('maotoken.jpg');
 	for (var i = 1; i<towerHeight; i++){
 		precard = './cards/tower ('+i+').jpg';
 		core.preload(precard);
@@ -92,6 +99,40 @@ window.onload = function() {
     		landList = [];
     		
          });
+    	
+    	var untapImage = new Sprite(108,74);
+        untapImage.image = core.assets['untap.jpg'];
+        untapImage.x = 0;
+        untapImage.y = 250;
+    	untapImage.addEventListener('touchstart', function(){
+        for (var i = 0; i<fieldList.length; ++i){
+    		 var discard = fieldList[i];
+      		 discard.rotation = 0;
+    		};
+    		
+    	for (var i = 0; i<landList.length; ++i){
+    		 var discard = landList[i];
+      		 discard.rotation = 0;
+    		};
+            
+         });
+    	
+    	var tokenImage = new Sprite(218,93);
+        tokenImage.image = core.assets['token.jpg'];
+        tokenImage.x = 220;
+        tokenImage.y = 0;
+    	tokenImage.addEventListener('touchstart', function(){
+        var play_card = new Sprite(card_image_width, card_image_height);
+          	play_card.image = core.assets['maotoken.jpg'];
+    	    play_card.scaleX = card_scale;
+    	    play_card.scaleY = card_scale;
+    	    play_card.moveTo(play_cardx + fieldList.length*Math.ceil(card_image_width*card_scale), play_cardy);
+    	    play_card.ontouchstart = touchFuncPlayToken;
+    	    core.rootScene.addChild(play_card);
+    	    fieldList.push(play_card);
+    		fieldListNum.push(10000);
+            
+         });
     	socket.on('draw',function(data){
     	    var card = new Sprite(card_image_width, card_image_height);
     	    var card_name = './cards/tower ('+data+').jpg';
@@ -127,10 +168,13 @@ window.onload = function() {
     	});
     	
     	var touchFuncHand = function(){
+    	
+    	
     		var setland = new Sprite(179,65);
     	    var discardImage = new Sprite(173,65);
     	    var playImage = new Sprite(162,63);
     		var cancelImage = new Sprite(181,69);
+    		
     		setland.image = core.assets['setland.jpg'];
     		discardImage.image = core.assets['discard.jpg'];
     		playImage.image = core.assets['play.jpg'];
@@ -145,8 +189,14 @@ window.onload = function() {
     		cancelImage.y = this.y+170;
     		handcard_x = this.x
     		
+    		var touchRemoveFuncHand = function(){
+    		    core.rootScene.removeChild(setland);
+                core.rootScene.removeChild(discardImage);
+    			core.rootScene.removeChild(playImage);
+    			core.rootScene.removeChild(cancelImage);
+    		};
     		playImage.addEventListener('touchstart', function(){
-        	console.log("play",handcard_x);
+        
     			for (var i = 0; i<handList.length; ++i){
     		        var discard = handList[i];
     		    	if (handcard_x == discard.x){
@@ -176,13 +226,11 @@ window.onload = function() {
     			handListNum[j-1] =handListNum[j]
     		};
     		handList.pop();
-    			handListNum.pop();
-    			core.rootScene.removeChild(setland);
-                core.rootScene.removeChild(discardImage);
-    			core.rootScene.removeChild(playImage);
-    			core.rootScene.removeChild(cancelImage);
+    		handListNum.pop();
+    		touchRemoveFuncHand();	
             });
     		setland.addEventListener('touchstart', function(){
+    			
     			var towerland = new Sprite(land_image_width,land_image_height);
     			towerland.image = core.assets['tower_land.jpg'];
     			towerland.scaleX = land_scale;
@@ -208,11 +256,8 @@ window.onload = function() {
     			
     		};
     		handList.pop();
-    			handListNum.pop();
-    			core.rootScene.removeChild(setland);
-                core.rootScene.removeChild(discardImage);
-    			core.rootScene.removeChild(playImage);
-    			core.rootScene.removeChild(cancelImage);
+    		handListNum.pop();
+    		touchRemoveFuncHand();	
             });
     		
     		discardImage.addEventListener('touchstart', function(){
@@ -232,18 +277,11 @@ window.onload = function() {
     		};
     		handList.pop();
     		handListNum.pop();
-    		
-    		core.rootScene.removeChild(setland);
-            core.rootScene.removeChild(discardImage);
-    		core.rootScene.removeChild(playImage);
-    		core.rootScene.removeChild(cancelImage);
+    		touchRemoveFuncHand();
             });
     		
     		cancelImage.addEventListener('touchstart', function(){
-    			core.rootScene.removeChild(setland);
-                core.rootScene.removeChild(discardImage);
-    			core.rootScene.removeChild(playImage);
-    			core.rootScene.removeChild(cancelImage);
+    		touchRemoveFuncHand();
             });
     		
     		core.rootScene.addChild(setland);
@@ -256,16 +294,52 @@ window.onload = function() {
     	  var discardImage = new Sprite(173,65);
     	  var tapImage = new Sprite(177,71);
     	  var cancelImage = new Sprite(181,69);
+    	  var reHand = new Sprite(180,70);
+    	  var plusImage = new Sprite(63,57);
+    	  var minusImage = new Sprite(59,58);
+    	  var leftImage = new Sprite(61,59);
+    	  var rightImage = new Sprite(60,60);
+    	  
     	  discardImage.image = core.assets['discard.jpg'];
     	  tapImage.image = core.assets['tap.jpg'];
           cancelImage.image = core.assets['cancel.jpg'];
-    	  discardImage.x = this.x + 150;
+    	  reHand.image = core.assets['return_hand.jpg']
+    	  plusImage.image = core.assets['plus.jpg'];
+    	  minusImage.image = core.assets['minus.jpg'];
+          leftImage.image = core.assets['left.jpg'];
+    	  rightImage.image = core.assets['right.jpg']
+
+    	  discardImage.x = this.x + 170;
           discardImage.y = this.y+100;
-    	  tapImage.x = this.x - 150;
-          tapImage.y = this.y+100;
+    	  tapImage.x = this.x +30;
+          tapImage.y = this.y - 40;
     	  cancelImage.x = this.x+30;
     	  cancelImage.y = this.y+170;
+    	  reHand.x = this.x - 120;
+    	  reHand.y = this.y + 100;
+    	  plusImage.x = this.x + 65;
+          plusImage.y = this.y + 240;
+    	  minusImage.x = this.x + 130;
+          minusImage.y = this.y + 240;
+    	  leftImage.x = this.x ;
+    	  leftImage.y = this.y + 240;
+    	  rightImage.x = this.x + 195;
+    	  rightImage.y = this.y + 240;
+    		
     	  ftargetx = this.x
+    	  
+    	  //remove button
+    	  var touchRemoveFunc = function(){
+    	  	core.rootScene.removeChild(discardImage);
+    		core.rootScene.removeChild(tapImage);
+    		core.rootScene.removeChild(cancelImage);
+    	  	core.rootScene.removeChild(reHand);
+          	core.rootScene.removeChild(plusImage);
+    	  	core.rootScene.removeChild(minusImage);
+    		core.rootScene.removeChild(leftImage);
+    	  	core.rootScene.removeChild(rightImage);
+    		};
+    		
     	  discardImage.addEventListener('touchstart', function(){
     			for (var i = 0; i<fieldList.length; ++i){
     		        var discard = fieldList[i];
@@ -283,17 +357,13 @@ window.onload = function() {
     		};
     		fieldList.pop();
     		fieldListNum.pop();
+    	  	touchRemoveFunc();
     	  	
-            core.rootScene.removeChild(discardImage);
-    	  	core.rootScene.removeChild(cancelImage);
-    		core.rootScene.removeChild(tapImage);
           });
     	  
     	  cancelImage.addEventListener('touchstart', function(){
-                core.rootScene.removeChild(discardImage);
-    			core.rootScene.removeChild(tapImage);
-    			core.rootScene.removeChild(cancelImage);
-          });
+    	  	touchRemoveFunc();
+    	  });
     	  
     	  tapImage.addEventListener('touchstart', function(){
     	  	for (var i = 0; i<fieldList.length; ++i){
@@ -308,14 +378,255 @@ window.onload = function() {
     	  	} else {
     	  		tapcard.rotate(90);
     	  	};
-                core.rootScene.removeChild(discardImage);
-    			core.rootScene.removeChild(tapImage);
-    			core.rootScene.removeChild(cancelImage);
+            
+    	  	touchRemoveFunc();
+    	  
+    	  });
+    	  
+    	  reHand.addEventListener('touchstart', function(){
+    	    for (var i = 0; i<fieldList.length; ++i){
+    		    var discard = fieldList[i];
+    		    if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		var reHandNum = fieldListNum[discard_num];
+    	  	
+    	  	var card = new Sprite(card_image_width, card_image_height);
+    	    var card_name = './cards/tower ('+reHandNum+').jpg';
+          	card.image = core.assets[card_name];
+    	    card.scaleX = card_scale;
+    	    card.scaleY = card_scale;
+    	    card.moveTo(cardx + handList.length*Math.ceil(card_image_width*card_scale), cardy);
+    	    card.ontouchstart = touchFuncHand;
+    	    scene.addChild(card);
+    	    handList.push(card);
+    		handListNum.push(reHandNum);
+    	  	
+    	  	var discard_set = fieldList[discard_num];
+    	  	core.rootScene.removeChild(discard_set);
+    		for (var j = discard_num+1; j<fieldList.length; ++j){
+    			var move_card = fieldList[j];
+    			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), play_cardy);
+    			fieldList[j-1] = fieldList[j];
+    			fieldListNum[j-1] =fieldListNum[j]
+    		};
+    		fieldList.pop();
+    		fieldListNum.pop();
+    	  	touchRemoveFunc();
+          });
+    	  
+    	leftImage.addEventListener('touchstart', function(){
+    	    for (var i = 0; i<fieldList.length; ++i){
+    		    var discard = fieldList[i];
+    		    if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		
+    		if (discard_num != 0){
+    		
+    		var target = fieldList[discard_num];
+    	  	var left = fieldList[discard_num -1];
+    		var targetNum = fieldListNum[discard_num];
+    		var leftNum = fieldListNum[discard_num-1];
+    		    	  	
+    		target.moveTo(target.x - Math.ceil(card_image_width*card_scale), play_cardy);
+            left.moveTo(left.x + Math.ceil(card_image_width*card_scale), play_cardy);
+    		fieldList[discard_num] = left;
+    		fieldList[discard_num -1] = target;
+    		fieldListNum[discard_num] = leftNum;
+    		fieldListNum[discard_num -1] = targetNum;
+    		};
+    	  	
+    		touchRemoveFunc();
+          });
+    	
+    	rightImage.addEventListener('touchstart', function(){
+    	    for (var i = 0; i<fieldList.length; ++i){
+    		    var discard = fieldList[i];
+    		    if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		
+    		if (discard_num < fieldList.length-1){
+    		
+    		var target = fieldList[discard_num];
+    	  	var right = fieldList[discard_num + 1];
+    		var targetNum = fieldListNum[discard_num];
+    		var rightNum = fieldListNum[discard_num+1];
+    		    	  	
+    		target.moveTo(target.x + Math.ceil(card_image_width*card_scale), play_cardy);
+            right.moveTo(right.x - Math.ceil(card_image_width*card_scale), play_cardy);
+    		fieldList[discard_num] = right;
+    		fieldList[discard_num + 1] = target;
+    		fieldListNum[discard_num] = rightNum;
+    		fieldListNum[discard_num + 1] = targetNum;
+    		};
+    	  	
+    		touchRemoveFunc();
           });
     	core.rootScene.addChild(discardImage);
     	core.rootScene.addChild(tapImage);
     	core.rootScene.addChild(cancelImage);
+    	core.rootScene.addChild(reHand);
+    	core.rootScene.addChild(plusImage);
+    	core.rootScene.addChild(minusImage);
+    	core.rootScene.addChild(leftImage);
+    	core.rootScene.addChild(rightImage);
+    		
+    		
+    	};
+    	var touchFuncPlayToken = function(){
+    	  var discardImage = new Sprite(173,65);
+    	  var tapImage = new Sprite(177,71);
+    	  var cancelImage = new Sprite(181,69);
+    	  var plusImage = new Sprite(63,57);
+    	  var minusImage = new Sprite(59,58);
+    	  var leftImage = new Sprite(61,59);
+    	  var rightImage = new Sprite(60,60);
     	  
+    	  discardImage.image = core.assets['discard.jpg'];
+    	  tapImage.image = core.assets['tap.jpg'];
+          cancelImage.image = core.assets['cancel.jpg'];
+    	  plusImage.image = core.assets['plus.jpg'];
+    	  minusImage.image = core.assets['minus.jpg'];
+          leftImage.image = core.assets['left.jpg'];
+    	  rightImage.image = core.assets['right.jpg']
+
+    	  discardImage.x = this.x + 170;
+          discardImage.y = this.y+100;
+    	  tapImage.x = this.x +30;
+          tapImage.y = this.y - 40;
+    	  cancelImage.x = this.x+30;
+    	  cancelImage.y = this.y+170;
+    	  plusImage.x = this.x + 65;
+          plusImage.y = this.y + 240;
+    	  minusImage.x = this.x + 130;
+          minusImage.y = this.y + 240;
+    	  leftImage.x = this.x ;
+    	  leftImage.y = this.y + 240;
+    	  rightImage.x = this.x + 195;
+    	  rightImage.y = this.y + 240;
+    		
+    	  ftargetx = this.x
+    	  
+    	  //remove button
+    	  var touchRemoveFunc = function(){
+    	  	core.rootScene.removeChild(discardImage);
+    		core.rootScene.removeChild(tapImage);
+    		core.rootScene.removeChild(cancelImage);
+          	core.rootScene.removeChild(plusImage);
+    	  	core.rootScene.removeChild(minusImage);
+    		core.rootScene.removeChild(leftImage);
+    	  	core.rootScene.removeChild(rightImage);
+    		};
+    		
+    	  discardImage.addEventListener('touchstart', function(){
+    			for (var i = 0; i<fieldList.length; ++i){
+    		        var discard = fieldList[i];
+    		    	if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		var discard_set = fieldList[discard_num];
+    		core.rootScene.removeChild(discard_set);
+    		for (var j = discard_num+1; j<fieldList.length; ++j){
+    			var move_card = fieldList[j];
+    			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), play_cardy);
+    			fieldList[j-1] = fieldList[j];
+    			fieldListNum[j-1] =fieldListNum[j]
+    		};
+    		fieldList.pop();
+    		fieldListNum.pop();
+    	  	touchRemoveFunc();
+    	  	
+          });
+    	  
+    	  cancelImage.addEventListener('touchstart', function(){
+    	  	touchRemoveFunc();
+    	  });
+    	  
+    	  tapImage.addEventListener('touchstart', function(){
+    	  	for (var i = 0; i<fieldList.length; ++i){
+    		    var discard = fieldList[i];
+    		    if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		var tapcard = fieldList[discard_num];
+    	  	if (tapcard.rotation == 90){
+    	  		tapcard.rotate(-90);
+    	  	} else {
+    	  		tapcard.rotate(90);
+    	  	};
+            
+    	  	touchRemoveFunc();
+    	  
+    	  });
+    	  
+    	  
+    	leftImage.addEventListener('touchstart', function(){
+    	    for (var i = 0; i<fieldList.length; ++i){
+    		    var discard = fieldList[i];
+    		    if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		
+    		if (discard_num != 0){
+    		
+    		var target = fieldList[discard_num];
+    	  	var left = fieldList[discard_num -1];
+    		var targetNum = fieldListNum[discard_num];
+    		var leftNum = fieldListNum[discard_num-1];
+    		    	  	
+    		target.moveTo(target.x - Math.ceil(card_image_width*card_scale), play_cardy);
+            left.moveTo(left.x + Math.ceil(card_image_width*card_scale), play_cardy);
+    		fieldList[discard_num] = left;
+    		fieldList[discard_num -1] = target;
+    		fieldListNum[discard_num] = leftNum;
+    		fieldListNum[discard_num -1] = targetNum;
+    		};
+    	  	
+    		touchRemoveFunc();
+          });
+    	
+    	rightImage.addEventListener('touchstart', function(){
+    	    for (var i = 0; i<fieldList.length; ++i){
+    		    var discard = fieldList[i];
+    		    if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		
+    		if (discard_num < fieldList.length-1){
+    		
+    		var target = fieldList[discard_num];
+    	  	var right = fieldList[discard_num + 1];
+    		var targetNum = fieldListNum[discard_num];
+    		var rightNum = fieldListNum[discard_num+1];
+    		    	  	
+    		target.moveTo(target.x + Math.ceil(card_image_width*card_scale), play_cardy);
+            right.moveTo(right.x - Math.ceil(card_image_width*card_scale), play_cardy);
+    		fieldList[discard_num] = right;
+    		fieldList[discard_num + 1] = target;
+    		fieldListNum[discard_num] = rightNum;
+    		fieldListNum[discard_num + 1] = targetNum;
+    		};
+    	  	
+    		touchRemoveFunc();
+          });
+    	core.rootScene.addChild(discardImage);
+    	core.rootScene.addChild(tapImage);
+    	core.rootScene.addChild(cancelImage);
+    	core.rootScene.addChild(plusImage);
+    	core.rootScene.addChild(minusImage);
+    	core.rootScene.addChild(leftImage);
+    	core.rootScene.addChild(rightImage);
+    		
+    		
     	};
     	var touchFuncLand = function(){
     		if (this.rotation == 90){
@@ -324,9 +635,12 @@ window.onload = function() {
     	  		this.rotate(90);
     	  	};
     	};
+    	
         core.rootScene.addChild(backImage);
     	core.rootScene.addChild(makeTower);
     	core.rootScene.addChild(resetImage);
+    	core.rootScene.addChild(untapImage);
+    	core.rootScene.addChild(tokenImage);
        };
       core.start();
 };

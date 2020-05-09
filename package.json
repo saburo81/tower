@@ -1,0 +1,20 @@
+{
+  "name": "tower",
+  "version": "1.0.0",
+  "description": "test タワーのver1.0 nodejsのインストールが必要 nodejsをインストールしたあと npm install connect さらにnpm install serve-static main.js ではenchant.jsというライブラリを使ってる カードイメージはForgeからごにょごにょして手に入れた",
+  "main": "main.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Node.js",
+    "socket.io"
+  ],
+  "author": "saburo",
+  "license": "ISC"
+}
