@@ -12,7 +12,6 @@ app.get('/' , function(req, res){
 
 var towerHeight = 200;
 var topcardNum = 0;
-var ft = 0; // from top
 var tower = [];
 var min = 1, max = towerHeight
 function intRandom(min, max){
@@ -23,12 +22,12 @@ io.on('connection',function(socket){
     id ++;
     console.log("userid"+id);
     socket.on('drawcard',function(){
-      if (ft > tower.length){
+      if (tower.length == 0){
       	console.log("tower over");
       } else {
-          topcardNum = tower[ft];
-          ft = ft+1;
+          topcardNum = tower[0];
           socket.emit('draw',topcardNum);
+      	  tower.shift();
       };
       });
 	socket.on('maketower',function(){
@@ -49,6 +48,10 @@ io.on('connection',function(socket){
 	});
 	socket.on('play',function(msg){
 		socket.broadcast.emit('opplay',msg);
+	});
+	
+	socket.on('return',function(data){
+		tower.unshift(data);
 	});
 });
 http.listen(PORT, function(){
