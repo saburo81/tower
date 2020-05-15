@@ -18,23 +18,33 @@ window.onload = function() {
 	var fieldListNum =[];
 	var counterList =[];
 	var counterLabelList =[];
+	var upfieldList = [];
+	var upfieldListNum = [];
 	var card_image_width = 223;
 	var card_image_height = 311;
 	var card_scale = 0.6;
 	var cardx = 100;
 	var cardy = 710;
 	var landx = 0;
-	var landy = 380;
+	var landy = 205;
 	var land_image_width = 431;
 	var land_image_height = 599
 	var land_scale = 0.25;
 	var play_cardx = 100;
-	var play_cardy = 180;
+	var play_cardy = 170;
 	var counter_x = 70;
 	var counter_y = 30;
 	var zoom_x = 1300;
 	var zoom_y = 200;
-	var zoom_scale = 1.5;
+	var zoom_scale = 1.2;
+	var opcard_scale = 1.2;
+	var back_scale = 0.7;
+	var make_scale = 0.7;
+	var reset_scale = 0.69;
+	var token_scale = 0.6;
+	var dice_scale = 0.4;
+	var upfield_x = 150;
+	var upfield_y = -55;
     scene = core.rootScene;
     scene.backgroundColor = "green";
     core.preload('back_image.jpg');
@@ -57,6 +67,7 @@ window.onload = function() {
 	core.preload('return_tower.jpg');
 	core.preload('zoom.jpg');
 	core.preload('destroyland.jpg');
+	core.preload('dice.gif');
 	
 	for (var i = 1; i<towerHeight; i++){
 		precard = './cards/tower ('+i+').jpg';
@@ -64,12 +75,34 @@ window.onload = function() {
 	};
     
     core.onload = function() {
+    	var hand_space = new Sprite(SCREEN_WIDTH, 400);
+    	var surface = new Surface(SCREEN_WIDTH,400);
+    	surface.context.fillStyle = "beige";
+    	surface.context.fillRect(0, 0, SCREEN_WIDTH, 400);
+    	hand_space.image = surface;
+    	hand_space.y = 585;
+    	
+    	var input = new Entity();
+		//DOM設定
+		input._element = document.createElement('input');
+		input._element.setAttribute('type','text');
+		input._element.setAttribute('maxlength','10');
+		input._element.setAttribute('id','test');
+		input._element.setAttribute('value','name');
+    	//input._element.style.fontsize = '30px'
+		input.width = 100;
+		input.height = 50;
+		input.x = 50;
+		input.y = 10;
+	    input.on(Event.ENTER_FRAME, function() {
+		
+		});
         var backImage = new Sprite(223,319);
         backImage.image = core.assets['back_image.jpg'];
         backImage.x = SCREEN_WIDTH/2-50;
-        backImage.y = -50
-    	backImage.scaleX = 0.75;
-    	backImage.scaleY = 0.75;
+        backImage.y = -70
+    	backImage.scaleX = back_scale;
+    	backImage.scaleY = back_scale;
     	backImage.rotation = 90;
         backImage.addEventListener('touchstart', function(){
             socket.emit('drawcard');
@@ -77,17 +110,40 @@ window.onload = function() {
          });
     	var makeTower = new Sprite(210,99);
         makeTower.image = core.assets['make_tower.jpg'];
-        makeTower.x = 0;
+        makeTower.x = SCREEN_WIDTH-170;
         makeTower.y = 0;
+    	makeTower.scaleX = make_scale;
+    	makeTower.scaleY = make_scale;
     	makeTower.addEventListener('touchstart', function(){
             socket.emit('maketower');
             
          });
     	
+    	var diceImage = new Sprite(175,175);
+        diceImage.image = core.assets['dice.gif'];
+        diceImage.x = -25;
+        diceImage.y = 110;
+    	diceImage.scaleX = dice_scale;
+    	diceImage.scaleY = dice_scale;
+    	var diceLabel = new Label('0');
+    	diceLabel.color = "black";
+	    diceLabel.font = "normal normal 30px/1.0 monospace";
+    	diceLabel.x = 60;
+    	diceLabel.y = 120;
+    	scene.addChild(diceLabel);
+    	diceImage.addEventListener('touchstart', function(){
+    		core.rootScene.removeChild(diceLabel);
+    		var diceNum = Math.floor( Math.random() * 6) + 1;
+    		diceLabel.text = String(diceNum);
+            //socket.emit('dice', diceNum);
+    		scene.addChild(diceLabel);
+         });
     	var resetImage = new Sprite(217,94);
         resetImage.image = core.assets['reset.jpg'];
-        resetImage.x = 0;
-        resetImage.y = 100;
+        resetImage.x = SCREEN_WIDTH-172;
+        resetImage.y = 80;
+    	resetImage.scaleX = reset_scale;
+    	resetImage.scaleY = reset_scale;
     	resetImage.addEventListener('touchstart', function(){
             for (var i = 0; i<handList.length; ++i){
     		    var discard = handList[i];
@@ -107,6 +163,10 @@ window.onload = function() {
     		    var discard = counterLabelList[i];
       		    core.rootScene.removeChild(discard);
     		};
+    		for (var i = 0; i<upfieldList.length; ++i){
+    		    var discard = upfieldList[i];
+      		    core.rootScene.removeChild(discard);
+    		};
             handList = [];
     		handListNum = [];
     		fieldList = [];
@@ -114,12 +174,13 @@ window.onload = function() {
     		landList = [];
     		counterList = [];
     		counterLabelList = [];
-    		
+    		upfieldList = [];
+    		upfieldListNum = [];
          });
     	
     	var untapImage = new Sprite(108,74);
         untapImage.image = core.assets['untap.jpg'];
-        untapImage.x = 0;
+        untapImage.x = 10;
         untapImage.y = 250;
     	untapImage.addEventListener('touchstart', function(){
         for (var i = 0; i<fieldList.length; ++i){
@@ -132,12 +193,16 @@ window.onload = function() {
       		 discard.rotation = 0;
     		};
             
-         });
-    	
+         
+    	 for (var i = 0; i<upfieldList.length; ++i){
+    		 var discard = upfieldList[i];
+      		 discard.rotation = 0;
+    		};
+    	});
     	var destroyland = new Sprite(115,78);
         destroyland.image = core.assets['destroyland.jpg'];
-        destroyland.x = 0;
-        destroyland.y = 600;
+        destroyland.x = 10;
+        destroyland.y = 450;
     	destroyland.addEventListener('touchstart', function(){
           var target_land = landList[landList.length -1];
     	  core.rootScene.removeChild(target_land);
@@ -147,8 +212,10 @@ window.onload = function() {
     	
     	var tokenImage = new Sprite(218,93);
         tokenImage.image = core.assets['token.jpg'];
-        tokenImage.x = 220;
-        tokenImage.y = 0;
+        tokenImage.x = -45;
+        tokenImage.y = 310;
+    	tokenImage.scaleX = token_scale-0.1;
+    	tokenImage.scaleY = token_scale;
     	tokenImage.addEventListener('touchstart', function(){
         var play_card = new Sprite(card_image_width, card_image_height);
           	play_card.image = core.assets['maotoken.jpg'];
@@ -182,13 +249,13 @@ window.onload = function() {
     		var opplay_name = './cards/tower ('+data+').jpg';
     		var op_label = new Label('opponent play');
     		opplay.image = core.assets[opplay_name];
-    	    opplay.scaleX = card_scale;
-    	    opplay.scaleY = card_scale;
+    	    opplay.scaleX = opcard_scale;
+    	    opplay.scaleY = opcard_scale;
     	    opplay.x = 1200;
-    		opplay.y = 0;
+    		opplay.y = 50;
     		op_label.x = 1200;
-    		op_label.y = 275;
-    		op_label.color = "#FC9";
+    		op_label.y = opplay.y + 350;
+    		op_label.color = "red";
 	        op_label.font = "normal normal 30px/1.0 monospace";
     		opplay.addEventListener('touchstart', function(){
     	    this.parentNode.removeChild(this);
@@ -366,8 +433,8 @@ window.onload = function() {
           	zoom_card.image = core.assets[zoom_card_name];
     	    zoom_card.scaleX = zoom_scale;
     	    zoom_card.scaleY = zoom_scale;
-    	    zoom_card.x = zoom_x;
-    		zoom_card.y = zoom_y
+    	    zoom_card.x = this.x + 100;
+    		zoom_card.y = this.y - 185;
     		zoom_card.addEventListener('touchstart', function(){
     			core.rootScene.removeChild(this);
     		});
@@ -395,7 +462,8 @@ window.onload = function() {
     	  var rightImage = new Sprite(60,60);
     	  var reTower = new Sprite(180,71);
     	  var zoomImage = new Sprite(184,74);
-    	  
+    	  var upImage = new Sprite(61,59);
+    		
     	  discardImage.image = core.assets['discard.jpg'];
     	  tapImage.image = core.assets['tap.jpg'];
           cancelImage.image = core.assets['cancel.jpg'];
@@ -405,7 +473,8 @@ window.onload = function() {
           leftImage.image = core.assets['left.jpg'];
     	  rightImage.image = core.assets['right.jpg']
     	  reTower.image = core.assets['return_tower.jpg'];
-    	  zoomImage.image = core.assets['zoom.jpg']
+    	  zoomImage.image = core.assets['zoom.jpg'];
+    	  upImage.image = core.assets['left.jpg'];
 
     	  discardImage.x = this.x + 170;
           discardImage.y = this.y+40;
@@ -433,6 +502,9 @@ window.onload = function() {
     	  reTower.y = this.y + 100;
     	  reTower.scaleX = 0.95;
     	  reTower.scaleY = 0.95;
+    	  upImage.x = this.x - 32;
+    	  upImage.y = this.y - 30;
+    	  upImage.rotate(90);
     	  ftargetx = this.x
     	  
     	  //remove button
@@ -447,6 +519,7 @@ window.onload = function() {
     	  	core.rootScene.removeChild(rightImage);
     	  	core.rootScene.removeChild(zoomImage);
     	  	core.rootScene.removeChild(reTower);
+    	  	core.rootScene.removeChild(upImage);
     		};
     		
     	  discardImage.addEventListener('touchstart', function(){
@@ -462,7 +535,9 @@ window.onload = function() {
     	  	core.rootScene.removeChild(discard_label);
     		for (var j = discard_num+1; j<fieldList.length; ++j){
     			var move_card = fieldList[j];
+    			var targetLabel = counterLabelList[j];
     			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), play_cardy);
+    			targetLabel.moveTo(move_card.x + counter_x, move_card.y + counter_y);
     			fieldList[j-1] = fieldList[j];
     			fieldListNum[j-1] =fieldListNum[j];
     			counterList[j-1] = counterList[j];
@@ -524,7 +599,9 @@ window.onload = function() {
     	  	core.rootScene.removeChild(discard_label);
     		for (var j = discard_num+1; j<fieldList.length; ++j){
     			var move_card = fieldList[j];
+    			var targetLabel = counterLabelList[j];
     			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), play_cardy);
+    			targetLabel.moveTo(move_card.x + counter_x, move_card.y + counter_y);
     			fieldList[j-1] = fieldList[j];
     			fieldListNum[j-1] =fieldListNum[j];
     			counterList[j-1] = counterList[j];
@@ -610,7 +687,48 @@ window.onload = function() {
     	  	
     		touchRemoveFunc();
           });
+    	upImage.addEventListener('touchstart', function(){
+    	    for (var i = 0; i<fieldList.length; ++i){
+    		    var discard = fieldList[i];
+    		    if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+     		var targetNum = fieldListNum[discard_num];
+
+    		var up_card = new Sprite(card_image_width, card_image_height);
+    		var up_card_name = './cards/tower ('+targetNum+').jpg';
+          	up_card.image = core.assets[up_card_name];
+    	    up_card.scaleX = card_scale;
+    	    up_card.scaleY = card_scale;
+    	    up_card.moveTo(upfield_x + upfieldList.length*Math.ceil(card_image_width*card_scale), upfield_y);
+    	    up_card.ontouchstart = touchFuncPlayUp;
+    	    core.rootScene.addChild(up_card);
+    	    upfieldList.push(up_card);
+    		upfieldListNum.push(targetNum);
     		
+    		var discard_set = fieldList[discard_num];
+    		core.rootScene.removeChild(discard_set);
+    		var discard_label = counterLabelList[discard_num];
+    	  	core.rootScene.removeChild(discard_label);
+    		for (var j = discard_num+1; j<fieldList.length; ++j){
+    			var move_card = fieldList[j];
+    			var targetLabel = counterLabelList[j];
+    			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), play_cardy);
+    			targetLabel.moveTo(move_card.x + counter_x, move_card.y + counter_y);
+    			fieldList[j-1] = fieldList[j];
+    			fieldListNum[j-1] =fieldListNum[j];
+    			counterList[j-1] = counterList[j];
+    			counterLabelList[j-1] = counterLabelList[j];
+    		};
+    		fieldList.pop();
+    		fieldListNum.pop();
+    	  	counterLabelList.pop();
+    	  	counterList.pop();
+    	  	
+    		touchRemoveFunc();
+          });
+    	
     	plusImage.addEventListener('touchstart', function(){
     	    for (var i = 0; i<fieldList.length; ++i){
     		    var discard = fieldList[i];
@@ -708,7 +826,9 @@ window.onload = function() {
     	  	core.rootScene.removeChild(discard_label);
     		for (var j = discard_num+1; j<fieldList.length; ++j){
     			var move_card = fieldList[j];
+    			var targetLabel = counterLabelList[j];
     			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), play_cardy);
+    			targetLabel.moveTo(move_card.x + counter_x, move_card.y + counter_y);
     			fieldList[j-1] = fieldList[j];
     			fieldListNum[j-1] =fieldListNum[j];
     			counterList[j-1] = counterList[j];
@@ -730,7 +850,7 @@ window.onload = function() {
     	core.rootScene.addChild(rightImage);
     	core.rootScene.addChild(zoomImage);
     	core.rootScene.addChild(reTower);	
-    		
+    	core.rootScene.addChild(upImage);
     	};
     	var touchFuncPlayToken = function(){
     	  var discardImage = new Sprite(173,65);
@@ -740,14 +860,15 @@ window.onload = function() {
     	  var minusImage = new Sprite(59,58);
     	  var leftImage = new Sprite(61,59);
     	  var rightImage = new Sprite(60,60);
-    	  
+    	      	  
     	  discardImage.image = core.assets['discard.jpg'];
     	  tapImage.image = core.assets['tap.jpg'];
           cancelImage.image = core.assets['cancel.jpg'];
     	  plusImage.image = core.assets['plus.jpg'];
     	  minusImage.image = core.assets['minus.jpg'];
           leftImage.image = core.assets['left.jpg'];
-    	  rightImage.image = core.assets['right.jpg']
+    	  rightImage.image = core.assets['right.jpg'];
+    	  
 
     	  discardImage.x = this.x + 170;
           discardImage.y = this.y+100;
@@ -763,7 +884,7 @@ window.onload = function() {
     	  leftImage.y = this.y + 240;
     	  rightImage.x = this.x + 195;
     	  rightImage.y = this.y + 240;
-    		
+    	  
     	  ftargetx = this.x
     	  
     	  //remove button
@@ -790,7 +911,9 @@ window.onload = function() {
     	  	core.rootScene.removeChild(discard_label);
     		for (var j = discard_num+1; j<fieldList.length; ++j){
     			var move_card = fieldList[j];
+    			var targetLabel = counterLabelList[j];
     			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), play_cardy);
+    			targetLabel.moveTo(move_card.x + counter_x, move_card.y + counter_y);
     			fieldList[j-1] = fieldList[j];
     			fieldListNum[j-1] =fieldListNum[j];
     			counterList[j-1] = counterList[j];
@@ -968,8 +1091,181 @@ window.onload = function() {
     	core.rootScene.addChild(leftImage);
     	core.rootScene.addChild(rightImage);
     		
-    		
     	};
+    	
+    	var touchFuncPlayUp = function(){
+    	  var discardImage = new Sprite(173,65);
+    	  var tapImage = new Sprite(177,71);
+    	  var cancelImage = new Sprite(181,69);
+    	  var reHand = new Sprite(180,70);
+    	  var reTower = new Sprite(180,71);
+    	  var zoomImage = new Sprite(184,74);
+    	     		
+    	  discardImage.image = core.assets['discard.jpg'];
+    	  tapImage.image = core.assets['tap.jpg'];
+          cancelImage.image = core.assets['cancel.jpg'];
+    	  reHand.image = core.assets['return_hand.jpg']
+    	  reTower.image = core.assets['return_tower.jpg'];
+    	  zoomImage.image = core.assets['zoom.jpg'];
+
+    	  discardImage.x = this.x + 170;
+          discardImage.y = this.y + 100;
+    	  tapImage.x = this.x +30;
+          tapImage.y = this.y +30;
+    	  cancelImage.x = this.x+30;
+    	  cancelImage.y = this.y+230;
+    	  reHand.x = this.x - 103;
+    	  reHand.y = this.y + 162;
+    	  reHand.scaleX = 0.90;
+    	  reHand.scaleY = 0.95;
+    	  zoomImage.x = this.x - 105;
+          zoomImage.y = this.y + 95;
+    	  zoomImage.scaleX = 0.9;
+    	  zoomImage.scaleY = 0.9;
+    	  reTower.x = this.x + 165;
+    	  reTower.y = this.y + 160;
+    	  reTower.scaleX = 0.95;
+    	  reTower.scaleY = 0.95;
+    	  ftargetx = this.x
+    	  
+    	  //remove button
+    	  var touchRemoveFuncUp = function(){
+    	  	core.rootScene.removeChild(discardImage);
+    		core.rootScene.removeChild(tapImage);
+    		core.rootScene.removeChild(cancelImage);
+    	  	core.rootScene.removeChild(reHand);
+          	core.rootScene.removeChild(zoomImage);
+    	  	core.rootScene.removeChild(reTower);
+    		};
+    		
+    	  discardImage.addEventListener('touchstart', function(){
+    			for (var i = 0; i<upfieldList.length; ++i){
+    		        var discard = upfieldList[i];
+    		    	if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		var discard_set = upfieldList[discard_num];
+    		core.rootScene.removeChild(discard_set);
+    		for (var j = discard_num+1; j<upfieldList.length; ++j){
+    			var move_card = upfieldList[j];
+    			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), upfield_y);
+    			upfieldList[j-1] = upfieldList[j];
+    			upfieldListNum[j-1] = upfieldListNum[j];
+    		};
+    		upfieldList.pop();
+    		upfieldListNum.pop();
+    	  	touchRemoveFuncUp();
+    	  	
+          });
+    	  
+    	  cancelImage.addEventListener('touchstart', function(){
+    	  	touchRemoveFuncUp();
+    	  });
+    	  
+    	  tapImage.addEventListener('touchstart', function(){
+    	  	for (var i = 0; i<upfieldList.length; ++i){
+    		    var discard = upfieldList[i];
+    		    if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		var tapcard = upfieldList[discard_num];
+    	  	if (tapcard.rotation == 90){
+    	  		tapcard.rotate(-90);
+    	  	} else {
+    	  		tapcard.rotate(90);
+    	  	};
+            
+    	  	touchRemoveFuncUp();
+    	  
+    	  });
+    	  
+    	  reHand.addEventListener('touchstart', function(){
+    	    for (var i = 0; i<upfieldList.length; ++i){
+    		    var discard = upfieldList[i];
+    		    if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		var reHandNum = upfieldListNum[discard_num];
+    	  	
+    	  	var card = new Sprite(card_image_width, card_image_height);
+    	    var card_name = './cards/tower ('+reHandNum+').jpg';
+          	card.image = core.assets[card_name];
+    	    card.scaleX = card_scale;
+    	    card.scaleY = card_scale;
+    	    card.moveTo(cardx + handList.length*Math.ceil(card_image_width*card_scale), cardy);
+    	    card.ontouchstart = touchFuncHand;
+    	    scene.addChild(card);
+    	    handList.push(card);
+    		handListNum.push(reHandNum);
+    	  	
+    	  	var discard_set = upfieldList[discard_num];
+    	  	core.rootScene.removeChild(discard_set);
+    		for (var j = discard_num+1; j<upfieldList.length; ++j){
+    			var move_card = upfieldList[j];
+    			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), upfield_y);
+    			upfieldList[j-1] = upfieldList[j];
+    			upfieldListNum[j-1] = upfieldListNum[j];
+    		};
+    		upfieldList.pop();
+    		upfieldListNum.pop();
+    	  	touchRemoveFuncUp();
+          });
+    	  
+    	    zoomImage.addEventListener('touchstart', function(){
+    			for (var i = 0; i<upfieldList.length; ++i){
+    		        var discard = upfieldList[i];
+    		    	if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		
+    		var zoomNum = upfieldListNum[discard_num];
+    		var zoom_card = new Sprite(card_image_width, card_image_height);
+    		var zoom_card_name = './cards/tower ('+zoomNum+').jpg';
+          	zoom_card.image = core.assets[zoom_card_name];
+    	    zoom_card.scaleX = zoom_scale;
+    	    zoom_card.scaleY = zoom_scale;
+    	    zoom_card.x = zoom_x;
+    		zoom_card.y = zoom_y
+    		zoom_card.addEventListener('touchstart', function(){
+    			core.rootScene.removeChild(this);
+    		});
+    		core.rootScene.addChild(zoom_card);
+    		touchRemoveFuncUp();
+            });
+    		
+    		reTower.addEventListener('touchstart', function(){
+    			for (var i = 0; i<upfieldList.length; ++i){
+    		        var discard = upfieldList[i];
+    		    	if (ftargetx == discard.x){
+    				var discard_num = i;
+    			};
+    		};
+    		var discard_set = upfieldList[discard_num];
+    		var reTowerNum = upfieldListNum[discard_num];
+    		socket.emit('return',reTowerNum);
+    		core.rootScene.removeChild(discard_set);
+    		for (var j = discard_num+1; j<upfieldList.length; ++j){
+    			var move_card = upfieldList[j];
+    			move_card.moveTo(move_card.x - Math.ceil(card_image_width*card_scale), upfield_y);
+    			upfieldList[j-1] = upfieldList[j];
+    			upfieldListNum[j-1] = upfieldListNum[j];
+    		};
+    		upfieldList.pop();
+    		upfieldListNum.pop();
+    	  	touchRemoveFuncUp();
+          });
+    	core.rootScene.addChild(discardImage);
+    	core.rootScene.addChild(tapImage);
+    	core.rootScene.addChild(cancelImage);
+    	core.rootScene.addChild(reHand);
+    	core.rootScene.addChild(zoomImage);
+    	core.rootScene.addChild(reTower);	
+    	};
+    	
     	var touchFuncLand = function(){
     		if (this.rotation == 90){
     	  		this.rotate(-90);
@@ -977,13 +1273,16 @@ window.onload = function() {
     	  		this.rotate(90);
     	  	};
     	};
-    	
+    	core.rootScene.addChild(hand_space);
+    	core.rootScene.addChild(input);
+    	core.rootScene.addChild(diceImage);
         core.rootScene.addChild(backImage);
     	core.rootScene.addChild(makeTower);
     	core.rootScene.addChild(resetImage);
     	core.rootScene.addChild(untapImage);
     	core.rootScene.addChild(tokenImage);
     	core.rootScene.addChild(destroyland);
+    	
        };
       core.start();
 };
