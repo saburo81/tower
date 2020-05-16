@@ -45,32 +45,34 @@ window.onload = function() {
 	var dice_scale = 0.4;
 	var upfield_x = 150;
 	var upfield_y = -55;
+	var cards_path = 'images/cards/';
+	var components_path = 'images/components/';
     scene = core.rootScene;
     scene.backgroundColor = "green";
-    core.preload('back_image.jpg');
-	core.preload('make_tower.jpg');
-	core.preload('tower_land.jpg');
-	core.preload('setland.jpg');
-	core.preload('play.jpg');
-	core.preload('discard.jpg');
-	core.preload('cancel.jpg');
-	core.preload('tap.jpg');
-	core.preload('reset.jpg');
-    core.preload('return_hand.jpg');
-	core.preload('untap.jpg');
-	core.preload('plus.jpg');
-	core.preload('minus.jpg');
-    core.preload('left.jpg');
-	core.preload('right.jpg');
-	core.preload('token.jpg');
-	core.preload('maotoken.jpg');
-	core.preload('return_tower.jpg');
-	core.preload('zoom.jpg');
-	core.preload('destroyland.jpg');
-	core.preload('dice.gif');
+    core.preload(components_path + 'back_image.jpg');
+	core.preload(components_path + 'make_tower.jpg');
+	core.preload(components_path + 'tower_land.jpg');
+	core.preload(components_path + 'setland.jpg');
+	core.preload(components_path + 'play.jpg');
+	core.preload(components_path + 'discard.jpg');
+	core.preload(components_path + 'cancel.jpg');
+	core.preload(components_path + 'tap.jpg');
+	core.preload(components_path + 'reset.jpg');
+    core.preload(components_path + 'return_hand.jpg');
+	core.preload(components_path + 'untap.jpg');
+	core.preload(components_path + 'plus.jpg');
+	core.preload(components_path + 'minus.jpg');
+    core.preload(components_path + 'left.jpg');
+	core.preload(components_path + 'right.jpg');
+	core.preload(components_path + 'token.jpg');
+	core.preload(components_path + 'maotoken.jpg');
+	core.preload(components_path + 'return_tower.jpg');
+	core.preload(components_path + 'zoom.jpg');
+	core.preload(components_path + 'destroyland.jpg');
+	core.preload(components_path + 'dice.gif');
 	
 	for (var i = 1; i<towerHeight; i++){
-		precard = './cards/tower ('+i+').jpg';
+		precard = cards_path + 'tower ('+i+').jpg';
 		core.preload(precard);
 	};
     
@@ -98,7 +100,7 @@ window.onload = function() {
 		
 		});
         var backImage = new Sprite(223,319);
-        backImage.image = core.assets['back_image.jpg'];
+        backImage.image = core.assets[components_path + 'back_image.jpg'];
         backImage.x = SCREEN_WIDTH/2-50;
         backImage.y = -70
     	backImage.scaleX = back_scale;
@@ -109,7 +111,7 @@ window.onload = function() {
             
          });
     	var makeTower = new Sprite(210,99);
-        makeTower.image = core.assets['make_tower.jpg'];
+        makeTower.image = core.assets[components_path + 'make_tower.jpg'];
         makeTower.x = SCREEN_WIDTH-170;
         makeTower.y = 0;
     	makeTower.scaleX = make_scale;
@@ -120,7 +122,7 @@ window.onload = function() {
          });
     	
     	var diceImage = new Sprite(175,175);
-        diceImage.image = core.assets['dice.gif'];
+        diceImage.image = core.assets[components_path + 'dice.gif'];
         diceImage.x = -25;
         diceImage.y = 110;
     	diceImage.scaleX = dice_scale;
@@ -139,7 +141,7 @@ window.onload = function() {
     		scene.addChild(diceLabel);
          });
     	var resetImage = new Sprite(217,94);
-        resetImage.image = core.assets['reset.jpg'];
+        resetImage.image = core.assets[components_path + 'reset.jpg'];
         resetImage.x = SCREEN_WIDTH-172;
         resetImage.y = 80;
     	resetImage.scaleX = reset_scale;
@@ -179,7 +181,7 @@ window.onload = function() {
          });
     	
     	var untapImage = new Sprite(108,74);
-        untapImage.image = core.assets['untap.jpg'];
+        untapImage.image = core.assets[components_path + 'untap.jpg'];
         untapImage.x = 10;
         untapImage.y = 250;
     	untapImage.addEventListener('touchstart', function(){
@@ -200,7 +202,7 @@ window.onload = function() {
     		};
     	});
     	var destroyland = new Sprite(115,78);
-        destroyland.image = core.assets['destroyland.jpg'];
+        destroyland.image = core.assets[components_path + 'destroyland.jpg'];
         destroyland.x = 10;
         destroyland.y = 450;
     	destroyland.addEventListener('touchstart', function(){
@@ -211,14 +213,14 @@ window.onload = function() {
          });
     	
     	var tokenImage = new Sprite(218,93);
-        tokenImage.image = core.assets['token.jpg'];
+        tokenImage.image = core.assets[components_path + 'token.jpg'];
         tokenImage.x = -45;
         tokenImage.y = 310;
     	tokenImage.scaleX = token_scale-0.1;
     	tokenImage.scaleY = token_scale;
     	tokenImage.addEventListener('touchstart', function(){
         var play_card = new Sprite(card_image_width, card_image_height);
-          	play_card.image = core.assets['maotoken.jpg'];
+          	play_card.image = core.assets[components_path + 'maotoken.jpg'];
     	    play_card.scaleX = card_scale;
     	    play_card.scaleY = card_scale;
     	    play_card.moveTo(play_cardx + fieldList.length*Math.ceil(card_image_width*card_scale), play_cardy);
@@ -233,7 +235,7 @@ window.onload = function() {
          });
     	socket.on('draw',function(data){
     	    var card = new Sprite(card_image_width, card_image_height);
-    	    var card_name = './cards/tower ('+data+').jpg';
+    	    var card_name = cards_path + 'tower ('+data+').jpg';
           	card.image = core.assets[card_name];
     	    card.scaleX = card_scale;
     	    card.scaleY = card_scale;
@@ -246,7 +248,7 @@ window.onload = function() {
     	
     	socket.on('opplay',function(data){
     		var opplay = new Sprite(card_image_width, card_image_height);
-    		var opplay_name = './cards/tower ('+data+').jpg';
+    		var opplay_name = cards_path + 'tower ('+data+').jpg';
     		var op_label = new Label('opponent play');
     		opplay.image = core.assets[opplay_name];
     	    opplay.scaleX = opcard_scale;
@@ -274,12 +276,12 @@ window.onload = function() {
     		var cancelImage = new Sprite(181,69);
     		var reTower = new Sprite(180,71);
     		var zoomImage = new Sprite(184,74);
-    		setland.image = core.assets['setland.jpg'];
-    		discardImage.image = core.assets['discard.jpg'];
-    		playImage.image = core.assets['play.jpg'];
-    		cancelImage.image = core.assets['cancel.jpg'];
-    		reTower.image = core.assets['return_tower.jpg'];
-    		zoomImage.image = core.assets['zoom.jpg']
+    		setland.image = core.assets[components_path + 'setland.jpg'];
+    		discardImage.image = core.assets[components_path + 'discard.jpg'];
+    		playImage.image = core.assets[components_path + 'play.jpg'];
+    		cancelImage.image = core.assets[components_path + 'cancel.jpg'];
+    		reTower.image = core.assets[components_path + 'return_tower.jpg'];
+    		zoomImage.image = core.assets[components_path + 'zoom.jpg']
     		setland.x = this.x - 100;
             setland.y = this.y+40
     		zoomImage.x = this.x - 105;
@@ -317,7 +319,7 @@ window.onload = function() {
     		var play_card_Num = handListNum[discard_num];
     		socket.emit('play',play_card_Num);
     		var play_card = new Sprite(card_image_width, card_image_height);
-    		var play_card_name = './cards/tower ('+play_card_Num+').jpg';
+    		var play_card_name = cards_path + 'tower ('+play_card_Num+').jpg';
           	play_card.image = core.assets[play_card_name];
     	    play_card.scaleX = card_scale;
     	    play_card.scaleY = card_scale;
@@ -345,7 +347,7 @@ window.onload = function() {
     		setland.addEventListener('touchstart', function(){
     			
     			var towerland = new Sprite(land_image_width,land_image_height);
-    			towerland.image = core.assets['tower_land.jpg'];
+    			towerland.image = core.assets[components_path + 'tower_land.jpg'];
     			towerland.scaleX = land_scale;
     			towerland.scaleY = land_scale;
     			towerland.moveTo(landx + landList.length*Math.ceil(land_image_width*land_scale), landy);
@@ -429,7 +431,7 @@ window.onload = function() {
     		
     		var zoomNum = handListNum[discard_num];
     		var zoom_card = new Sprite(card_image_width, card_image_height);
-    		var zoom_card_name = './cards/tower ('+zoomNum+').jpg';
+    		var zoom_card_name = cards_path + 'tower ('+zoomNum+').jpg';
           	zoom_card.image = core.assets[zoom_card_name];
     	    zoom_card.scaleX = zoom_scale;
     	    zoom_card.scaleY = zoom_scale;
@@ -464,17 +466,17 @@ window.onload = function() {
     	  var zoomImage = new Sprite(184,74);
     	  var upImage = new Sprite(61,59);
     		
-    	  discardImage.image = core.assets['discard.jpg'];
-    	  tapImage.image = core.assets['tap.jpg'];
-          cancelImage.image = core.assets['cancel.jpg'];
-    	  reHand.image = core.assets['return_hand.jpg']
-    	  plusImage.image = core.assets['plus.jpg'];
-    	  minusImage.image = core.assets['minus.jpg'];
-          leftImage.image = core.assets['left.jpg'];
-    	  rightImage.image = core.assets['right.jpg']
-    	  reTower.image = core.assets['return_tower.jpg'];
-    	  zoomImage.image = core.assets['zoom.jpg'];
-    	  upImage.image = core.assets['left.jpg'];
+    	  discardImage.image = core.assets[components_path + 'discard.jpg'];
+    	  tapImage.image = core.assets[components_path + 'tap.jpg'];
+          cancelImage.image = core.assets[components_path + 'cancel.jpg'];
+    	  reHand.image = core.assets[components_path + 'return_hand.jpg']
+    	  plusImage.image = core.assets[components_path + 'plus.jpg'];
+    	  minusImage.image = core.assets[components_path + 'minus.jpg'];
+          leftImage.image = core.assets[components_path + 'left.jpg'];
+    	  rightImage.image = core.assets[components_path + 'right.jpg']
+    	  reTower.image = core.assets[components_path + 'return_tower.jpg'];
+    	  zoomImage.image = core.assets[components_path + 'zoom.jpg'];
+    	  upImage.image = core.assets[components_path + 'left.jpg'];
 
     	  discardImage.x = this.x + 170;
           discardImage.y = this.y+40;
@@ -583,7 +585,7 @@ window.onload = function() {
     		var reHandNum = fieldListNum[discard_num];
     	  	
     	  	var card = new Sprite(card_image_width, card_image_height);
-    	    var card_name = './cards/tower ('+reHandNum+').jpg';
+    	    var card_name = cards_path + 'tower ('+reHandNum+').jpg';
           	card.image = core.assets[card_name];
     	    card.scaleX = card_scale;
     	    card.scaleY = card_scale;
@@ -697,7 +699,7 @@ window.onload = function() {
      		var targetNum = fieldListNum[discard_num];
 
     		var up_card = new Sprite(card_image_width, card_image_height);
-    		var up_card_name = './cards/tower ('+targetNum+').jpg';
+    		var up_card_name = cards_path + 'tower ('+targetNum+').jpg';
           	up_card.image = core.assets[up_card_name];
     	    up_card.scaleX = card_scale;
     	    up_card.scaleY = card_scale;
@@ -798,7 +800,7 @@ window.onload = function() {
     		
     		var zoomNum = fieldListNum[discard_num];
     		var zoom_card = new Sprite(card_image_width, card_image_height);
-    		var zoom_card_name = './cards/tower ('+zoomNum+').jpg';
+    		var zoom_card_name = cards_path + 'tower ('+zoomNum+').jpg';
           	zoom_card.image = core.assets[zoom_card_name];
     	    zoom_card.scaleX = zoom_scale;
     	    zoom_card.scaleY = zoom_scale;
@@ -861,13 +863,13 @@ window.onload = function() {
     	  var leftImage = new Sprite(61,59);
     	  var rightImage = new Sprite(60,60);
     	      	  
-    	  discardImage.image = core.assets['discard.jpg'];
-    	  tapImage.image = core.assets['tap.jpg'];
-          cancelImage.image = core.assets['cancel.jpg'];
-    	  plusImage.image = core.assets['plus.jpg'];
-    	  minusImage.image = core.assets['minus.jpg'];
-          leftImage.image = core.assets['left.jpg'];
-    	  rightImage.image = core.assets['right.jpg'];
+    	  discardImage.image = core.assets[components_path + 'discard.jpg'];
+    	  tapImage.image = core.assets[components_path + 'tap.jpg'];
+          cancelImage.image = core.assets[components_path + 'cancel.jpg'];
+    	  plusImage.image = core.assets[components_path + 'plus.jpg'];
+    	  minusImage.image = core.assets[components_path + 'minus.jpg'];
+          leftImage.image = core.assets[components_path + 'left.jpg'];
+    	  rightImage.image = core.assets[components_path + 'right.jpg'];
     	  
 
     	  discardImage.x = this.x + 170;
@@ -1101,12 +1103,12 @@ window.onload = function() {
     	  var reTower = new Sprite(180,71);
     	  var zoomImage = new Sprite(184,74);
     	     		
-    	  discardImage.image = core.assets['discard.jpg'];
-    	  tapImage.image = core.assets['tap.jpg'];
-          cancelImage.image = core.assets['cancel.jpg'];
-    	  reHand.image = core.assets['return_hand.jpg']
-    	  reTower.image = core.assets['return_tower.jpg'];
-    	  zoomImage.image = core.assets['zoom.jpg'];
+    	  discardImage.image = core.assets[components_path + 'discard.jpg'];
+    	  tapImage.image = core.assets[components_path + 'tap.jpg'];
+          cancelImage.image = core.assets[components_path + 'cancel.jpg'];
+    	  reHand.image = core.assets[components_path + 'return_hand.jpg']
+    	  reTower.image = core.assets[components_path + 'return_tower.jpg'];
+    	  zoomImage.image = core.assets[components_path + 'zoom.jpg'];
 
     	  discardImage.x = this.x + 170;
           discardImage.y = this.y + 100;
@@ -1191,7 +1193,7 @@ window.onload = function() {
     		var reHandNum = upfieldListNum[discard_num];
     	  	
     	  	var card = new Sprite(card_image_width, card_image_height);
-    	    var card_name = './cards/tower ('+reHandNum+').jpg';
+    	    var card_name = cards_path + 'tower ('+reHandNum+').jpg';
           	card.image = core.assets[card_name];
     	    card.scaleX = card_scale;
     	    card.scaleY = card_scale;
@@ -1224,7 +1226,7 @@ window.onload = function() {
     		
     		var zoomNum = upfieldListNum[discard_num];
     		var zoom_card = new Sprite(card_image_width, card_image_height);
-    		var zoom_card_name = './cards/tower ('+zoomNum+').jpg';
+    		var zoom_card_name = cards_path + 'tower ('+zoomNum+').jpg';
           	zoom_card.image = core.assets[zoom_card_name];
     	    zoom_card.scaleX = zoom_scale;
     	    zoom_card.scaleY = zoom_scale;
