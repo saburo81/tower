@@ -144,7 +144,9 @@ window.onload = function() {
         resetImage.y = 80;
     	resetImage.scaleX = reset_scale;
     	resetImage.scaleY = reset_scale;
+    	var reset_flag = false;
     	resetImage.addEventListener('touchstart', function(){
+    		if (reset_flag){
             for (var i = 0; i<handList.length; ++i){
     		    var discard = handList[i];
       		    core.rootScene.removeChild(discard);
@@ -176,6 +178,11 @@ window.onload = function() {
     		counterLabelList = [];
     		upfieldList = [];
     		upfieldListNum = [];
+    		
+    		reset_flag = false;
+    		} else {
+    			reset_flag = true;
+    		};
          });
     	
     	var untapImage = new Sprite(108,74);
@@ -280,16 +287,16 @@ window.onload = function() {
     		cancelImage.image = core.assets['cancel.jpg'];
     		reTower.image = core.assets['return_tower.jpg'];
     		zoomImage.image = core.assets['zoom.jpg']
-    		setland.x = this.x - 100;
-            setland.y = this.y+40
+    		setland.x = this.x + 150;
+            setland.y = this.y+105
     		zoomImage.x = this.x - 105;
             zoomImage.y = this.y+100;
     		zoomImage.scaleX = 0.95;
     		zoomImage.scaleY = 0.95;
     	    discardImage.x = this.x + 150;
             discardImage.y = this.y+40;
-    		reTower.x = this.x + 145;
-    		reTower.y = this.y + 100;
+    		reTower.x = this.x - 105;
+    		reTower.y = this.y + 35;
     		reTower.scaleX = 0.95;
     		reTower.scaleY = 0.95;
             playImage.x = this.x+30;
