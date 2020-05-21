@@ -91,6 +91,9 @@ window.onload = function () {
         playOrder.height = 56;
         playOrder.x = 10;
         playOrder.y = 10;
+        playOrder._element.onclick = function () {
+            this.innerText = this.innerText++ % 4 + 1
+        }
 
         // プレイヤー名
         var input = new Entity();
