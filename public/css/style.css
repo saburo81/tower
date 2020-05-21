@@ -10,3 +10,11 @@ input {
 button {
     font-size: 48px;
 }
+
+button.team-red {
+    background-color: lightsalmon;
+}
+
+button.team-blue {
+    background-color: lightskyblue;
+}

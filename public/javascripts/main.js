@@ -86,14 +86,20 @@ window.onload = function () {
         var playOrder = new Entity();
         playOrder._element = document.createElement('button');
         playOrder._element.setAttribute('id', 'playOrder');
+        playOrder._element.setAttribute('class', 'team-red');
         playOrder._element.innerText = 1;
         playOrder.width = 56;
         playOrder.height = 56;
         playOrder.x = 10;
         playOrder.y = 10;
         playOrder._element.onclick = function () {
-            this.innerText = this.innerText++ % 4 + 1
-        }
+            this.innerText = this.innerText++ % 4 + 1;
+            if (this.innerText % 2 != 0) {
+                this.setAttribute('class', 'team-red');
+            } else {
+                this.setAttribute('class', 'team-blue');
+            };
+        };
 
         // プレイヤー名
         var input = new Entity();
