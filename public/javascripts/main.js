@@ -89,8 +89,7 @@ window.onload = function () {
         input._element.setAttribute('maxlength', '10');
         input._element.setAttribute('id', 'test');
         input._element.setAttribute('value', 'name');
-        //input._element.style.fontsize = '30px'
-        input.width = 100;
+        input.width = 200;
         input.height = 50;
         input.x = 50;
         input.y = 10;
