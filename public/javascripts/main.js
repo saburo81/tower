@@ -41,7 +41,7 @@ window.onload = function () {
     var reset_scale = 0.69;
     var token_scale = 0.6;
     var dice_scale = 0.4;
-    var upfield_x = 150;
+    var upfield_x = 200;
     var upfield_y = -55;
     var cards_path = 'images/cards/';
     var components_path = 'images/components/';
@@ -90,7 +90,7 @@ window.onload = function () {
         playOrder._element.innerText = 1;
         playOrder.width = 56;
         playOrder.height = 56;
-        playOrder.x = 10;
+        playOrder.x = 5;
         playOrder.y = 10;
         playOrder._element.onclick = function () {
             this.innerText = this.innerText++ % 4 + 1;
@@ -108,13 +108,23 @@ window.onload = function () {
         input._element.setAttribute('maxlength', '10');
         input._element.setAttribute('id', 'test');
         input._element.setAttribute('value', 'name');
-        input.width = 200;
+        input.width = 150;
         input.height = 50;
-        input.x = 100;
+        input.x = 75;
         input.y = 10;
         input.on(Event.ENTER_FRAME, function () {
 
         });
+
+        // 手札枚数
+        var handCardNum = new Entity();
+        handCardNum._element = document.createElement('p');
+        handCardNum._element.setAttribute('class', 'hand-card-num');
+        handCardNum.width = 125;
+        handCardNum.height = 50;
+        handCardNum.x = 1100;
+        handCardNum.y = 10;
+        setHandCardNum(handCardNum._element, handList.length);
 
         // ライフカウンター
         var lifeCounter = new Entity();
@@ -124,7 +134,7 @@ window.onload = function () {
         lifeCounter._element.setAttribute('value', '0');
         lifeCounter.width = 100;
         lifeCounter.height = 50;
-        lifeCounter.x = 350;
+        lifeCounter.x = 1250;
         lifeCounter.y = 10;
 
         var backImage = new Sprite(223, 319);
@@ -277,6 +287,7 @@ window.onload = function () {
             scene.addChild(card);
             handList.push(card);
             handListNum.push(data);
+            setHandCardNum(handCardNum._element, handList.length);
         });
 
         socket.on('opplay', function (data) {
@@ -374,6 +385,7 @@ window.onload = function () {
                 handList.pop();
                 handListNum.pop();
                 touchRemoveFuncHand();
+                setHandCardNum(handCardNum._element, handList.length);
             });
 
             setland.addEventListener('touchstart', function () {
@@ -404,6 +416,7 @@ window.onload = function () {
                 handList.pop();
                 handListNum.pop();
                 touchRemoveFuncHand();
+                setHandCardNum(handCardNum._element, handList.length);
             });
 
             discardImage.addEventListener('touchstart', function () {
@@ -424,6 +437,7 @@ window.onload = function () {
                 handList.pop();
                 handListNum.pop();
                 touchRemoveFuncHand();
+                setHandCardNum(handCardNum._element, handList.length);
             });
 
             cancelImage.addEventListener('touchstart', function () {
@@ -450,6 +464,7 @@ window.onload = function () {
                 handList.pop();
                 handListNum.pop();
                 touchRemoveFuncHand();
+                setHandCardNum(handCardNum._element, handList.length);
             });
 
             zoomImage.addEventListener('touchstart', function () {
@@ -623,6 +638,7 @@ window.onload = function () {
                 scene.addChild(card);
                 handList.push(card);
                 handListNum.push(reHandNum);
+                setHandCardNum(handCardNum._element, handList.length);
 
                 var discard_set = fieldList[discard_num];
                 core.rootScene.removeChild(discard_set);
@@ -1216,6 +1232,7 @@ window.onload = function () {
                 scene.addChild(card);
                 handList.push(card);
                 handListNum.push(reHandNum);
+                setHandCardNum(handCardNum._element, handList.length);
 
                 var discard_set = upfieldList[discard_num];
                 core.rootScene.removeChild(discard_set);
@@ -1289,9 +1306,11 @@ window.onload = function () {
                 this.rotate(90);
             };
         };
+
         core.rootScene.addChild(hand_space);
         core.rootScene.addChild(playOrder);
         core.rootScene.addChild(input);
+        core.rootScene.addChild(handCardNum);
         core.rootScene.addChild(lifeCounter);
         core.rootScene.addChild(diceImage);
         core.rootScene.addChild(backImage);
@@ -1302,4 +1321,9 @@ window.onload = function () {
         core.rootScene.addChild(destroyland);
     };
     core.start();
+};
+
+// 手札枚数表示の更新
+var setHandCardNum = function (element, handNum) {
+    element.innerText = handNum + '枚';
 };
