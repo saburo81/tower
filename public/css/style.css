@@ -3,6 +3,6 @@ body {
     padding: 0;
 }
 
-input[type="text"] {
-    font-size: xx-large;
+input {
+    font-size: 48px;
 }

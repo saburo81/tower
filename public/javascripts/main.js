@@ -82,8 +82,8 @@ window.onload = function () {
         hand_space.image = surface;
         hand_space.y = 585;
 
+        // プレイヤー名
         var input = new Entity();
-        //DOM設定
         input._element = document.createElement('input');
         input._element.setAttribute('type', 'text');
         input._element.setAttribute('maxlength', '10');
@@ -96,6 +96,18 @@ window.onload = function () {
         input.on(Event.ENTER_FRAME, function () {
 
         });
+
+        // ライフカウンター
+        var lifeCounter = new Entity();
+        lifeCounter._element = document.createElement('input');
+        lifeCounter._element.setAttribute('type', 'number');
+        lifeCounter._element.setAttribute('id', 'life-counter');
+        lifeCounter._element.setAttribute('value', '0');
+        lifeCounter.width = 100;
+        lifeCounter.height = 50;
+        lifeCounter.x = 300;
+        lifeCounter.y = 10;
+
         var backImage = new Sprite(223, 319);
         backImage.image = core.assets[components_path + 'back_image.jpg'];
         backImage.x = SCREEN_WIDTH / 2 - 50;
@@ -1260,6 +1272,7 @@ window.onload = function () {
         };
         core.rootScene.addChild(hand_space);
         core.rootScene.addChild(input);
+        core.rootScene.addChild(lifeCounter);
         core.rootScene.addChild(diceImage);
         core.rootScene.addChild(backImage);
         core.rootScene.addChild(makeTower);
