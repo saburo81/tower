@@ -82,6 +82,16 @@ window.onload = function () {
         hand_space.image = surface;
         hand_space.y = 585;
 
+        // プレイ順
+        var playOrder = new Entity();
+        playOrder._element = document.createElement('button');
+        playOrder._element.setAttribute('id', 'playOrder');
+        playOrder._element.innerText = 1;
+        playOrder.width = 56;
+        playOrder.height = 56;
+        playOrder.x = 10;
+        playOrder.y = 10;
+
         // プレイヤー名
         var input = new Entity();
         input._element = document.createElement('input');
@@ -91,7 +101,7 @@ window.onload = function () {
         input._element.setAttribute('value', 'name');
         input.width = 200;
         input.height = 50;
-        input.x = 50;
+        input.x = 100;
         input.y = 10;
         input.on(Event.ENTER_FRAME, function () {
 
@@ -105,7 +115,7 @@ window.onload = function () {
         lifeCounter._element.setAttribute('value', '0');
         lifeCounter.width = 100;
         lifeCounter.height = 50;
-        lifeCounter.x = 300;
+        lifeCounter.x = 350;
         lifeCounter.y = 10;
 
         var backImage = new Sprite(223, 319);
@@ -1271,6 +1281,7 @@ window.onload = function () {
             };
         };
         core.rootScene.addChild(hand_space);
+        core.rootScene.addChild(playOrder);
         core.rootScene.addChild(input);
         core.rootScene.addChild(lifeCounter);
         core.rootScene.addChild(diceImage);
