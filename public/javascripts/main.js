@@ -41,7 +41,7 @@ window.onload = function () {
     var reset_scale = 0.69;
     var token_scale = 0.6;
     var dice_scale = 0.4;
-    var upfield_x = 150;
+    var upfield_x = 200;
     var upfield_y = -55;
     var cards_path = 'images/cards/';
     var components_path = 'images/components/';
@@ -90,7 +90,7 @@ window.onload = function () {
         playOrder._element.innerText = 1;
         playOrder.width = 56;
         playOrder.height = 56;
-        playOrder.x = 10;
+        playOrder.x = 5;
         playOrder.y = 10;
         playOrder._element.onclick = function () {
             this.innerText = this.innerText++ % 4 + 1;
@@ -108,9 +108,9 @@ window.onload = function () {
         input._element.setAttribute('maxlength', '10');
         input._element.setAttribute('id', 'test');
         input._element.setAttribute('value', 'name');
-        input.width = 200;
+        input.width = 150;
         input.height = 50;
-        input.x = 100;
+        input.x = 75;
         input.y = 10;
         input.on(Event.ENTER_FRAME, function () {
 
@@ -122,7 +122,7 @@ window.onload = function () {
         handCardNum._element.setAttribute('class', 'hand-card-num');
         handCardNum.width = 125;
         handCardNum.height = 50;
-        handCardNum.x = 325;
+        handCardNum.x = 1100;
         handCardNum.y = 10;
         setHandCardNum(handCardNum._element, handList.length);
 
@@ -134,7 +134,7 @@ window.onload = function () {
         lifeCounter._element.setAttribute('value', '0');
         lifeCounter.width = 100;
         lifeCounter.height = 50;
-        lifeCounter.x = 475;
+        lifeCounter.x = 1250;
         lifeCounter.y = 10;
 
         var backImage = new Sprite(223, 319);
