@@ -116,6 +116,16 @@ window.onload = function () {
 
         });
 
+        // 手札枚数
+        var handCardNum = new Entity();
+        handCardNum._element = document.createElement('p');
+        handCardNum._element.setAttribute('class', 'hand-card-num');
+        handCardNum.width = 125;
+        handCardNum.height = 50;
+        handCardNum.x = 325;
+        handCardNum.y = 10;
+        setHandCardNum(handCardNum._element, handList.length);
+
         // ライフカウンター
         var lifeCounter = new Entity();
         lifeCounter._element = document.createElement('input');
@@ -124,7 +134,7 @@ window.onload = function () {
         lifeCounter._element.setAttribute('value', '0');
         lifeCounter.width = 100;
         lifeCounter.height = 50;
-        lifeCounter.x = 350;
+        lifeCounter.x = 475;
         lifeCounter.y = 10;
 
         var backImage = new Sprite(223, 319);
@@ -277,6 +287,7 @@ window.onload = function () {
             scene.addChild(card);
             handList.push(card);
             handListNum.push(data);
+            setHandCardNum(handCardNum._element, handList.length);
         });
 
         socket.on('opplay', function (data) {
@@ -374,6 +385,7 @@ window.onload = function () {
                 handList.pop();
                 handListNum.pop();
                 touchRemoveFuncHand();
+                setHandCardNum(handCardNum._element, handList.length);
             });
 
             setland.addEventListener('touchstart', function () {
@@ -404,6 +416,7 @@ window.onload = function () {
                 handList.pop();
                 handListNum.pop();
                 touchRemoveFuncHand();
+                setHandCardNum(handCardNum._element, handList.length);
             });
 
             discardImage.addEventListener('touchstart', function () {
@@ -424,6 +437,7 @@ window.onload = function () {
                 handList.pop();
                 handListNum.pop();
                 touchRemoveFuncHand();
+                setHandCardNum(handCardNum._element, handList.length);
             });
 
             cancelImage.addEventListener('touchstart', function () {
@@ -450,6 +464,7 @@ window.onload = function () {
                 handList.pop();
                 handListNum.pop();
                 touchRemoveFuncHand();
+                setHandCardNum(handCardNum._element, handList.length);
             });
 
             zoomImage.addEventListener('touchstart', function () {
@@ -623,6 +638,7 @@ window.onload = function () {
                 scene.addChild(card);
                 handList.push(card);
                 handListNum.push(reHandNum);
+                setHandCardNum(handCardNum._element, handList.length);
 
                 var discard_set = fieldList[discard_num];
                 core.rootScene.removeChild(discard_set);
@@ -1216,6 +1232,7 @@ window.onload = function () {
                 scene.addChild(card);
                 handList.push(card);
                 handListNum.push(reHandNum);
+                setHandCardNum(handCardNum._element, handList.length);
 
                 var discard_set = upfieldList[discard_num];
                 core.rootScene.removeChild(discard_set);
@@ -1289,9 +1306,11 @@ window.onload = function () {
                 this.rotate(90);
             };
         };
+
         core.rootScene.addChild(hand_space);
         core.rootScene.addChild(playOrder);
         core.rootScene.addChild(input);
+        core.rootScene.addChild(handCardNum);
         core.rootScene.addChild(lifeCounter);
         core.rootScene.addChild(diceImage);
         core.rootScene.addChild(backImage);
@@ -1302,4 +1321,9 @@ window.onload = function () {
         core.rootScene.addChild(destroyland);
     };
     core.start();
+};
+
+// 手札枚数表示の更新
+var setHandCardNum = function (element, handNum) {
+    element.innerText = handNum + '枚';
 };
