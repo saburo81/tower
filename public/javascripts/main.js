@@ -1,4 +1,6 @@
 enchant(); // enchantjs おまじない
+import { putCardInHand } from './modules/action.js';
+
 var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
 var SCREEN_HEIGHT = 960; //スクリーン高さ
@@ -45,7 +47,29 @@ window.onload = function () {
     var upfield_y = -55;
     var cards_path = 'images/cards/';
     var components_path = 'images/components/';
-    scene = core.rootScene;
+    const cardProperties = {
+        hand: {
+            image: { width: 223, height: 311, scale: 0.6 },
+            field: { x: 100, y: 710 }
+        },
+        land: {
+            image: { width: 431, height: 599, scale: 0.25 },
+            field: { x: 0, y: 205 }
+        },
+        play: {
+            image: { width: 223, height: 311, scale: 0.6 },
+            field: { x: 100, y: 170 }
+        },
+        playUp: {
+            image: { width: 223, height: 311, scale: 0.6 },
+            field: { x: 200, y: -55 }
+        },
+        counter: { x: 100, y: 170 },
+        zoom: { x: 1300, y: 200, scale: 1.2 },
+        opcard: { scale: 1.2 },
+        imagePath: { card: 'images/cards/', component: 'images/components/' }
+    }
+    var scene = core.rootScene;
     scene.backgroundColor = "green";
     core.preload(components_path + 'back_image.jpg');
     core.preload(components_path + 'make_tower.jpg');
@@ -70,7 +94,7 @@ window.onload = function () {
     core.preload(components_path + 'dice.gif');
 
     for (var i = 1; i < towerHeight; i++) {
-        precard = cards_path + 'tower (' + i + ').jpg';
+        var precard = cards_path + 'tower (' + i + ').jpg';
         core.preload(precard);
     };
 
@@ -277,17 +301,7 @@ window.onload = function () {
         });
 
         socket.on('draw', function (data) {
-            var card = new Sprite(card_image_width, card_image_height);
-            var card_name = cards_path + 'tower (' + data + ').jpg';
-            card.image = core.assets[card_name];
-            card.scaleX = card_scale;
-            card.scaleY = card_scale;
-            card.moveTo(cardx + handList.length * Math.ceil(card_image_width * card_scale), cardy);
-            card.ontouchstart = touchFuncHand;
-            scene.addChild(card);
-            handList.push(card);
-            handListNum.push(data);
-            setHandCardNum(handCardNum._element, handList.length);
+            putCardInHand(data, core, cards_path, cardProperties, handList, handListNum, handCardNum, touchFuncHand);
         });
 
         socket.on('opplay', function (data) {
@@ -340,7 +354,7 @@ window.onload = function () {
             playImage.y = this.y - 20;
             cancelImage.x = this.x + 30;
             cancelImage.y = this.y + 170;
-            handcard_x = this.x
+            var handcard_x = this.x;
 
             var touchRemoveFuncHand = function () {
                 core.rootScene.removeChild(setland);
@@ -553,7 +567,7 @@ window.onload = function () {
             upImage.x = this.x - 32;
             upImage.y = this.y - 30;
             upImage.rotate(90);
-            ftargetx = this.x
+            var ftargetx = this.x;
 
             //remove button
             var touchRemoveFunc = function () {
@@ -926,7 +940,7 @@ window.onload = function () {
             rightImage.x = this.x + 195;
             rightImage.y = this.y + 240;
 
-            ftargetx = this.x
+            var ftargetx = this.x;
 
             //remove button
             var touchRemoveFuncToken = function () {
@@ -1160,7 +1174,7 @@ window.onload = function () {
             reTower.y = this.y + 160;
             reTower.scaleX = 0.95;
             reTower.scaleY = 0.95;
-            ftargetx = this.x
+            var ftargetx = this.x;
 
             //remove button
             var touchRemoveFuncUp = function () {
