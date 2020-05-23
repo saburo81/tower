@@ -40,10 +40,9 @@ export const destroyLand = (core, landList) => {
     landList.pop();
 }
 
-// 手札からカードをプレイする
-export const playCardFromHand = (targetCard, core, socket, cardProperties,
-                                    cardList, handNumElem, touchFuncPlay,
-                                    touchRemoveFuncHand) => {
+// カードをplayFieldに配置する
+export const playCard = (targetCard, core, socket, cardProperties,
+                                    cardList, touchFuncPlay) => {
     const playProp = cardProperties.play;
 
     // playFieldのカードSprite生成
@@ -66,20 +65,13 @@ export const playCardFromHand = (targetCard, core, socket, cardProperties,
     cardList.counter.sprite.push(0);
     cardList.counter.number.push(counter_label);
 
-    // handFieldのカード削除
-    disCardFromHand(targetCard, core, cardProperties, cardList, handNumElem, touchRemoveFuncHand);
-
-    // 手札情報の更新
-    setHandCardNum(handNumElem._element, cardList.hand.sprite.length);
-
     // プレイしたカード情報をsocketで通知
     socket.emit('play', play_card_Num);
 }
 
-// 手札から土地をセットする
-export const setLand = (targetCard, core, cardProperties, cardList,
-                            handNumElem, touchFuncLand,
-                            touchRemoveFuncHand) => {
+// 土地をセットする
+export const setLand = (core, cardProperties, cardList,
+                            touchFuncLand) => {
     // 土地カード生成
     const landProp = cardProperties.land;
     const towerLand = new Sprite(landProp.image.width, landProp.image.height);
@@ -93,12 +85,6 @@ export const setLand = (targetCard, core, cardProperties, cardList,
     towerLand.ontouchstart = touchFuncLand;
     core.rootScene.addChild(towerLand);
     cardList.land.sprite.push(towerLand);
-
-    // handFieldのカード削除
-    disCardFromHand(targetCard, core, cardProperties, cardList, handNumElem, touchRemoveFuncHand);
-
-    // 手札枚数表示の更新
-    setHandCardNum(handNumElem._element, cardList.hand.sprite.length);
 }
 
 // 手札からカードを捨てる

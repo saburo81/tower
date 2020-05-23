@@ -1,5 +1,5 @@
 enchant(); // enchantjs おまじない
-import { putCardInHand, destroyLand, playCardFromHand, disCardFromHand, setLand } from './modules/action.js';
+import { putCardInHand, destroyLand, playCard, disCardFromHand, setLand } from './modules/action.js';
 
 var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
@@ -373,11 +373,13 @@ window.onload = function () {
             };
 
             playImage.addEventListener('touchstart', function () {
-                playCardFromHand(targetCard, core, socket, cardProperties, cardList, handCardNum, touchFuncPlay, touchRemoveFuncHand);
+                playCard(targetCard, core, socket, cardProperties, cardList, touchFuncPlay);
+                disCardFromHand(targetCard, core, cardProperties, cardList, handCardNum, touchRemoveFuncHand);
             });
 
             setland.addEventListener('touchstart', function () {
-                setLand(targetCard, core, cardProperties, cardList, handCardNum, touchFuncLand, touchRemoveFuncHand);
+                setLand(core, cardProperties, cardList, touchFuncLand);
+                disCardFromHand(targetCard, core, cardProperties, cardList, handCardNum, touchRemoveFuncHand);
             });
 
             discardImage.addEventListener('touchstart', function () {
