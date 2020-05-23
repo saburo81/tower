@@ -1,5 +1,5 @@
 enchant(); // enchantjs おまじない
-import { putCardInHand, destroyLand, playCard, setLand, removeCard } from './modules/action.js';
+import { setCard, removeCard, destroyLand, setCounter } from './modules/action.js';
 
 var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
@@ -238,15 +238,17 @@ window.onload = function () {
                     var discard = upfieldList[i];
                     core.rootScene.removeChild(discard);
                 };
-                handList = [];
-                handListNum = [];
-                fieldList = [];
-                fieldListNum = [];
-                landList = [];
-                counterList = [];
-                counterLabelList = [];
-                upfieldList = [];
-                upfieldListNum = [];
+                handList.splice(0);
+                handListNum.splice(0);
+                fieldList.splice(0);
+                fieldListNum.splice(0);
+                landList.splice(0);
+                counterList.splice(0);
+                counterLabelList.splice(0);
+                upfieldList.splice(0);
+                upfieldListNum.splice(0);
+
+                setHandCardNum(handCardNum._element, handList.length);
 
                 reset_flag = false;
             } else {
@@ -307,7 +309,8 @@ window.onload = function () {
         });
 
         socket.on('draw', function (data) {
-            putCardInHand(data, core, cardProperties, cardList, handCardNum, touchFuncHand);
+            setCard(data, cardList.hand, cardProperties.hand, cardProperties.imagePath.card, core, touchFuncHand);
+            setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
         });
 
         socket.on('opplay', function (data) {
@@ -333,6 +336,8 @@ window.onload = function () {
 
         var touchFuncHand = function () {
             const targetCard = this;
+            const targetCardIdx = cardList.hand.sprite.findIndex((card) => card === targetCard);
+            const targetCardNum = cardList.hand.number[targetCardIdx];
             var setland = new Sprite(179, 65);
             var discardImage = new Sprite(173, 65);
             var playImage = new Sprite(162, 63);
@@ -373,13 +378,14 @@ window.onload = function () {
             };
 
             playImage.addEventListener('touchstart', function () {
-                playCard(targetCard, core, socket, cardProperties, cardList, touchFuncPlay);
+                setCard(targetCardNum, cardList.field, cardProperties.play, cardProperties.imagePath.card, core, touchFuncPlay);
+                setCounter(0, cardList.counter);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
 
             setland.addEventListener('touchstart', function () {
-                setLand(core, cardProperties, cardList, touchFuncLand);
+                setCard(10000, cardList.land, cardProperties.land, cardProperties.imagePath.component, core, touchFuncLand);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
