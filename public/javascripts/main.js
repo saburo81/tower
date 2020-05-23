@@ -613,46 +613,11 @@ window.onload = function () {
 
                 touchRemoveFunc();
             });
+
             upImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var targetNum = fieldListNum[discard_num];
-
-                var up_card = new Sprite(card_image_width, card_image_height);
-                var up_card_name = cards_path + 'tower (' + targetNum + ').jpg';
-                up_card.image = core.assets[up_card_name];
-                up_card.scaleX = card_scale;
-                up_card.scaleY = card_scale;
-                up_card.moveTo(upfield_x + upfieldList.length * Math.ceil(card_image_width * card_scale), upfield_y);
-                up_card.ontouchstart = touchFuncPlayUp;
-                core.rootScene.addChild(up_card);
-                upfieldList.push(up_card);
-                upfieldListNum.push(targetNum);
-
-                var discard_set = fieldList[discard_num];
-                core.rootScene.removeChild(discard_set);
-                var discard_label = counterLabelList[discard_num];
-                core.rootScene.removeChild(discard_label);
-                for (var j = discard_num + 1; j < fieldList.length; ++j) {
-                    var move_card = fieldList[j];
-                    var targetLabel = counterLabelList[j];
-                    move_card.moveTo(move_card.x - Math.ceil(card_image_width * card_scale), play_cardy);
-                    targetLabel.moveTo(move_card.x + counter_x, move_card.y + counter_y);
-                    fieldList[j - 1] = fieldList[j];
-                    fieldListNum[j - 1] = fieldListNum[j];
-                    counterList[j - 1] = counterList[j];
-                    counterLabelList[j - 1] = counterLabelList[j];
-                };
-                fieldList.pop();
-                fieldListNum.pop();
-                counterLabelList.pop();
-                counterList.pop();
-
-                touchRemoveFunc();
+                removeCard(targetCard, cardList.field, cardProperties.play, core, touchRemoveFunc);
+                removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
+                setCard(targetCardNum, cardList.upField, cardProperties.playUp, cardProperties.imagePath.card, core, touchFuncPlayUp);
             });
 
             plusImage.addEventListener('touchstart', function () {
