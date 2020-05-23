@@ -394,26 +394,11 @@ window.onload = function () {
             });
 
             reTower.addEventListener('touchstart', function () {
-                for (var i = 0; i < handList.length; ++i) {
-                    var discard = handList[i];
-                    if (handcard_x == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var discard_set = handList[discard_num];
-                var reTowerNum = handListNum[discard_num];
+                const discardNum = cardList.hand.sprite.findIndex((card) => card === targetCard);
+                const reTowerNum = handListNum[discardNum];
                 socket.emit('return', reTowerNum);
-                core.rootScene.removeChild(discard_set);
-                for (var j = discard_num + 1; j < handList.length; ++j) {
-                    var move_card = handList[j];
-                    move_card.moveTo(move_card.x - Math.ceil(card_image_width * card_scale), cardy);
-                    handList[j - 1] = handList[j];
-                    handListNum[j - 1] = handListNum[j]
-                };
-                handList.pop();
-                handListNum.pop();
-                touchRemoveFuncHand();
-                setHandCardNum(handCardNum._element, handList.length);
+                removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
+                setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
 
             zoomImage.addEventListener('touchstart', function () {
