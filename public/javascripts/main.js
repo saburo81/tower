@@ -539,45 +539,10 @@ window.onload = function () {
             });
 
             reHand.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var reHandNum = fieldListNum[discard_num];
-
-                var card = new Sprite(card_image_width, card_image_height);
-                var card_name = cards_path + 'tower (' + reHandNum + ').jpg';
-                card.image = core.assets[card_name];
-                card.scaleX = card_scale;
-                card.scaleY = card_scale;
-                card.moveTo(cardx + handList.length * Math.ceil(card_image_width * card_scale), cardy);
-                card.ontouchstart = touchFuncHand;
-                scene.addChild(card);
-                handList.push(card);
-                handListNum.push(reHandNum);
+                removeCard(targetCard, cardList.field, cardProperties.play, core, touchRemoveFunc);
+                removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
+                setCard(targetCardNum, cardList.hand, cardProperties.hand, cardProperties.imagePath.card, core, touchFuncHand);
                 setHandCardNum(handCardNum._element, handList.length);
-
-                var discard_set = fieldList[discard_num];
-                core.rootScene.removeChild(discard_set);
-                var discard_label = counterLabelList[discard_num];
-                core.rootScene.removeChild(discard_label);
-                for (var j = discard_num + 1; j < fieldList.length; ++j) {
-                    var move_card = fieldList[j];
-                    var targetLabel = counterLabelList[j];
-                    move_card.moveTo(move_card.x - Math.ceil(card_image_width * card_scale), play_cardy);
-                    targetLabel.moveTo(move_card.x + counter_x, move_card.y + counter_y);
-                    fieldList[j - 1] = fieldList[j];
-                    fieldListNum[j - 1] = fieldListNum[j];
-                    counterList[j - 1] = counterList[j];
-                    counterLabelList[j - 1] = counterLabelList[j];
-                };
-                fieldList.pop();
-                fieldListNum.pop();
-                counterLabelList.pop();
-                counterList.pop();
-                touchRemoveFunc();
             });
 
             leftImage.addEventListener('touchstart', function () {
