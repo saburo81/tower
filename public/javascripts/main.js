@@ -20,6 +20,13 @@ window.onload = function () {
     var counterLabelList = [];
     var upfieldList = [];
     var upfieldListNum = [];
+    const cardList = {
+        hand: { sprite: handList, number: handListNum },
+        land: { sprite: landList, number: landListNum },
+        field: { sprite: fieldList, number: fieldListNum },
+        upField: { sprite: upfieldList, number: upfieldListNum },
+        counter: { sprite: counterList, number: counterLabelList }
+    }
     var card_image_width = 223;
     var card_image_height = 311;
     var card_scale = 0.6;
@@ -300,7 +307,7 @@ window.onload = function () {
         });
 
         socket.on('draw', function (data) {
-            putCardInHand(data, core, cardProperties, handList, handListNum, handCardNum, touchFuncHand);
+            putCardInHand(data, core, cardProperties, cardList, handCardNum, touchFuncHand);
         });
 
         socket.on('opplay', function (data) {
