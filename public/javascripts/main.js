@@ -935,6 +935,8 @@ window.onload = function () {
         };
 
         var touchFuncPlayUp = function () {
+            const targetCard = this;
+
             var discardImage = new Sprite(173, 65);
             var tapImage = new Sprite(177, 71);
             var cancelImage = new Sprite(181, 69);
@@ -980,23 +982,7 @@ window.onload = function () {
             };
 
             discardImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < upfieldList.length; ++i) {
-                    var discard = upfieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var discard_set = upfieldList[discard_num];
-                core.rootScene.removeChild(discard_set);
-                for (var j = discard_num + 1; j < upfieldList.length; ++j) {
-                    var move_card = upfieldList[j];
-                    move_card.moveTo(move_card.x - Math.ceil(card_image_width * card_scale), upfield_y);
-                    upfieldList[j - 1] = upfieldList[j];
-                    upfieldListNum[j - 1] = upfieldListNum[j];
-                };
-                upfieldList.pop();
-                upfieldListNum.pop();
-                touchRemoveFuncUp();
+                removeCard(targetCard, cardList.upField, cardProperties.playUp, core, touchRemoveFuncUp);
             });
 
             cancelImage.addEventListener('touchstart', function () {
