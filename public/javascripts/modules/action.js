@@ -73,8 +73,24 @@ export const destroyLand = (core, landList) => {
 export const setCounter = (counter, counterList) => {
     // カードを生成
     const counterLabel = new Label(String(counter));
-    counterList.sprite.push(counter);
-    counterList.number.push(counterLabel);
+    counterList.sprite.push(counterLabel);
+    counterList.number.push(counter);
+}
+
+// カウンターを取り除く
+//   counterLabel: カウンターのLabelオブジェクト
+//   counterList: カウンターのリスト
+//   core: EnchantJSオブジェクト
+export const removeCounter = (counterLabel, counterList, core) => {
+    const counterIdx = counterList.sprite.findIndex((label) => label === counterLabel);
+    core.rootScene.removeChild(counterLabel);
+    for (let i = counterList.sprite.length - 1; i > counterIdx; i--) {
+        const rightLabel = counterList.sprite[i];
+        const leftLabel = counterList.sprite[i - 1];
+        rightLabel.moveTo(leftLabel.x, leftLabel.y);
+    };
+    counterList.sprite.splice(counterIdx, 1);
+    counterList.number.splice(counterIdx, 1);
 }
 
 // 手札枚数表示の更新
