@@ -301,7 +301,7 @@ window.onload = function () {
         });
 
         socket.on('draw', function (data) {
-            putCardInHand(data, core, cards_path, cardProperties, handList, handListNum, handCardNum, touchFuncHand);
+            putCardInHand(data, core, cardProperties, handList, handListNum, handCardNum, touchFuncHand);
         });
 
         socket.on('opplay', function (data) {

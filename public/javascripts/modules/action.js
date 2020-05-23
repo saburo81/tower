@@ -1,9 +1,9 @@
 /* カード操作に関する関数 */
 
-export const putCardInHand = (cardNum, core, cardPath, cardProperties, handList, handListNum, handNumElem, touchFuncHand) => {
+export const putCardInHand = (cardNum, core, cardProperties, handList, handListNum, handNumElem, touchFuncHand) => {
     const handProp = cardProperties.hand
     const card = new Sprite(handProp.image.width, handProp.image.height);
-    const cardName = cardPath + 'tower (' + cardNum + ').jpg';
+    const cardName = cardProperties.imagePath.card + 'tower (' + cardNum + ').jpg';
 
     // カード画像生成
     card.image = core.assets[cardName];
