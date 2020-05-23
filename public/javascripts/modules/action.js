@@ -87,26 +87,24 @@ export const setLand = (core, cardProperties, cardList,
     cardList.land.sprite.push(towerLand);
 }
 
-// 手札からカードを捨てる
-export const disCardFromHand = (targetCard, core, cardProperties, cardList,
-                                handNumElem, touchRemoveFuncHand) => {
-    const handProp = cardProperties.hand;
-    const discardNum = cardList.hand.sprite.findIndex((card) => card.x === targetCard.x);
-    const discardSet = cardList.hand.sprite[discardNum];
+// 指定されたカードを取り除く
+export const removeCard = (targetCard, targetCardList, targetCardProp, core, 
+                            touchRemoveFunc) => {
+    const discardNum = targetCardList.sprite.findIndex((card) => card.x === targetCard.x);
+    const discardSet = targetCardList.sprite[discardNum];
     core.currentScene.removeChild(discardSet);
-    for (let j = discardNum + 1; j < cardList.hand.sprite.length; ++j) {
-        const moveCard = cardList.hand.sprite[j];
+    for (let j = discardNum + 1; j < targetCardList.sprite.length; ++j) {
+        const moveCard = targetCardList.sprite[j];
         moveCard.moveTo(
-            moveCard.x - Math.ceil(handProp.image.width * handProp.image.scale),
-            handProp.field.y
+            moveCard.x - Math.ceil(targetCardProp.image.width * targetCardProp.image.scale),
+            targetCardProp.field.y
         );
-        cardList.hand.sprite[j - 1] = cardList.hand.sprite[j];
-        cardList.hand.number[j - 1] = cardList.hand.number[j];
+        targetCardList.sprite[j - 1] = targetCardList.sprite[j];
+        targetCardList.number[j - 1] = targetCardList.number[j];
     };
-    cardList.hand.sprite.pop();
-    cardList.hand.number.pop();
-    touchRemoveFuncHand();
-    setHandCardNum(handNumElem._element, cardList.hand.sprite.length);
+    targetCardList.sprite.pop();
+    targetCardList.number.pop();
+    touchRemoveFunc();
 }
 
 // 手札枚数表示の更新
