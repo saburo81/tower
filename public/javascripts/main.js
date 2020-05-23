@@ -1,5 +1,5 @@
 enchant(); // enchantjs おまじない
-import { putCardInHand, destroyLand, playCardFromHand, disCardFromHand } from './modules/action.js';
+import { putCardInHand, destroyLand, playCardFromHand, disCardFromHand, setLand } from './modules/action.js';
 
 var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
@@ -377,34 +377,7 @@ window.onload = function () {
             });
 
             setland.addEventListener('touchstart', function () {
-                var towerland = new Sprite(land_image_width, land_image_height);
-                towerland.image = core.assets[components_path + 'tower_land.jpg'];
-                towerland.scaleX = land_scale;
-                towerland.scaleY = land_scale;
-                towerland.moveTo(landx + landList.length * Math.ceil(land_image_width * land_scale), landy);
-                towerland.ontouchstart = touchFuncLand;
-                core.rootScene.addChild(towerland);
-                landList.push(towerland);
-
-                for (var i = 0; i < handList.length; ++i) {
-                    var discard = handList[i];
-                    if (handcard_x == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var discard_set = handList[discard_num];
-                core.rootScene.removeChild(discard_set);
-                for (var j = discard_num + 1; j < handList.length; ++j) {
-                    var move_card = handList[j];
-                    move_card.moveTo(move_card.x - Math.ceil(card_image_width * card_scale), cardy);
-                    handList[j - 1] = handList[j];
-                    handListNum[j - 1] = handListNum[j]
-
-                };
-                handList.pop();
-                handListNum.pop();
-                touchRemoveFuncHand();
-                setHandCardNum(handCardNum._element, handList.length);
+                setLand(targetCard, core, cardProperties, cardList, handCardNum, touchFuncLand, touchRemoveFuncHand);
             });
 
             discardImage.addEventListener('touchstart', function () {

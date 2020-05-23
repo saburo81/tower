@@ -76,6 +76,31 @@ export const playCardFromHand = (targetCard, core, socket, cardProperties,
     socket.emit('play', play_card_Num);
 }
 
+// 手札から土地をセットする
+export const setLand = (targetCard, core, cardProperties, cardList,
+                            handNumElem, touchFuncLand,
+                            touchRemoveFuncHand) => {
+    // 土地カード生成
+    const landProp = cardProperties.land;
+    const towerLand = new Sprite(landProp.image.width, landProp.image.height);
+    towerLand.image = core.assets[cardProperties.imagePath.component + 'tower_land.jpg'];
+    towerLand.scaleX = landProp.image.scale;
+    towerLand.scaleY = landProp.image.scale;
+    towerLand.moveTo(
+        landProp.field.x + cardList.land.sprite.length * Math.ceil(landProp.image.width * landProp.image.scale),
+        landProp.field.y
+    );
+    towerLand.ontouchstart = touchFuncLand;
+    core.rootScene.addChild(towerLand);
+    cardList.land.sprite.push(towerLand);
+
+    // handFieldのカード削除
+    disCardFromHand(targetCard, core, cardProperties, cardList, handNumElem, touchRemoveFuncHand);
+
+    // 手札枚数表示の更新
+    setHandCardNum(handNumElem._element, cardList.hand.sprite.length);
+}
+
 // 手札からカードを捨てる
 export const disCardFromHand = (targetCard, core, cardProperties, cardList,
                                 handNumElem, touchRemoveFuncHand) => {
