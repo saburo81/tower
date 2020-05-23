@@ -400,9 +400,7 @@ window.onload = function () {
             });
 
             reTower.addEventListener('touchstart', function () {
-                const discardNum = cardList.hand.sprite.findIndex((card) => card === targetCard);
-                const reTowerNum = handListNum[discardNum];
-                socket.emit('return', reTowerNum);
+                socket.emit('return', targetCardNum);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
