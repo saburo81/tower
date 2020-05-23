@@ -70,9 +70,12 @@ export const destroyLand = (core, landList) => {
 // カウンターを配置する
 //   counter: カウンターの数値
 //   counterList: カウンターのリスト
-export const setCounter = (counter, counterList) => {
+//   counterProp: カウンターのプロパティ
+//   card: カウンターを付与するカードのSpriteオブジェクト
+export const setCounter = (counter, counterList, counterProp, card) => {
     // カードを生成
     const counterLabel = new Label(String(counter));
+    counterLabel.moveTo(card.x + counterProp.x, card.y + counterProp.y);
     counterList.sprite.push(counterLabel);
     counterList.number.push(counter);
 }

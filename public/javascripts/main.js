@@ -71,7 +71,7 @@ window.onload = function () {
             image: { width: 223, height: 311, scale: 0.6 },
             field: { x: 200, y: -55 }
         },
-        counter: { x: 100, y: 170 },
+        counter: { x: 70, y: 30 },
         zoom: { x: 1300, y: 200, scale: 1.2 },
         opcard: { scale: 1.2 },
         imagePath: { card: 'images/cards/', component: 'images/components/' }
@@ -304,6 +304,7 @@ window.onload = function () {
             fieldList.push(play_card);
             fieldListNum.push(10000);
             var counter_label = new Label('0');
+            counter_label.moveTo(play_card.x + counter_x, play_card.y + counter_y);
             counterList.push(0);
             counterLabelList.push(counter_label);
         });
@@ -379,7 +380,7 @@ window.onload = function () {
 
             playImage.addEventListener('touchstart', function () {
                 setCard(targetCardNum, cardList.field, cardProperties.play, cardProperties.imagePath.card, core, touchFuncPlay);
-                setCounter(0, cardList.counter);
+                setCounter(0, cardList.counter, cardProperties.counter, cardList.field.sprite[cardList.field.sprite.length - 1]);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
