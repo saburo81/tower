@@ -3,7 +3,7 @@ var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
 var SCREEN_HEIGHT = 960; //スクリーン高さ
 var GAME_FPS = 30; //ゲームのFPS, いくつがいいんだ…?
-var towerHeight = 200;
+var towerHeight = 1300;
 
 window.onload = function () {
     var core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT);
