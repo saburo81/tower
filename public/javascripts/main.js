@@ -721,7 +721,11 @@ window.onload = function () {
             core.rootScene.addChild(reTower);
             core.rootScene.addChild(upImage);
         };
+
         var touchFuncPlayToken = function () {
+            const targetCard = this;
+            const targetCardIdx = cardList.field.sprite.findIndex((card) => card === targetCard);
+
             var discardImage = new Sprite(173, 65);
             var tapImage = new Sprite(177, 71);
             var cancelImage = new Sprite(181, 69);
@@ -767,32 +771,8 @@ window.onload = function () {
             };
 
             discardImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var discard_set = fieldList[discard_num];
-                core.rootScene.removeChild(discard_set);
-                var discard_label = counterLabelList[discard_num];
-                core.rootScene.removeChild(discard_label);
-                for (var j = discard_num + 1; j < fieldList.length; ++j) {
-                    var move_card = fieldList[j];
-                    var targetLabel = counterLabelList[j];
-                    move_card.moveTo(move_card.x - Math.ceil(card_image_width * card_scale), play_cardy);
-                    targetLabel.moveTo(move_card.x + counter_x, move_card.y + counter_y);
-                    fieldList[j - 1] = fieldList[j];
-                    fieldListNum[j - 1] = fieldListNum[j];
-                    counterList[j - 1] = counterList[j];
-                    counterLabelList[j - 1] = counterLabelList[j];
-                };
-                fieldList.pop();
-                fieldListNum.pop();
-                counterLabelList.pop();
-                counterList.pop();
-                touchRemoveFuncToken();
-
+                removeCard(targetCard, cardList.field, cardProperties.play, core, touchRemoveFuncToken);
+                removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
             });
 
             cancelImage.addEventListener('touchstart', function () {
