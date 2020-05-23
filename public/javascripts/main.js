@@ -936,6 +936,8 @@ window.onload = function () {
 
         var touchFuncPlayUp = function () {
             const targetCard = this;
+            const targetCardIdx = cardList.upField.sprite.findIndex((card) => card === targetCard);
+            const targetCardNum = cardList.upField.number[targetCardIdx];
 
             var discardImage = new Sprite(173, 65);
             var tapImage = new Sprite(177, 71);
@@ -1007,37 +1009,9 @@ window.onload = function () {
             });
 
             reHand.addEventListener('touchstart', function () {
-                for (var i = 0; i < upfieldList.length; ++i) {
-                    var discard = upfieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var reHandNum = upfieldListNum[discard_num];
-
-                var card = new Sprite(card_image_width, card_image_height);
-                var card_name = cards_path + 'tower (' + reHandNum + ').jpg';
-                card.image = core.assets[card_name];
-                card.scaleX = card_scale;
-                card.scaleY = card_scale;
-                card.moveTo(cardx + handList.length * Math.ceil(card_image_width * card_scale), cardy);
-                card.ontouchstart = touchFuncHand;
-                scene.addChild(card);
-                handList.push(card);
-                handListNum.push(reHandNum);
-                setHandCardNum(handCardNum._element, handList.length);
-
-                var discard_set = upfieldList[discard_num];
-                core.rootScene.removeChild(discard_set);
-                for (var j = discard_num + 1; j < upfieldList.length; ++j) {
-                    var move_card = upfieldList[j];
-                    move_card.moveTo(move_card.x - Math.ceil(card_image_width * card_scale), upfield_y);
-                    upfieldList[j - 1] = upfieldList[j];
-                    upfieldListNum[j - 1] = upfieldListNum[j];
-                };
-                upfieldList.pop();
-                upfieldListNum.pop();
-                touchRemoveFuncUp();
+                removeCard(targetCard, cardList.upField, cardProperties.playUp, core, touchRemoveFuncUp);
+                setCard(targetCardNum, cardList.hand, cardProperties.hand, cardProperties.imagePath.card, core, touchFuncHand);
+                setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
 
             zoomImage.addEventListener('touchstart', function () {
