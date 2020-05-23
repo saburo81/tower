@@ -1,5 +1,5 @@
 enchant(); // enchantjs おまじない
-import { putCardInHand } from './modules/action.js';
+import { putCardInHand, destroyLand } from './modules/action.js';
 
 var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
@@ -267,15 +267,14 @@ window.onload = function () {
                 discard.rotation = 0;
             };
         });
-        var destroyland = new Sprite(115, 78);
-        destroyland.image = core.assets[components_path + 'destroyland.jpg'];
-        destroyland.x = 10;
-        destroyland.y = 450;
-        destroyland.addEventListener('touchstart', function () {
-            var target_land = landList[landList.length - 1];
-            core.rootScene.removeChild(target_land);
-            landList.pop();
 
+        // 土地破壊
+        var destroyLandButton = new Sprite(115, 78);
+        destroyLandButton.image = core.assets[components_path + 'destroyland.jpg'];
+        destroyLandButton.x = 10;
+        destroyLandButton.y = 450;
+        destroyLandButton.addEventListener('touchstart', () => {
+            destroyLand(core, landList);
         });
 
         var tokenImage = new Sprite(218, 93);
@@ -1332,7 +1331,7 @@ window.onload = function () {
         core.rootScene.addChild(resetImage);
         core.rootScene.addChild(untapImage);
         core.rootScene.addChild(tokenImage);
-        core.rootScene.addChild(destroyland);
+        core.rootScene.addChild(destroyLandButton);
     };
     core.start();
 };

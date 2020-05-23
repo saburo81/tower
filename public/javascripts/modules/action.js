@@ -1,5 +1,6 @@
 /* カード操作に関する関数 */
 
+// cardNumのカードを手札に追加する
 export const putCardInHand = (cardNum, core, cardProperties, handList, handListNum, handNumElem, touchFuncHand) => {
     const handProp = cardProperties.hand
     const card = new Sprite(handProp.image.width, handProp.image.height);
@@ -26,6 +27,16 @@ export const putCardInHand = (cardNum, core, cardProperties, handList, handListN
     handList.push(card);
     handListNum.push(cardNum);
     setHandCardNum(handNumElem._element, handList.length);
+}
+
+// 一番右の土地を破壊する
+export const destroyLand = (core, landList) => {
+    // カード描画
+    const targetLand = landList[landList.length - 1];
+    core.currentScene.removeChild(targetLand);
+
+    // 土地情報の更新
+    landList.pop();
 }
 
 // 手札枚数表示の更新
