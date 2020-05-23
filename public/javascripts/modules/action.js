@@ -45,7 +45,6 @@ export const playCardFromHand = (targetCard, core, socket, cardProperties,
                                     cardList, handNumElem, touchFuncPlay,
                                     touchRemoveFuncHand) => {
     const playProp = cardProperties.play;
-    const handProp = cardProperties.hand;
 
     // playFieldのカードSprite生成
     const discardNum = cardList.hand.sprite.findIndex((card) => card.x === targetCard.x);
@@ -68,24 +67,35 @@ export const playCardFromHand = (targetCard, core, socket, cardProperties,
     cardList.counter.number.push(counter_label);
 
     // handFieldのカード削除
-    const discard_set = cardList.hand.sprite[discardNum];
-    core.rootScene.removeChild(discard_set);
+    disCardFromHand(targetCard, core, cardProperties, cardList, handNumElem, touchRemoveFuncHand);
+
+    // 手札情報の更新
+    setHandCardNum(handNumElem._element, cardList.hand.sprite.length);
+
+    // プレイしたカード情報をsocketで通知
+    socket.emit('play', play_card_Num);
+}
+
+// 手札からカードを捨てる
+export const disCardFromHand = (targetCard, core, cardProperties, cardList,
+                                handNumElem, touchRemoveFuncHand) => {
+    const handProp = cardProperties.hand;
+    const discardNum = cardList.hand.sprite.findIndex((card) => card.x === targetCard.x);
+    const discardSet = cardList.hand.sprite[discardNum];
+    core.currentScene.removeChild(discardSet);
     for (let j = discardNum + 1; j < cardList.hand.sprite.length; ++j) {
-        const move_card = cardList.hand.sprite[j];
-        move_card.moveTo(
-            move_card.x - Math.ceil(handProp.image.width * handProp.image.scale),
+        const moveCard = cardList.hand.sprite[j];
+        moveCard.moveTo(
+            moveCard.x - Math.ceil(handProp.image.width * handProp.image.scale),
             handProp.field.y
         );
         cardList.hand.sprite[j - 1] = cardList.hand.sprite[j];
-        cardList.hand.number[j - 1] = cardList.hand.number[j]
+        cardList.hand.number[j - 1] = cardList.hand.number[j];
     };
     cardList.hand.sprite.pop();
     cardList.hand.number.pop();
     touchRemoveFuncHand();
     setHandCardNum(handNumElem._element, cardList.hand.sprite.length);
-
-    // プレイしたカード情報をsocketで通知
-    socket.emit('play', play_card_Num);
 }
 
 // 手札枚数表示の更新
