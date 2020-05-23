@@ -1038,26 +1038,10 @@ window.onload = function () {
             });
 
             reTower.addEventListener('touchstart', function () {
-                for (var i = 0; i < upfieldList.length; ++i) {
-                    var discard = upfieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var discard_set = upfieldList[discard_num];
-                var reTowerNum = upfieldListNum[discard_num];
-                socket.emit('return', reTowerNum);
-                core.rootScene.removeChild(discard_set);
-                for (var j = discard_num + 1; j < upfieldList.length; ++j) {
-                    var move_card = upfieldList[j];
-                    move_card.moveTo(move_card.x - Math.ceil(card_image_width * card_scale), upfield_y);
-                    upfieldList[j - 1] = upfieldList[j];
-                    upfieldListNum[j - 1] = upfieldListNum[j];
-                };
-                upfieldList.pop();
-                upfieldListNum.pop();
-                touchRemoveFuncUp();
+                removeCard(targetCard, cardList.upField, cardProperties.playUp, core, touchRemoveFuncUp);
+                socket.emit('return', targetCardNum);
             });
+
             core.rootScene.addChild(discardImage);
             core.rootScene.addChild(tapImage);
             core.rootScene.addChild(cancelImage);
