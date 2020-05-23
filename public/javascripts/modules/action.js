@@ -40,6 +40,54 @@ export const destroyLand = (core, landList) => {
     landList.pop();
 }
 
+// 手札からカードをプレイする
+export const playCardFromHand = (targetCard, core, socket, cardProperties,
+                                    cardList, handNumElem, touchFuncPlay,
+                                    touchRemoveFuncHand) => {
+    const playProp = cardProperties.play;
+    const handProp = cardProperties.hand;
+
+    // playFieldのカードSprite生成
+    const discardNum = cardList.hand.sprite.findIndex((card) => card.x === targetCard.x);
+    const play_card_Num = cardList.hand.number[discardNum];
+    const play_card = new Sprite(playProp.image.width, playProp.image.height);
+    const play_card_name = cardProperties.imagePath.card + 'tower (' + play_card_Num + ').jpg';
+    play_card.image = core.assets[play_card_name];
+    play_card.scaleX = playProp.image.scale;
+    play_card.scaleY = playProp.image.scale;
+    play_card.moveTo(
+        playProp.field.x + cardList.field.sprite.length * Math.ceil(playProp.image.width * playProp.image.scale),
+        playProp.field.y
+    );
+    play_card.ontouchstart = touchFuncPlay;
+    core.rootScene.addChild(play_card);
+    cardList.field.sprite.push(play_card);
+    cardList.field.number.push(play_card_Num);
+    const counter_label = new Label('0');
+    cardList.counter.sprite.push(0);
+    cardList.counter.number.push(counter_label);
+
+    // handFieldのカード削除
+    const discard_set = cardList.hand.sprite[discardNum];
+    core.rootScene.removeChild(discard_set);
+    for (let j = discardNum + 1; j < cardList.hand.sprite.length; ++j) {
+        const move_card = cardList.hand.sprite[j];
+        move_card.moveTo(
+            move_card.x - Math.ceil(handProp.image.width * handProp.image.scale),
+            handProp.field.y
+        );
+        cardList.hand.sprite[j - 1] = cardList.hand.sprite[j];
+        cardList.hand.number[j - 1] = cardList.hand.number[j]
+    };
+    cardList.hand.sprite.pop();
+    cardList.hand.number.pop();
+    touchRemoveFuncHand();
+    setHandCardNum(handNumElem._element, cardList.hand.sprite.length);
+
+    // プレイしたカード情報をsocketで通知
+    socket.emit('play', play_card_Num);
+}
+
 // 手札枚数表示の更新
 var setHandCardNum = function (element, handNum) {
     element.innerText = handNum + '枚';

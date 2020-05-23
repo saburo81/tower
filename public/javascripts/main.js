@@ -1,5 +1,5 @@
 enchant(); // enchantjs おまじない
-import { putCardInHand, destroyLand } from './modules/action.js';
+import { putCardInHand, destroyLand, playCardFromHand } from './modules/action.js';
 
 var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
@@ -332,6 +332,7 @@ window.onload = function () {
         });
 
         var touchFuncHand = function () {
+            const targetCard = this;
             var setland = new Sprite(179, 65);
             var discardImage = new Sprite(173, 65);
             var playImage = new Sprite(162, 63);
@@ -372,40 +373,7 @@ window.onload = function () {
             };
 
             playImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < handList.length; ++i) {
-                    var discard = handList[i];
-                    if (handcard_x == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var play_card_Num = handListNum[discard_num];
-                socket.emit('play', play_card_Num);
-                var play_card = new Sprite(card_image_width, card_image_height);
-                var play_card_name = cards_path + 'tower (' + play_card_Num + ').jpg';
-                play_card.image = core.assets[play_card_name];
-                play_card.scaleX = card_scale;
-                play_card.scaleY = card_scale;
-                play_card.moveTo(play_cardx + fieldList.length * Math.ceil(card_image_width * card_scale), play_cardy);
-                play_card.ontouchstart = touchFuncPlay;
-                core.rootScene.addChild(play_card);
-                fieldList.push(play_card);
-                fieldListNum.push(play_card_Num);
-                var counter_label = new Label('0');
-                counterList.push(0);
-                counterLabelList.push(counter_label);
-
-                var discard_set = handList[discard_num];
-                core.rootScene.removeChild(discard_set);
-                for (var j = discard_num + 1; j < handList.length; ++j) {
-                    var move_card = handList[j];
-                    move_card.moveTo(move_card.x - Math.ceil(card_image_width * card_scale), cardy);
-                    handList[j - 1] = handList[j];
-                    handListNum[j - 1] = handListNum[j]
-                };
-                handList.pop();
-                handListNum.pop();
-                touchRemoveFuncHand();
-                setHandCardNum(handCardNum._element, handList.length);
+                playCardFromHand(targetCard, core, socket, cardProperties, cardList, handCardNum, touchFuncPlay, touchRemoveFuncHand);
             });
 
             setland.addEventListener('touchstart', function () {
