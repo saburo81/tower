@@ -372,6 +372,7 @@ window.onload = function () {
                 setCounter(0, cardList.counter, cardProperties.counter, cardList.field.sprite[cardList.field.sprite.length - 1]);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
+                socket.emit('play', targetCardNum);
             });
 
             setland.addEventListener('touchstart', function () {
