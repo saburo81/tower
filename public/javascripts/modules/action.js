@@ -58,6 +58,27 @@ export const removeCard = (targetCard, targetCardList, targetCardProp, core,
     touchRemoveFunc();
 }
 
+// 同じ場の指定カード位置を入れ替える
+//   cardA: 対象とするカードのSpriteオブジェクト
+//   cardB: 対象とするカードのSpriteオブジェクト
+//   targetCardList: 配置する場のカードリスト
+export const swapCard = (cardA, cardB, targetCardList) => {
+    const cardAIdx = targetCardList.sprite.findIndex((card) => card === cardA);
+    const cardANum = targetCardList.number[cardAIdx];
+    const cardACoord = {x: cardA.x, y: cardA.y};
+    const cardBIdx = targetCardList.sprite.findIndex((card) => card === cardB);
+    const cardBNum = targetCardList.number[cardBIdx];
+    const cardBCoord = { x: cardB.x, y: cardB.y };
+
+    cardA.moveTo(cardBCoord.x, cardBCoord.y);
+    cardB.moveTo(cardACoord.x, cardACoord.y);
+
+    targetCardList.sprite[cardAIdx] = cardB;
+    targetCardList.sprite[cardBIdx] = cardA;
+    targetCardList.number[cardAIdx] = cardBNum;
+    targetCardList.number[cardBIdx] = cardANum;
+}
+
 // 一番右の土地を破壊する
 //   core: EnchantJSオブジェクト
 //   landList: 土地のカードリスト
@@ -97,6 +118,27 @@ export const removeCounter = (counterLabel, counterList, core) => {
     };
     counterList.sprite.splice(counterIdx, 1);
     counterList.number.splice(counterIdx, 1);
+}
+
+// 同じ場の指定カウンター位置を入れ替える
+//   counterA: 対象とするカウンターのLabelオブジェクト
+//   counterB: 対象とするカウンターのLabelオブジェクト
+//   targetCounterList: 配置する場のカウンターリスト
+export const swapCounter = (counterA, counterB, targetCounterList) => {
+    const counterAIdx = targetCounterList.sprite.findIndex((cnt) => cnt === counterA);
+    const counterANum = targetCounterList.number[counterAIdx];
+    const counterACoord = { x: counterA.x, y: counterA.y };
+    const counterBIdx = targetCounterList.sprite.findIndex((cnt) => cnt === counterB);
+    const counterBNum = targetCounterList.number[counterBIdx];
+    const counterBCoord = { x: counterB.x, y: counterB.y };
+
+    counterA.moveTo(counterBCoord.x, counterBCoord.y);
+    counterB.moveTo(counterACoord.x, counterACoord.y);
+
+    targetCounterList.sprite[counterAIdx] = counterB;
+    targetCounterList.sprite[counterBIdx] = counterA;
+    targetCounterList.number[counterAIdx] = counterBNum;
+    targetCounterList.number[counterBIdx] = counterANum;
 }
 
 // 手札枚数表示の更新

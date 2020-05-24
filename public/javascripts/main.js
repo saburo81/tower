@@ -1,5 +1,5 @@
 enchant(); // enchantjs おまじない
-import { setCard, removeCard, destroyLand, setCounter, removeCounter } from './modules/action.js';
+import { setCard, removeCard, swapCard, destroyLand, setCounter, removeCounter, swapCounter } from './modules/action.js';
 
 var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
@@ -537,71 +537,20 @@ window.onload = function () {
             });
 
             leftImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
+                const counterList = cardList.counter;
+                if (targetCardIdx > 0) {
+                    swapCard(targetCard, cardList.field.sprite[targetCardIdx - 1], cardList.field);
+                    swapCounter( counterList.sprite[targetCardIdx], counterList.sprite[targetCardIdx - 1], counterList );
                 };
-
-                if (discard_num != 0) {
-                    var target = fieldList[discard_num];
-                    var left = fieldList[discard_num - 1];
-                    var targetNum = fieldListNum[discard_num];
-                    var leftNum = fieldListNum[discard_num - 1];
-                    var targetCounter = counterList[discard_num];
-                    var targetLabel = counterLabelList[discard_num];
-                    var leftCounter = counterList[discard_num - 1];
-                    var leftLabel = counterLabelList[discard_num - 1];
-
-                    target.moveTo(target.x - Math.ceil(card_image_width * card_scale), play_cardy);
-                    left.moveTo(left.x + Math.ceil(card_image_width * card_scale), play_cardy);
-                    targetLabel.moveTo(target.x + counter_x, target.y + counter_y);
-                    leftLabel.moveTo(left.x + counter_x, target.y + counter_y);
-                    fieldList[discard_num] = left;
-                    fieldList[discard_num - 1] = target;
-                    fieldListNum[discard_num] = leftNum;
-                    fieldListNum[discard_num - 1] = targetNum;
-                    counterList[discard_num] = leftCounter;
-                    counterList[discard_num - 1] = targetCounter;
-                    counterLabelList[discard_num] = leftLabel;
-                    counterLabelList[discard_num - 1] = targetLabel;
-                };
-
                 touchRemoveFunc();
             });
 
             rightImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
+                const counterList = cardList.counter;
+                if (targetCardIdx < cardList.field.sprite.length - 1) {
+                    swapCard(targetCard, cardList.field.sprite[targetCardIdx + 1], cardList.field);
+                    swapCounter(counterList.sprite[targetCardIdx], counterList.sprite[targetCardIdx + 1], counterList);
                 };
-
-                if (discard_num < fieldList.length - 1) {
-                    var target = fieldList[discard_num];
-                    var right = fieldList[discard_num + 1];
-                    var targetNum = fieldListNum[discard_num];
-                    var rightNum = fieldListNum[discard_num + 1];
-                    var targetCounter = counterList[discard_num];
-                    var targetLabel = counterLabelList[discard_num];
-                    var rightCounter = counterList[discard_num + 1];
-                    var rightLabel = counterLabelList[discard_num + 1];
-                    target.moveTo(target.x + Math.ceil(card_image_width * card_scale), play_cardy);
-                    right.moveTo(right.x - Math.ceil(card_image_width * card_scale), play_cardy);
-                    targetLabel.moveTo(target.x + counter_x, target.y + counter_y);
-                    rightLabel.moveTo(right.x + counter_x, target.y + counter_y);
-                    fieldList[discard_num] = right;
-                    fieldList[discard_num + 1] = target;
-                    fieldListNum[discard_num] = rightNum;
-                    fieldListNum[discard_num + 1] = targetNum;
-                    counterList[discard_num] = rightCounter;
-                    counterList[discard_num + 1] = targetCounter;
-                    counterLabelList[discard_num] = rightLabel;
-                    counterLabelList[discard_num + 1] = targetLabel;
-                };
-
                 touchRemoveFunc();
             });
 
@@ -787,71 +736,20 @@ window.onload = function () {
             });
 
             leftImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
+                const counterList = cardList.counter;
+                if (targetCardIdx > 0) {
+                    swapCard(targetCard, cardList.field.sprite[targetCardIdx - 1], cardList.field);
+                    swapCounter(counterList.sprite[targetCardIdx], counterList.sprite[targetCardIdx - 1], counterList);
                 };
-
-                if (discard_num != 0) {
-                    var target = fieldList[discard_num];
-                    var left = fieldList[discard_num - 1];
-                    var targetNum = fieldListNum[discard_num];
-                    var leftNum = fieldListNum[discard_num - 1];
-                    var targetCounter = counterList[discard_num];
-                    var targetLabel = counterLabelList[discard_num];
-                    var leftCounter = counterList[discard_num - 1];
-                    var leftLabel = counterLabelList[discard_num - 1];
-
-                    target.moveTo(target.x - Math.ceil(card_image_width * card_scale), play_cardy);
-                    left.moveTo(left.x + Math.ceil(card_image_width * card_scale), play_cardy);
-                    targetLabel.moveTo(target.x + counter_x, target.y + counter_y);
-                    leftLabel.moveTo(left.x + counter_x, target.y + counter_y);
-                    fieldList[discard_num] = left;
-                    fieldList[discard_num - 1] = target;
-                    fieldListNum[discard_num] = leftNum;
-                    fieldListNum[discard_num - 1] = targetNum;
-                    counterList[discard_num] = leftCounter;
-                    counterList[discard_num - 1] = targetCounter;
-                    counterLabelList[discard_num] = leftLabel;
-                    counterLabelList[discard_num - 1] = targetLabel;
-                };
-
                 touchRemoveFuncToken();
             });
 
             rightImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
+                const counterList = cardList.counter;
+                if (targetCardIdx < cardList.field.sprite.length - 1) {
+                    swapCard(targetCard, cardList.field.sprite[targetCardIdx + 1], cardList.field);
+                    swapCounter(counterList.sprite[targetCardIdx], counterList.sprite[targetCardIdx + 1], counterList);
                 };
-
-                if (discard_num < fieldList.length - 1) {
-                    var target = fieldList[discard_num];
-                    var right = fieldList[discard_num + 1];
-                    var targetNum = fieldListNum[discard_num];
-                    var rightNum = fieldListNum[discard_num + 1];
-                    var targetCounter = counterList[discard_num];
-                    var targetLabel = counterLabelList[discard_num];
-                    var rightCounter = counterList[discard_num + 1];
-                    var rightLabel = counterLabelList[discard_num + 1];
-                    target.moveTo(target.x + Math.ceil(card_image_width * card_scale), play_cardy);
-                    right.moveTo(right.x - Math.ceil(card_image_width * card_scale), play_cardy);
-                    targetLabel.moveTo(target.x + counter_x, target.y + counter_y);
-                    rightLabel.moveTo(right.x + counter_x, target.y + counter_y);
-                    fieldList[discard_num] = right;
-                    fieldList[discard_num + 1] = target;
-                    fieldListNum[discard_num] = rightNum;
-                    fieldListNum[discard_num + 1] = targetNum;
-                    counterList[discard_num] = rightCounter;
-                    counterList[discard_num + 1] = targetCounter;
-                    counterLabelList[discard_num] = rightLabel;
-                    counterLabelList[discard_num + 1] = targetLabel;
-                };
-
                 touchRemoveFuncToken();
             });
 
