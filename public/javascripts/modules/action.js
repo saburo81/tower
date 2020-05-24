@@ -10,10 +10,13 @@
 export const setCard = (cardNum, dstCardList, dstCardProp, imagePath, core,
                         touchFunc) => {
     // カードを生成
-    const isLand = cardNum === 10000;
+    const cardMap = {
+        10000: { type: 'token', name: `${imagePath}maotoken.jpg` },
+        10001: { type: 'land', name: `${imagePath}tower_land.jpg` }
+    };
+    const cardInfo = cardMap[cardNum] || { type: 'card', name: `${imagePath}tower (${cardNum}).jpg` };
     const card = new Sprite(dstCardProp.image.width, dstCardProp.image.height);
-    const cardName = isLand ? `${imagePath}tower_land.jpg` : `${imagePath}tower (${cardNum}).jpg`;
-    card.image = core.assets[cardName];
+    card.image = core.assets[cardInfo.name];
     card.scaleX = dstCardProp.image.scale;
     card.scaleY = dstCardProp.image.scale;
     card.moveTo(
@@ -25,7 +28,7 @@ export const setCard = (cardNum, dstCardList, dstCardProp, imagePath, core,
 
     // 手札情報の更新
     dstCardList.sprite.push(card);
-    if (!isLand) {
+    if (cardInfo.type !== 'land') {
         dstCardList.number.push(cardNum);
     }
 }

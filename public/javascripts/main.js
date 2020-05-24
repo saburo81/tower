@@ -294,19 +294,8 @@ window.onload = function () {
         tokenImage.scaleY = token_scale;
 
         tokenImage.addEventListener('touchstart', function () {
-            var play_card = new Sprite(card_image_width, card_image_height);
-            play_card.image = core.assets[components_path + 'maotoken.jpg'];
-            play_card.scaleX = card_scale;
-            play_card.scaleY = card_scale;
-            play_card.moveTo(play_cardx + fieldList.length * Math.ceil(card_image_width * card_scale), play_cardy);
-            play_card.ontouchstart = touchFuncPlayToken;
-            core.rootScene.addChild(play_card);
-            fieldList.push(play_card);
-            fieldListNum.push(10000);
-            var counter_label = new Label('0');
-            counter_label.moveTo(play_card.x + counter_x, play_card.y + counter_y);
-            counterList.push(0);
-            counterLabelList.push(counter_label);
+            setCard(10000, cardList.field, cardProperties.play, cardProperties.imagePath.component, core, touchFuncPlayToken);
+            setCounter(0, cardList.counter, cardProperties.counter, cardList.field.sprite[cardList.field.sprite.length - 1]);
         });
 
         socket.on('draw', function (data) {
@@ -386,7 +375,7 @@ window.onload = function () {
             });
 
             setland.addEventListener('touchstart', function () {
-                setCard(10000, cardList.land, cardProperties.land, cardProperties.imagePath.component, core, touchFuncLand);
+                setCard(10001, cardList.land, cardProperties.land, cardProperties.imagePath.component, core, touchFuncLand);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
