@@ -1,5 +1,8 @@
 enchant(); // enchantjs おまじない
-import { setCard, removeCard, swapCard, tapCard, untapCard, destroyLand, setCounter, removeCounter, swapCounter } from './modules/action.js';
+import {
+    setCard, removeCard, swapCard, tapCard, untapCard, destroyLand, setCounter,
+    setCounterNum, removeCounter, swapCounter
+} from './modules/action.js';
 
 var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
@@ -286,8 +289,9 @@ window.onload = function () {
         tokenImage.scaleY = token_scale;
 
         tokenImage.addEventListener('touchstart', function () {
-            setCard(10000, cardList.field, cardProperties.play, cardProperties.imagePath.component, core, touchFuncPlayToken);
-            setCounter(0, cardList.counter, cardProperties.counter, cardList.field.sprite[cardList.field.sprite.length - 1]);
+            const fieldList = cardList.field;
+            setCard(10000, fieldList, cardProperties.play, cardProperties.imagePath.component, core, touchFuncPlayToken);
+            setCounter(cardList.counter, cardProperties.counter, fieldList.sprite[fieldList.sprite.length - 1], core);
         });
 
         socket.on('draw', function (data) {
@@ -360,8 +364,9 @@ window.onload = function () {
             };
 
             playImage.addEventListener('touchstart', function () {
-                setCard(targetCardNum, cardList.field, cardProperties.play, cardProperties.imagePath.card, core, touchFuncPlay);
-                setCounter(0, cardList.counter, cardProperties.counter, cardList.field.sprite[cardList.field.sprite.length - 1]);
+                const fieldList = cardList.field;
+                setCard(targetCardNum, fieldList, cardProperties.play, cardProperties.imagePath.card, core, touchFuncPlay);
+                setCounter(cardList.counter, cardProperties.counter, fieldList.sprite[fieldList.sprite.length - 1], core);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
                 socket.emit('play', targetCardNum);
@@ -545,62 +550,14 @@ window.onload = function () {
             });
 
             plusImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var target = fieldList[discard_num];
-                var counterNum = counterList[discard_num];
-                var plus_counter = counterLabelList[discard_num];
-                var plus_counterNum = counterList[discard_num] + 1;
-                plus_counter.x = target.x + counter_x;
-                plus_counter.y = target.y + counter_y;
-                //plus_counter.color = "#FC9";
-                plus_counter.font = "normal normal 30px/1.0 monospace";
-                if (plus_counterNum >= 0) {
-                    plus_counter.text = '+' + String(plus_counterNum) + '/+' + String(plus_counterNum);
-                } else {
-                    plus_counter.text = String(plus_counterNum) + '/' + String(plus_counterNum);
-                };
-                core.rootScene.addChild(plus_counter);
-                if (plus_counterNum == 0) {
-                    core.rootScene.removeChild(plus_counter);
-                };
-                counterList[discard_num] = counterList[discard_num] + 1;
-                counterLabelList[discard_num] = plus_counter;
-
+                const counterList = cardList.counter;
+                setCounterNum(counterList.sprite[targetCardIdx], counterList.number[targetCardIdx] + 1, counterList);
                 touchRemoveFunc();
             });
 
             minusImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var target = fieldList[discard_num];
-                var counterNum = counterList[discard_num];
-                var minus_counter = counterLabelList[discard_num];
-                var minus_counterNum = counterList[discard_num] - 1;
-                minus_counter.x = target.x + counter_x;
-                minus_counter.y = target.y + counter_y;
-                //minus_counter.color = "#FC9";
-                minus_counter.font = "normal normal 30px/1.0 monospace";
-                if (minus_counterNum >= 0) {
-                    minus_counter.text = '+' + String(minus_counterNum) + '/+' + String(minus_counterNum);
-                } else {
-                    minus_counter.text = String(minus_counterNum) + '/' + String(minus_counterNum);
-                };
-                core.rootScene.addChild(minus_counter);
-                if (minus_counterNum == 0) {
-                    core.rootScene.removeChild(minus_counter);
-                };
-                counterList[discard_num] = counterList[discard_num] - 1;
-                counterLabelList[discard_num] = minus_counter;
-
+                const counterList = cardList.counter;
+                setCounterNum(counterList.sprite[targetCardIdx], counterList.number[targetCardIdx] - 1, counterList);
                 touchRemoveFunc();
             });
             zoomImage.addEventListener('touchstart', function () {
@@ -730,64 +687,17 @@ window.onload = function () {
             });
 
             plusImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var target = fieldList[discard_num];
-                var counterNum = counterList[discard_num];
-                var plus_counter = counterLabelList[discard_num];
-                var plus_counterNum = counterList[discard_num] + 1;
-                plus_counter.x = target.x + counter_x;
-                plus_counter.y = target.y + counter_y;
-                //plus_counter.color = "#FC9";
-                plus_counter.font = "normal normal 30px/1.0 monospace";
-                if (plus_counterNum >= 0) {
-                    plus_counter.text = '+' + String(plus_counterNum) + '/+' + String(plus_counterNum);
-                } else {
-                    plus_counter.text = String(plus_counterNum) + '/' + String(plus_counterNum);
-                };
-                core.rootScene.addChild(plus_counter);
-                if (plus_counterNum == 0) {
-                    core.rootScene.removeChild(plus_counter);
-                };
-                counterList[discard_num] = counterList[discard_num] + 1;
-                counterLabelList[discard_num] = plus_counter;
-
+                const counterList = cardList.counter;
+                setCounterNum(counterList.sprite[targetCardIdx], counterList.number[targetCardIdx] + 1, counterList);
                 touchRemoveFuncToken();
             });
 
             minusImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var target = fieldList[discard_num];
-                var counterNum = counterList[discard_num];
-                var minus_counter = counterLabelList[discard_num];
-                var minus_counterNum = counterList[discard_num] - 1;
-                minus_counter.x = target.x + counter_x;
-                minus_counter.y = target.y + counter_y;
-                //minus_counter.color = "#FC9";
-                minus_counter.font = "normal normal 30px/1.0 monospace";
-                if (minus_counterNum >= 0) {
-                    minus_counter.text = '+' + String(minus_counterNum) + '/+' + String(minus_counterNum);
-                } else {
-                    minus_counter.text = String(minus_counterNum) + '/' + String(minus_counterNum);
-                };
-                core.rootScene.addChild(minus_counter);
-                if (minus_counterNum == 0) {
-                    core.rootScene.removeChild(minus_counter);
-                };
-                counterList[discard_num] = counterList[discard_num] - 1;
-                counterLabelList[discard_num] = minus_counter;
-
+                const counterList = cardList.counter;
+                setCounterNum(counterList.sprite[targetCardIdx], counterList.number[targetCardIdx] - 1, counterList);
                 touchRemoveFuncToken();
             });
+
             core.rootScene.addChild(discardImage);
             core.rootScene.addChild(tapImage);
             core.rootScene.addChild(cancelImage);
@@ -795,7 +705,6 @@ window.onload = function () {
             core.rootScene.addChild(minusImage);
             core.rootScene.addChild(leftImage);
             core.rootScene.addChild(rightImage);
-
         };
 
         var touchFuncPlayUp = function () {

@@ -104,25 +104,42 @@ export const destroyLand = (core, landList) => {
 }
 
 // カウンターを配置する
-//   counter: カウンターの数値
 //   counterList: カウンターのリスト
 //   counterProp: カウンターのプロパティ
 //   card: カウンターを付与するカードのSpriteオブジェクト
-export const setCounter = (counter, counterList, counterProp, card) => {
+export const setCounter = (counterList, counterProp, card, core) => {
     // カードを生成
-    const counterLabel = new Label(String(counter));
-    counterLabel.moveTo(card.x + counterProp.x, card.y + counterProp.y);
-    counterList.sprite.push(counterLabel);
-    counterList.number.push(counter);
+    const counter = new Label();
+    counter.font = "normal normal 30px/1.0 monospace";
+    counter.moveTo(card.x + counterProp.x, card.y + counterProp.y);
+    core.currentScene.addChild(counter);
+    counterList.sprite.push(counter);
+    counterList.number.push(0);
+}
+
+// カウンターの数値を設定する
+//   counter: カウンターのLabelオブジェクト
+//   counterNum: 設定するカウンターの数値
+//   counterNumList: カウンター数値のリスト
+export const setCounterNum = (counter, counterNum, counterList) => {
+    const counterIdx = counterList.sprite.findIndex((label) => label === counter);
+    if (counterNum > 0) {
+        counter.text = `+${counterNum}/+${counterNum}`;
+    } else if (counterNum < 0) {
+        counter.text = `${counterNum}/${counterNum}`;
+    } else {
+        counter.text = '';
+    };
+    counterList.number[counterIdx] = counterNum;
 }
 
 // カウンターを取り除く
-//   counterLabel: カウンターのLabelオブジェクト
+//   counter: カウンターのLabelオブジェクト
 //   counterList: カウンターのリスト
 //   core: EnchantJSオブジェクト
-export const removeCounter = (counterLabel, counterList, core) => {
-    const counterIdx = counterList.sprite.findIndex((label) => label === counterLabel);
-    core.rootScene.removeChild(counterLabel);
+export const removeCounter = (counter, counterList, core) => {
+    const counterIdx = counterList.sprite.findIndex((label) => label === counter);
+    core.rootScene.removeChild(counter);
     for (let i = counterList.sprite.length - 1; i > counterIdx; i--) {
         const rightLabel = counterList.sprite[i];
         const leftLabel = counterList.sprite[i - 1];
