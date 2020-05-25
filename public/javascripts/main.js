@@ -1,5 +1,5 @@
 enchant(); // enchantjs おまじない
-import { setCard, removeCard, swapCard, destroyLand, setCounter, removeCounter, swapCounter } from './modules/action.js';
+import { setCard, removeCard, swapCard, tapCard, untapCard, destroyLand, setCounter, removeCounter, swapCounter } from './modules/action.js';
 
 var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
@@ -261,20 +261,12 @@ window.onload = function () {
         untapImage.x = 10;
         untapImage.y = 250;
         untapImage.addEventListener('touchstart', function () {
-            for (var i = 0; i < fieldList.length; ++i) {
-                var discard = fieldList[i];
-                discard.rotation = 0;
-            };
-
-            for (var i = 0; i < landList.length; ++i) {
-                var discard = landList[i];
-                discard.rotation = 0;
-            };
-
-            for (var i = 0; i < upfieldList.length; ++i) {
-                var discard = upfieldList[i];
-                discard.rotation = 0;
-            };
+            const targetFields = [cardList.field.sprite, cardList.upField.sprite, cardList.land.sprite];
+            for (let field of targetFields) {
+                for (let card of field) {
+                    untapCard(card);
+                };
+            }
         });
 
         // 土地破壊
@@ -513,19 +505,11 @@ window.onload = function () {
             });
 
             tapImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var tapcard = fieldList[discard_num];
-                if (tapcard.rotation == 90) {
-                    tapcard.rotate(-90);
+                if (targetCard.rotation == 90) {
+                    untapCard(targetCard);
                 } else {
-                    tapcard.rotate(90);
+                    tapCard(targetCard);
                 };
-
                 touchRemoveFunc();
             });
 
@@ -719,19 +703,11 @@ window.onload = function () {
             });
 
             tapImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var tapcard = fieldList[discard_num];
-                if (tapcard.rotation == 90) {
-                    tapcard.rotate(-90);
+                if (targetCard.rotation == 90) {
+                    untapCard(targetCard);
                 } else {
-                    tapcard.rotate(90);
+                    tapCard(targetCard);
                 };
-
                 touchRemoveFuncToken();
             });
 
@@ -880,19 +856,11 @@ window.onload = function () {
             });
 
             tapImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < upfieldList.length; ++i) {
-                    var discard = upfieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-                var tapcard = upfieldList[discard_num];
-                if (tapcard.rotation == 90) {
-                    tapcard.rotate(-90);
+                if (targetCard.rotation == 90) {
+                    untapCard(targetCard);
                 } else {
-                    tapcard.rotate(90);
+                    tapCard(targetCard);
                 };
-
                 touchRemoveFuncUp();
             });
 
@@ -940,9 +908,9 @@ window.onload = function () {
 
         var touchFuncLand = function () {
             if (this.rotation == 90) {
-                this.rotate(-90);
+                untapCard(this);
             } else {
-                this.rotate(90);
+                tapCard(this);
             };
         };
 

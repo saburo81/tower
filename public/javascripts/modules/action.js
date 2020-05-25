@@ -79,6 +79,18 @@ export const swapCard = (cardA, cardB, targetCardList) => {
     targetCardList.number[cardBIdx] = cardANum;
 }
 
+// カードをタップする
+//   card: 対象とするカードのSpriteオブジェクト
+export const tapCard = (card) => {
+    card.rotation = 90;
+}
+
+// カードをアンタップする
+//   card: 対象とするカードのSpriteオブジェクト
+export const untapCard = (card) => {
+    card.rotation = 0;
+}
+
 // 一番右の土地を破壊する
 //   core: EnchantJSオブジェクト
 //   landList: 土地のカードリスト
