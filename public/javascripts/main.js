@@ -1,7 +1,7 @@
 enchant(); // enchantjs おまじない
 import {
     setCard, removeCard, swapCard, tapCard, untapCard, destroyLand, setCounter,
-    setCounterNum, removeCounter, swapCounter
+    setCounterNum, removeCounter, swapCounter, zoomCard
 } from './modules/action.js';
 
 var socket = io();
@@ -60,7 +60,8 @@ window.onload = function () {
     const cardProperties = {
         hand: {
             image: { width: 223, height: 311, scale: 0.6 },
-            field: { x: 100, y: 710 }
+            field: { x: 100, y: 710 },
+            zoom: { scale: 1.2, x: 1250, y: 620 }
         },
         land: {
             image: { width: 431, height: 599, scale: 0.25 },
@@ -68,15 +69,19 @@ window.onload = function () {
         },
         play: {
             image: { width: 223, height: 311, scale: 0.6 },
-            field: { x: 100, y: 170 }
+            field: { x: 100, y: 170 },
+            zoom: { scale: 1.2, x: 1200, y: 150 }
         },
         playUp: {
             image: { width: 223, height: 311, scale: 0.6 },
-            field: { x: 200, y: -55 }
+            field: { x: 200, y: -55 },
+            zoom: { scale: 1.2, x: 1200, y: 150 }
+        },
+        opCard: {
+            image: { width: 223, height: 311, scale: 0.6 },
+            zoom: { scale: 1.2, x: 1250, y: 200 }
         },
         counter: { x: 70, y: 30 },
-        zoom: { x: 1300, y: 200, scale: 1.2 },
-        opcard: { scale: 1.2 },
         imagePath: { card: 'images/cards/', component: 'images/components/' }
     }
     var scene = core.rootScene;
@@ -300,24 +305,13 @@ window.onload = function () {
         });
 
         socket.on('opplay', function (data) {
-            var opplay = new Sprite(card_image_width, card_image_height);
-            var opplay_name = cards_path + 'tower (' + data + ').jpg';
-            var op_label = new Label('opponent play');
-            opplay.image = core.assets[opplay_name];
-            opplay.scaleX = opcard_scale;
-            opplay.scaleY = opcard_scale;
-            opplay.x = 1200;
-            opplay.y = 50;
-            op_label.x = 1200;
-            op_label.y = opplay.y + 350;
-            op_label.color = "red";
-            op_label.font = "normal normal 30px/1.0 monospace";
-            opplay.addEventListener('touchstart', function () {
-                this.parentNode.removeChild(this);
-                core.rootScene.removeChild(op_label);
-            });
-            scene.addChild(opplay);
-            scene.addChild(op_label);
+            const opplayName = `${cards_path}tower (${data}).jpg`;
+            const opLabel = new Label('opponent play');
+            opLabel.x = cardProperties.opCard.zoom.x;
+            opLabel.y = cardProperties.opCard.zoom.y + 350;
+            opLabel.color = "red";
+            opLabel.font = "normal normal 30px/1.0 monospace";
+            zoomCard(core.assets[opplayName], cardProperties.opCard, core, opLabel);
         });
 
         var touchFuncHand = function () {
@@ -394,25 +388,7 @@ window.onload = function () {
             });
 
             zoomImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < handList.length; ++i) {
-                    var discard = handList[i];
-                    if (handcard_x == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-
-                var zoomNum = handListNum[discard_num];
-                var zoom_card = new Sprite(card_image_width, card_image_height);
-                var zoom_card_name = cards_path + 'tower (' + zoomNum + ').jpg';
-                zoom_card.image = core.assets[zoom_card_name];
-                zoom_card.scaleX = zoom_scale;
-                zoom_card.scaleY = zoom_scale;
-                zoom_card.x = this.x + 100;
-                zoom_card.y = this.y - 185;
-                zoom_card.addEventListener('touchstart', function () {
-                    core.rootScene.removeChild(this);
-                });
-                core.rootScene.addChild(zoom_card);
+                zoomCard(targetCard.image, cardProperties.hand, core);
                 touchRemoveFuncHand();
             });
 
@@ -560,26 +536,9 @@ window.onload = function () {
                 setCounterNum(counterList.sprite[targetCardIdx], counterList.number[targetCardIdx] - 1, counterList);
                 touchRemoveFunc();
             });
-            zoomImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
 
-                var zoomNum = fieldListNum[discard_num];
-                var zoom_card = new Sprite(card_image_width, card_image_height);
-                var zoom_card_name = cards_path + 'tower (' + zoomNum + ').jpg';
-                zoom_card.image = core.assets[zoom_card_name];
-                zoom_card.scaleX = zoom_scale;
-                zoom_card.scaleY = zoom_scale;
-                zoom_card.x = zoom_x;
-                zoom_card.y = zoom_y
-                zoom_card.addEventListener('touchstart', function () {
-                    core.rootScene.removeChild(this);
-                });
-                core.rootScene.addChild(zoom_card);
+            zoomImage.addEventListener('touchstart', function () {
+                zoomCard(targetCard.image, cardProperties.play, core);
                 touchRemoveFunc();
             });
 
@@ -780,25 +739,7 @@ window.onload = function () {
             });
 
             zoomImage.addEventListener('touchstart', function () {
-                for (var i = 0; i < upfieldList.length; ++i) {
-                    var discard = upfieldList[i];
-                    if (ftargetx == discard.x) {
-                        var discard_num = i;
-                    };
-                };
-
-                var zoomNum = upfieldListNum[discard_num];
-                var zoom_card = new Sprite(card_image_width, card_image_height);
-                var zoom_card_name = cards_path + 'tower (' + zoomNum + ').jpg';
-                zoom_card.image = core.assets[zoom_card_name];
-                zoom_card.scaleX = zoom_scale;
-                zoom_card.scaleY = zoom_scale;
-                zoom_card.x = zoom_x;
-                zoom_card.y = zoom_y
-                zoom_card.addEventListener('touchstart', function () {
-                    core.rootScene.removeChild(this);
-                });
-                core.rootScene.addChild(zoom_card);
+                zoomCard(targetCard.image, cardProperties.playUp, core);
                 touchRemoveFuncUp();
             });
 

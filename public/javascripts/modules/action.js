@@ -170,6 +170,30 @@ export const swapCounter = (counterA, counterB, targetCounterList) => {
     targetCounterList.number[counterBIdx] = counterANum;
 }
 
+// カードを拡大表示する
+//   cardImage: 対象とするカードのimage
+//   core: EnchantJSオブジェクト
+//   targetCardProp: cardが配置されている場のカードプロパティ
+//   label: 拡大イメージに付けるラベル (option)
+export const zoomCard = (cardImage, cardProp, core, label) => {
+    const card = new Sprite(cardProp.image.width, cardProp.image.height);
+    card.image = cardImage;
+    card.scaleX = cardProp.zoom.scale;
+    card.scaleY = cardProp.zoom.scale;
+    card.x = cardProp.zoom.x;
+    card.y = cardProp.zoom.y;
+    card.addEventListener('touchstart', function () {
+        core.currentScene.removeChild(this);
+        if (label) {
+            core.currentScene.removeChild(label);
+        }
+    });
+    if (label) {
+        core.currentScene.addChild(label);
+    }
+    core.currentScene.addChild(card);
+}
+
 // 手札枚数表示の更新
 var setHandCardNum = function (element, handNum) {
     element.innerText = handNum + '枚';
