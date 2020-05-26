@@ -13,22 +13,12 @@ var towerHeight = 200;
 window.onload = function () {
     var core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT);
     var towerDeck = new Array;
-    var handList = []; //手札のカードリスト、一番左が0番, カードそのもの
-    var handListNum = []; //手札のカードナンバーのリスト
-    var landList = [];
-    var landListNum = [];
-    var fieldList = [];
-    var fieldListNum = [];
-    var counterList = [];
-    var counterLabelList = [];
-    var upfieldList = [];
-    var upfieldListNum = [];
     const cardList = {
-        hand: { sprite: handList, number: handListNum },
-        land: { sprite: landList, number: landListNum },
-        field: { sprite: fieldList, number: fieldListNum },
-        upField: { sprite: upfieldList, number: upfieldListNum },
-        counter: { sprite: counterLabelList, number: counterList }
+        hand: { sprite: [], number: [] },
+        land: { sprite: [], number: [] },
+        field: { sprite: [], number: [] },
+        upField: { sprite: [], number: [] },
+        counter: { sprite: [], number: [] }
     }
     var card_image_width = 223;
     var card_image_height = 311;
@@ -163,7 +153,7 @@ window.onload = function () {
         handCardNum.height = 50;
         handCardNum.x = 1100;
         handCardNum.y = 10;
-        setHandCardNum(handCardNum._element, handList.length);
+        setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
 
         // ライフカウンター
         var lifeCounter = new Entity();
@@ -224,39 +214,39 @@ window.onload = function () {
         var reset_flag = false;
         resetImage.addEventListener('touchstart', function () {
             if (reset_flag) {
-                for (var i = 0; i < handList.length; ++i) {
-                    var discard = handList[i];
+                for (var i = 0; i < cardList.hand.sprite.length; ++i) {
+                    var discard = cardList.hand.sprite[i];
                     core.rootScene.removeChild(discard);
                 };
 
-                for (var i = 0; i < fieldList.length; ++i) {
-                    var discard = fieldList[i];
+                for (var i = 0; i < cardList.field.sprite.length; ++i) {
+                    var discard = cardList.field.sprite[i];
                     core.rootScene.removeChild(discard);
                 };
 
-                for (var i = 0; i < landList.length; ++i) {
-                    var discard = landList[i];
+                for (var i = 0; i < cardList.land.sprite.length; ++i) {
+                    var discard = cardList.land.sprite[i];
                     core.rootScene.removeChild(discard);
                 };
-                for (var i = 0; i < counterLabelList.length; ++i) {
-                    var discard = counterLabelList[i];
+                for (var i = 0; i < cardList.counter.sprite.length; ++i) {
+                    var discard = cardList.counter.sprite[i];
                     core.rootScene.removeChild(discard);
                 };
-                for (var i = 0; i < upfieldList.length; ++i) {
-                    var discard = upfieldList[i];
+                for (var i = 0; i < cardList.upField.sprite.length; ++i) {
+                    var discard = cardList.upField.sprite[i];
                     core.rootScene.removeChild(discard);
                 };
-                handList.splice(0);
-                handListNum.splice(0);
-                fieldList.splice(0);
-                fieldListNum.splice(0);
-                landList.splice(0);
-                counterList.splice(0);
-                counterLabelList.splice(0);
-                upfieldList.splice(0);
-                upfieldListNum.splice(0);
+                cardList.hand.sprite.splice(0);
+                cardList.hand.number.splice(0);
+                cardList.field.sprite.splice(0);
+                cardList.field.number.splice(0);
+                cardList.land.sprite.splice(0);
+                cardList.counter.sprite.splice(0);
+                cardList.counter.number.splice(0);
+                cardList.upField.sprite.splice(0);
+                cardList.upField.number.splice(0);
 
-                setHandCardNum(handCardNum._element, handList.length);
+                setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
 
                 reset_flag = false;
             } else {
@@ -283,7 +273,7 @@ window.onload = function () {
         destroyLandButton.x = 10;
         destroyLandButton.y = 450;
         destroyLandButton.addEventListener('touchstart', () => {
-            destroyLand(core, landList);
+            destroyLand(core, cardList.land.sprite);
         });
 
         var tokenImage = new Sprite(218, 93);
@@ -498,7 +488,7 @@ window.onload = function () {
                 removeCard(targetCard, cardList.field, cardProperties.play, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
                 setCard(targetCardNum, cardList.hand, cardProperties.hand, cardProperties.imagePath.card, core, touchFuncHand);
-                setHandCardNum(handCardNum._element, handList.length);
+                setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
 
             leftImage.addEventListener('touchstart', function () {
