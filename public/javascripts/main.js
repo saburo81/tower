@@ -7,12 +7,10 @@ import {
 var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
 var SCREEN_HEIGHT = 960; //スクリーン高さ
-var GAME_FPS = 30; //ゲームのFPS, いくつがいいんだ…?
 var towerHeight = 200;
 
 window.onload = function () {
     var core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT);
-    var towerDeck = new Array;
     const cardList = {
         hand: { sprite: [], number: [] },
         land: { sprite: [], number: [] },
@@ -20,31 +18,11 @@ window.onload = function () {
         upField: { sprite: [], number: [] },
         counter: { sprite: [], number: [] }
     }
-    var card_image_width = 223;
-    var card_image_height = 311;
-    var card_scale = 0.6;
-    var cardx = 100;
-    var cardy = 710;
-    var landx = 0;
-    var landy = 205;
-    var land_image_width = 431;
-    var land_image_height = 599
-    var land_scale = 0.25;
-    var play_cardx = 100;
-    var play_cardy = 170;
-    var counter_x = 70;
-    var counter_y = 30;
-    var zoom_x = 1300;
-    var zoom_y = 200;
-    var zoom_scale = 1.2;
-    var opcard_scale = 1.2;
     var back_scale = 0.7;
     var make_scale = 0.7;
     var reset_scale = 0.69;
     var token_scale = 0.6;
     var dice_scale = 0.4;
-    var upfield_x = 200;
-    var upfield_y = -55;
     var cards_path = 'images/cards/';
     var components_path = 'images/components/';
     const cardProperties = {
@@ -336,7 +314,6 @@ window.onload = function () {
             playImage.y = this.y - 20;
             cancelImage.x = this.x + 30;
             cancelImage.y = this.y + 170;
-            var handcard_x = this.x;
 
             var touchRemoveFuncHand = function () {
                 core.rootScene.removeChild(setland);
@@ -449,7 +426,6 @@ window.onload = function () {
             upImage.x = this.x - 32;
             upImage.y = this.y - 30;
             upImage.rotate(90);
-            var ftargetx = this.x;
 
             //remove button
             var touchRemoveFunc = function () {
@@ -586,7 +562,6 @@ window.onload = function () {
             rightImage.x = this.x + 195;
             rightImage.y = this.y + 240;
 
-            var ftargetx = this.x;
 
             //remove button
             var touchRemoveFuncToken = function () {
@@ -693,7 +668,6 @@ window.onload = function () {
             reTower.y = this.y + 160;
             reTower.scaleX = 0.95;
             reTower.scaleY = 0.95;
-            var ftargetx = this.x;
 
             //remove button
             var touchRemoveFuncUp = function () {
