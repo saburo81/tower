@@ -28,7 +28,7 @@ window.onload = function () {
     const cardProperties = {
         hand: {
             image: { width: 223, height: 311, scale: 0.6 },
-            field: { x: 100, y: 710 },
+            field: { x: 100, y: 650 },
             zoom: { scale: 1.2, x: 1250, y: 620 }
         },
         land: {
@@ -37,12 +37,12 @@ window.onload = function () {
         },
         play: {
             image: { width: 223, height: 311, scale: 0.6 },
-            field: { x: 100, y: 170 },
+            field: { x: 100, y: 175 },
             zoom: { scale: 1.2, x: 1200, y: 150 }
         },
         playUp: {
             image: { width: 223, height: 311, scale: 0.6 },
-            field: { x: 200, y: -55 },
+            field: { x: 200, y: -45 },
             zoom: { scale: 1.2, x: 1200, y: 150 }
         },
         opCard: {
@@ -69,6 +69,7 @@ window.onload = function () {
     core.preload(components_path + 'minus.jpg');
     core.preload(components_path + 'left.jpg');
     core.preload(components_path + 'right.jpg');
+    core.preload(components_path + 'up.jpg');
     core.preload(components_path + 'token.jpg');
     core.preload(components_path + 'maotoken.jpg');
     core.preload(components_path + 'return_tower.jpg');
@@ -80,6 +81,49 @@ window.onload = function () {
         var precard = cards_path + 'tower (' + i + ').jpg';
         core.preload(precard);
     };
+
+    const createOperationSprite = (card, operation) => {
+        const operationSprite = {
+            play: new Sprite(162, 63),
+            setLand: new Sprite(179, 65),
+            discard: new Sprite(173, 65),
+            tap: new Sprite(177, 71),
+            cancel: new Sprite(181, 69),
+            plus: new Sprite(63, 57),
+            minus: new Sprite(59, 58),
+            left: new Sprite(61, 59),
+            right: new Sprite(60, 60),
+            reHand: new Sprite(180, 70),
+            reTower: new Sprite(186, 72),
+            zoom: new Sprite(184, 74),
+            up: new Sprite(61, 59)
+        };
+
+        const operationProp = {
+            play: { imgName: 'play.jpg', offset: { x: 30, y: 30 }, scale: 1.0 },
+            setLand: { imgName: 'setland.jpg', offset: { x: 167, y: 150 }, scale: 0.95 },
+            discard: { imgName: 'discard.jpg', offset: { x: 170, y: 90 }, scale: 1.0 },
+            tap: { imgName: 'tap.jpg', offset: { x: 30, y: 25 }, scale: 1.0 },
+            cancel: { imgName: 'cancel.jpg', offset: { x: 30, y: 215 }, scale: 1.0 },
+            plus: { imgName: 'plus.jpg', offset: { x: 65, y: 290 }, scale: 1.0 },
+            minus: { imgName: 'minus.jpg', offset: { x: 130, y: 290 }, scale: 1.0 },
+            left: { imgName: 'left.jpg', offset: { x: 0, y: 290 }, scale: 1.0 },
+            right: { imgName: 'right.jpg', offset: { x: 195, y: 290 }, scale: 1.0 },
+            reHand: { imgName: 'return_hand.jpg', offset: { x: 167, y: 150 }, scale: 0.95 },
+            reTower: { imgName: 'return_tower.jpg', offset: { x: -105, y: 150 }, scale: 0.9 },
+            zoom: { imgName: 'zoom.jpg', offset: { x: -104, y: 85 }, scale: 0.9 },
+            up: { imgName: 'up.jpg', offset: { x: -32, y: 20 }, scale: 1.0 }
+        };
+
+        for (const op of operation) {
+            const imagePath = `${cardProperties.imagePath.component}${operationProp[op].imgName}`;
+            operationSprite[op].image = core.assets[imagePath];
+            operationSprite[op].scale(operationProp[op].scale, operationProp[op].scale);
+            operationSprite[op].moveTo(card.x + operationProp[op].offset.x, card.y + operationProp[op].offset.y);
+        };
+
+        return operationSprite;
+    }
 
     core.onload = function () {
         var hand_space = new Sprite(SCREEN_WIDTH, 400);
@@ -286,45 +330,16 @@ window.onload = function () {
             const targetCard = this;
             const targetCardIdx = cardList.hand.sprite.findIndex((card) => card === targetCard);
             const targetCardNum = cardList.hand.number[targetCardIdx];
-            var setland = new Sprite(179, 65);
-            var discardImage = new Sprite(173, 65);
-            var playImage = new Sprite(162, 63);
-            var cancelImage = new Sprite(181, 69);
-            var reTower = new Sprite(180, 71);
-            var zoomImage = new Sprite(184, 74);
-            setland.image = core.assets[components_path + 'setland.jpg'];
-            discardImage.image = core.assets[components_path + 'discard.jpg'];
-            playImage.image = core.assets[components_path + 'play.jpg'];
-            cancelImage.image = core.assets[components_path + 'cancel.jpg'];
-            reTower.image = core.assets[components_path + 'return_tower.jpg'];
-            zoomImage.image = core.assets[components_path + 'zoom.jpg']
-            setland.x = this.x + 150;
-            setland.y = this.y + 105
-            zoomImage.x = this.x - 105;
-            zoomImage.y = this.y + 100;
-            zoomImage.scaleX = 0.95;
-            zoomImage.scaleY = 0.95;
-            discardImage.x = this.x + 150;
-            discardImage.y = this.y + 40;
-            reTower.x = this.x - 105;
-            reTower.y = this.y + 35;
-            reTower.scaleX = 0.95;
-            reTower.scaleY = 0.95;
-            playImage.x = this.x + 30;
-            playImage.y = this.y - 20;
-            cancelImage.x = this.x + 30;
-            cancelImage.y = this.y + 170;
+            const operation = ['setLand', 'discard', 'play', 'cancel', 'reTower', 'zoom'];
+            const operationSprite = createOperationSprite(targetCard, operation);
 
-            var touchRemoveFuncHand = function () {
-                core.rootScene.removeChild(setland);
-                core.rootScene.removeChild(discardImage);
-                core.rootScene.removeChild(playImage);
-                core.rootScene.removeChild(cancelImage);
-                core.rootScene.removeChild(reTower);
-                core.rootScene.removeChild(zoomImage);
+            const touchRemoveFuncHand = function () {
+                for (const op of operation) {
+                    core.currentScene.removeChild(operationSprite[op]);
+                }
             };
 
-            playImage.addEventListener('touchstart', function () {
+            operationSprite.play.addEventListener('touchstart', function () {
                 const fieldList = cardList.field;
                 setCard(targetCardNum, fieldList, cardProperties.play, cardProperties.imagePath.card, core, touchFuncPlay);
                 setCounter(cardList.counter, cardProperties.counter, fieldList.sprite[fieldList.sprite.length - 1], core);
@@ -333,38 +348,35 @@ window.onload = function () {
                 socket.emit('play', targetCardNum);
             });
 
-            setland.addEventListener('touchstart', function () {
+            operationSprite.setLand.addEventListener('touchstart', function () {
                 setCard(10001, cardList.land, cardProperties.land, cardProperties.imagePath.component, core, touchFuncLand);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
 
-            discardImage.addEventListener('touchstart', function () {
+            operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
 
-            cancelImage.addEventListener('touchstart', function () {
+            operationSprite.cancel.addEventListener('touchstart', function () {
                 touchRemoveFuncHand();
             });
 
-            reTower.addEventListener('touchstart', function () {
+            operationSprite.reTower.addEventListener('touchstart', function () {
                 socket.emit('return', targetCardNum);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
 
-            zoomImage.addEventListener('touchstart', function () {
+            operationSprite.zoom.addEventListener('touchstart', function () {
                 zoomCard(targetCard.image, cardProperties.hand, core);
                 touchRemoveFuncHand();
             });
 
-            core.rootScene.addChild(setland);
-            core.rootScene.addChild(discardImage);
-            core.rootScene.addChild(playImage);
-            core.rootScene.addChild(cancelImage);
-            core.rootScene.addChild(reTower);
-            core.rootScene.addChild(zoomImage);
+            for (const op of operation) {
+                core.currentScene.addChild(operationSprite[op]);
+            }
         };
 
         // touch function field card
@@ -372,86 +384,29 @@ window.onload = function () {
             const targetCard = this;
             const targetCardIdx = cardList.field.sprite.findIndex((card) => card === targetCard);
             const targetCardNum = cardList.field.number[targetCardIdx];
-
-            var discardImage = new Sprite(173, 65);
-            var tapImage = new Sprite(177, 71);
-            var cancelImage = new Sprite(181, 69);
-            var reHand = new Sprite(180, 70);
-            var plusImage = new Sprite(63, 57);
-            var minusImage = new Sprite(59, 58);
-            var leftImage = new Sprite(61, 59);
-            var rightImage = new Sprite(60, 60);
-            var reTower = new Sprite(180, 71);
-            var zoomImage = new Sprite(184, 74);
-            var upImage = new Sprite(61, 59);
-
-            discardImage.image = core.assets[components_path + 'discard.jpg'];
-            tapImage.image = core.assets[components_path + 'tap.jpg'];
-            cancelImage.image = core.assets[components_path + 'cancel.jpg'];
-            reHand.image = core.assets[components_path + 'return_hand.jpg']
-            plusImage.image = core.assets[components_path + 'plus.jpg'];
-            minusImage.image = core.assets[components_path + 'minus.jpg'];
-            leftImage.image = core.assets[components_path + 'left.jpg'];
-            rightImage.image = core.assets[components_path + 'right.jpg']
-            reTower.image = core.assets[components_path + 'return_tower.jpg'];
-            zoomImage.image = core.assets[components_path + 'zoom.jpg'];
-            upImage.image = core.assets[components_path + 'left.jpg'];
-
-            discardImage.x = this.x + 170;
-            discardImage.y = this.y + 40;
-            tapImage.x = this.x + 30;
-            tapImage.y = this.y - 30;
-            cancelImage.x = this.x + 30;
-            cancelImage.y = this.y + 170;
-            reHand.x = this.x - 103;
-            reHand.y = this.y + 102;
-            reHand.scaleX = 0.90;
-            reHand.scaleY = 0.95;
-            plusImage.x = this.x + 65;
-            plusImage.y = this.y + 240;
-            minusImage.x = this.x + 130;
-            minusImage.y = this.y + 240;
-            leftImage.x = this.x;
-            leftImage.y = this.y + 240;
-            rightImage.x = this.x + 195;
-            rightImage.y = this.y + 240;
-            zoomImage.x = this.x - 105;
-            zoomImage.y = this.y + 35;
-            zoomImage.scaleX = 0.9;
-            zoomImage.scaleY = 0.9;
-            reTower.x = this.x + 165;
-            reTower.y = this.y + 100;
-            reTower.scaleX = 0.95;
-            reTower.scaleY = 0.95;
-            upImage.x = this.x - 32;
-            upImage.y = this.y - 30;
-            upImage.rotate(90);
+            const operation = [
+                'discard', 'tap', 'cancel', 'plus', 'minus', 'left', 'right',
+                'up', 'reHand', 'reTower', 'zoom'
+            ];
+            const operationSprite = createOperationSprite(targetCard, operation);
 
             //remove button
-            var touchRemoveFunc = function () {
-                core.rootScene.removeChild(discardImage);
-                core.rootScene.removeChild(tapImage);
-                core.rootScene.removeChild(cancelImage);
-                core.rootScene.removeChild(reHand);
-                core.rootScene.removeChild(plusImage);
-                core.rootScene.removeChild(minusImage);
-                core.rootScene.removeChild(leftImage);
-                core.rootScene.removeChild(rightImage);
-                core.rootScene.removeChild(zoomImage);
-                core.rootScene.removeChild(reTower);
-                core.rootScene.removeChild(upImage);
+            const touchRemoveFunc = function () {
+                for (const op of operation) {
+                    core.currentScene.removeChild(operationSprite[op]);
+                }
             };
 
-            discardImage.addEventListener('touchstart', function () {
+            operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.play, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
             });
 
-            cancelImage.addEventListener('touchstart', function () {
+            operationSprite.cancel.addEventListener('touchstart', function () {
                 touchRemoveFunc();
             });
 
-            tapImage.addEventListener('touchstart', function () {
+            operationSprite.tap.addEventListener('touchstart', function () {
                 if (targetCard.rotation == 90) {
                     untapCard(targetCard);
                 } else {
@@ -460,14 +415,14 @@ window.onload = function () {
                 touchRemoveFunc();
             });
 
-            reHand.addEventListener('touchstart', function () {
+            operationSprite.reHand.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.play, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
                 setCard(targetCardNum, cardList.hand, cardProperties.hand, cardProperties.imagePath.card, core, touchFuncHand);
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
 
-            leftImage.addEventListener('touchstart', function () {
+            operationSprite.left.addEventListener('touchstart', function () {
                 const counterList = cardList.counter;
                 if (targetCardIdx > 0) {
                     swapCard(targetCard, cardList.field.sprite[targetCardIdx - 1], cardList.field);
@@ -476,7 +431,7 @@ window.onload = function () {
                 touchRemoveFunc();
             });
 
-            rightImage.addEventListener('touchstart', function () {
+            operationSprite.right.addEventListener('touchstart', function () {
                 const counterList = cardList.counter;
                 if (targetCardIdx < cardList.field.sprite.length - 1) {
                     swapCard(targetCard, cardList.field.sprite[targetCardIdx + 1], cardList.field);
@@ -485,105 +440,63 @@ window.onload = function () {
                 touchRemoveFunc();
             });
 
-            upImage.addEventListener('touchstart', function () {
+            operationSprite.up.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.play, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
                 setCard(targetCardNum, cardList.upField, cardProperties.playUp, cardProperties.imagePath.card, core, touchFuncPlayUp);
             });
 
-            plusImage.addEventListener('touchstart', function () {
+            operationSprite.plus.addEventListener('touchstart', function () {
                 const counterList = cardList.counter;
                 setCounterNum(counterList.sprite[targetCardIdx], counterList.number[targetCardIdx] + 1, counterList);
                 touchRemoveFunc();
             });
 
-            minusImage.addEventListener('touchstart', function () {
+            operationSprite.minus.addEventListener('touchstart', function () {
                 const counterList = cardList.counter;
                 setCounterNum(counterList.sprite[targetCardIdx], counterList.number[targetCardIdx] - 1, counterList);
                 touchRemoveFunc();
             });
 
-            zoomImage.addEventListener('touchstart', function () {
+            operationSprite.zoom.addEventListener('touchstart', function () {
                 zoomCard(targetCard.image, cardProperties.play, core);
                 touchRemoveFunc();
             });
 
-            reTower.addEventListener('touchstart', function () {
+            operationSprite.reTower.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.play, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
                 socket.emit('return', targetCardNum);
             });
 
-            core.rootScene.addChild(discardImage);
-            core.rootScene.addChild(tapImage);
-            core.rootScene.addChild(cancelImage);
-            core.rootScene.addChild(reHand);
-            core.rootScene.addChild(plusImage);
-            core.rootScene.addChild(minusImage);
-            core.rootScene.addChild(leftImage);
-            core.rootScene.addChild(rightImage);
-            core.rootScene.addChild(zoomImage);
-            core.rootScene.addChild(reTower);
-            core.rootScene.addChild(upImage);
+            for (const op of operation) {
+                core.currentScene.addChild(operationSprite[op]);
+            }
         };
 
         var touchFuncPlayToken = function () {
             const targetCard = this;
             const targetCardIdx = cardList.field.sprite.findIndex((card) => card === targetCard);
-
-            var discardImage = new Sprite(173, 65);
-            var tapImage = new Sprite(177, 71);
-            var cancelImage = new Sprite(181, 69);
-            var plusImage = new Sprite(63, 57);
-            var minusImage = new Sprite(59, 58);
-            var leftImage = new Sprite(61, 59);
-            var rightImage = new Sprite(60, 60);
-
-            discardImage.image = core.assets[components_path + 'discard.jpg'];
-            tapImage.image = core.assets[components_path + 'tap.jpg'];
-            cancelImage.image = core.assets[components_path + 'cancel.jpg'];
-            plusImage.image = core.assets[components_path + 'plus.jpg'];
-            minusImage.image = core.assets[components_path + 'minus.jpg'];
-            leftImage.image = core.assets[components_path + 'left.jpg'];
-            rightImage.image = core.assets[components_path + 'right.jpg'];
-
-            discardImage.x = this.x + 170;
-            discardImage.y = this.y + 100;
-            tapImage.x = this.x + 30;
-            tapImage.y = this.y;
-            cancelImage.x = this.x + 30;
-            cancelImage.y = this.y + 170;
-            plusImage.x = this.x + 65;
-            plusImage.y = this.y + 240;
-            minusImage.x = this.x + 130;
-            minusImage.y = this.y + 240;
-            leftImage.x = this.x;
-            leftImage.y = this.y + 240;
-            rightImage.x = this.x + 195;
-            rightImage.y = this.y + 240;
-
+            const operation = ['discard', 'tap', 'cancel', 'plus', 'minus', 'left', 'right'];
+            const operationSprite = createOperationSprite(targetCard, operation);
 
             //remove button
             var touchRemoveFuncToken = function () {
-                core.rootScene.removeChild(discardImage);
-                core.rootScene.removeChild(tapImage);
-                core.rootScene.removeChild(cancelImage);
-                core.rootScene.removeChild(plusImage);
-                core.rootScene.removeChild(minusImage);
-                core.rootScene.removeChild(leftImage);
-                core.rootScene.removeChild(rightImage);
+                for (const op of operation) {
+                    core.currentScene.removeChild(operationSprite[op]);
+                }
             };
 
-            discardImage.addEventListener('touchstart', function () {
+            operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.play, core, touchRemoveFuncToken);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
             });
 
-            cancelImage.addEventListener('touchstart', function () {
+            operationSprite.cancel.addEventListener('touchstart', function () {
                 touchRemoveFuncToken();
             });
 
-            tapImage.addEventListener('touchstart', function () {
+            operationSprite.tap.addEventListener('touchstart', function () {
                 if (targetCard.rotation == 90) {
                     untapCard(targetCard);
                 } else {
@@ -592,7 +505,7 @@ window.onload = function () {
                 touchRemoveFuncToken();
             });
 
-            leftImage.addEventListener('touchstart', function () {
+            operationSprite.left.addEventListener('touchstart', function () {
                 const counterList = cardList.counter;
                 if (targetCardIdx > 0) {
                     swapCard(targetCard, cardList.field.sprite[targetCardIdx - 1], cardList.field);
@@ -601,7 +514,7 @@ window.onload = function () {
                 touchRemoveFuncToken();
             });
 
-            rightImage.addEventListener('touchstart', function () {
+            operationSprite.right.addEventListener('touchstart', function () {
                 const counterList = cardList.counter;
                 if (targetCardIdx < cardList.field.sprite.length - 1) {
                     swapCard(targetCard, cardList.field.sprite[targetCardIdx + 1], cardList.field);
@@ -610,84 +523,48 @@ window.onload = function () {
                 touchRemoveFuncToken();
             });
 
-            plusImage.addEventListener('touchstart', function () {
+            operationSprite.plus.addEventListener('touchstart', function () {
                 const counterList = cardList.counter;
                 setCounterNum(counterList.sprite[targetCardIdx], counterList.number[targetCardIdx] + 1, counterList);
                 touchRemoveFuncToken();
             });
 
-            minusImage.addEventListener('touchstart', function () {
+            operationSprite.minus.addEventListener('touchstart', function () {
                 const counterList = cardList.counter;
                 setCounterNum(counterList.sprite[targetCardIdx], counterList.number[targetCardIdx] - 1, counterList);
                 touchRemoveFuncToken();
             });
 
-            core.rootScene.addChild(discardImage);
-            core.rootScene.addChild(tapImage);
-            core.rootScene.addChild(cancelImage);
-            core.rootScene.addChild(plusImage);
-            core.rootScene.addChild(minusImage);
-            core.rootScene.addChild(leftImage);
-            core.rootScene.addChild(rightImage);
+            for (const op of operation) {
+                core.currentScene.addChild(operationSprite[op]);
+            }
         };
 
         var touchFuncPlayUp = function () {
             const targetCard = this;
             const targetCardIdx = cardList.upField.sprite.findIndex((card) => card === targetCard);
             const targetCardNum = cardList.upField.number[targetCardIdx];
-
-            var discardImage = new Sprite(173, 65);
-            var tapImage = new Sprite(177, 71);
-            var cancelImage = new Sprite(181, 69);
-            var reHand = new Sprite(180, 70);
-            var reTower = new Sprite(180, 71);
-            var zoomImage = new Sprite(184, 74);
-
-            discardImage.image = core.assets[components_path + 'discard.jpg'];
-            tapImage.image = core.assets[components_path + 'tap.jpg'];
-            cancelImage.image = core.assets[components_path + 'cancel.jpg'];
-            reHand.image = core.assets[components_path + 'return_hand.jpg']
-            reTower.image = core.assets[components_path + 'return_tower.jpg'];
-            zoomImage.image = core.assets[components_path + 'zoom.jpg'];
-
-            discardImage.x = this.x + 170;
-            discardImage.y = this.y + 100;
-            tapImage.x = this.x + 30;
-            tapImage.y = this.y + 30;
-            cancelImage.x = this.x + 30;
-            cancelImage.y = this.y + 230;
-            reHand.x = this.x - 103;
-            reHand.y = this.y + 162;
-            reHand.scaleX = 0.90;
-            reHand.scaleY = 0.95;
-            zoomImage.x = this.x - 105;
-            zoomImage.y = this.y + 95;
-            zoomImage.scaleX = 0.9;
-            zoomImage.scaleY = 0.9;
-            reTower.x = this.x + 165;
-            reTower.y = this.y + 160;
-            reTower.scaleX = 0.95;
-            reTower.scaleY = 0.95;
+            const operation = [
+                'discard', 'tap', 'cancel', 'reHand', 'reTower', 'zoom'
+            ];
+            const operationSprite = createOperationSprite(targetCard, operation);
 
             //remove button
-            var touchRemoveFuncUp = function () {
-                core.rootScene.removeChild(discardImage);
-                core.rootScene.removeChild(tapImage);
-                core.rootScene.removeChild(cancelImage);
-                core.rootScene.removeChild(reHand);
-                core.rootScene.removeChild(zoomImage);
-                core.rootScene.removeChild(reTower);
+            const touchRemoveFuncUp = function () {
+                for (const op of operation) {
+                    core.currentScene.removeChild(operationSprite[op]);
+                }
             };
 
-            discardImage.addEventListener('touchstart', function () {
+            operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.playUp, core, touchRemoveFuncUp);
             });
 
-            cancelImage.addEventListener('touchstart', function () {
+            operationSprite.cancel.addEventListener('touchstart', function () {
                 touchRemoveFuncUp();
             });
 
-            tapImage.addEventListener('touchstart', function () {
+            operationSprite.tap.addEventListener('touchstart', function () {
                 if (targetCard.rotation == 90) {
                     untapCard(targetCard);
                 } else {
@@ -696,28 +573,25 @@ window.onload = function () {
                 touchRemoveFuncUp();
             });
 
-            reHand.addEventListener('touchstart', function () {
+            operationSprite.reHand.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.playUp, core, touchRemoveFuncUp);
                 setCard(targetCardNum, cardList.hand, cardProperties.hand, cardProperties.imagePath.card, core, touchFuncHand);
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
             });
 
-            zoomImage.addEventListener('touchstart', function () {
+            operationSprite.zoom.addEventListener('touchstart', function () {
                 zoomCard(targetCard.image, cardProperties.playUp, core);
                 touchRemoveFuncUp();
             });
 
-            reTower.addEventListener('touchstart', function () {
+            operationSprite.reTower.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.playUp, core, touchRemoveFuncUp);
                 socket.emit('return', targetCardNum);
             });
 
-            core.rootScene.addChild(discardImage);
-            core.rootScene.addChild(tapImage);
-            core.rootScene.addChild(cancelImage);
-            core.rootScene.addChild(reHand);
-            core.rootScene.addChild(zoomImage);
-            core.rootScene.addChild(reTower);
+            for (const op of operation) {
+                core.currentScene.addChild(operationSprite[op]);
+            }
         };
 
         var touchFuncLand = function () {
