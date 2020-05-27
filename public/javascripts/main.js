@@ -49,7 +49,7 @@ window.onload = function () {
         imagePath: { card: 'images/cards/', component: 'images/components/' }
     }
 
-    // コンポーネントのプロパティ (Sprite)
+    // コンポーネントのプロパティ
     const componentProp = {
         operation: {
             play: { imgName: 'play.jpg', offset: { x: 30, y: 30 }, scale: 1.0 },
@@ -78,13 +78,21 @@ window.onload = function () {
         card: {
             land: { imgName: 'tower_land.jpg' },
             token: { imgName: 'maotoken.jpg' }
+        }, 
+        dom: {
+            playOrder: { width: 56, height: 56, x: 5, y: 10 },
+            playerName: { width: 150, height: 50, x: 75, y: 10 },
+            handCardNum: { width: 125, height: 50, x: 1100, y: 10 },
+            lifeCounter: { width: 100, height: 50, x: 1250, y: 10 }
         }
     };
 
     // コンポーネント画像のロード
     for (const category of Object.values(componentProp)) {
         for (const prop of Object.values(category)) {
-            core.preload(`${cardProperties.imagePath.component}${prop.imgName}`);
+            if (prop.hasOwnProperty('imgName')) {
+                core.preload(`${cardProperties.imagePath.component}${prop.imgName}`);
+            }
         }
     }
 
@@ -129,17 +137,27 @@ window.onload = function () {
         hand_space.image = surface;
         hand_space.y = 585;
 
+        // DOMコンポーネントの生成 (Entity)
+        const domComponent = {
+            playOrder: new Entity(),
+            playerName: new Entity(),
+            handCardNum: new Entity(),
+            lifeCounter: new Entity()
+        }
+
+        for (const [key, entity] of Object.entries(domComponent)) {
+            const prop = componentProp.dom[key];
+            entity.width = prop.width;
+            entity.height = prop.height;
+            entity.moveTo(prop.x, prop.y);
+        }
+
         // プレイ順
-        var playOrder = new Entity();
-        playOrder._element = document.createElement('button');
-        playOrder._element.setAttribute('id', 'playOrder');
-        playOrder._element.setAttribute('class', 'team-red');
-        playOrder._element.innerText = 1;
-        playOrder.width = 56;
-        playOrder.height = 56;
-        playOrder.x = 5;
-        playOrder.y = 10;
-        playOrder._element.onclick = function () {
+        const playOrderElement = document.createElement('button');
+        playOrderElement.setAttribute('id', 'playOrder');
+        playOrderElement.setAttribute('class', 'team-red');
+        playOrderElement.innerText = 1;
+        playOrderElement.onclick = function () {
             this.innerText = this.innerText++ % 4 + 1;
             if (this.innerText % 2 != 0) {
                 this.setAttribute('class', 'team-red');
@@ -147,42 +165,28 @@ window.onload = function () {
                 this.setAttribute('class', 'team-blue');
             };
         };
+        domComponent.playOrder._element = playOrderElement;
 
         // プレイヤー名
-        var input = new Entity();
-        input._element = document.createElement('input');
-        input._element.setAttribute('type', 'text');
-        input._element.setAttribute('maxlength', '10');
-        input._element.setAttribute('id', 'test');
-        input._element.setAttribute('value', 'name');
-        input.width = 150;
-        input.height = 50;
-        input.x = 75;
-        input.y = 10;
-        input.on(Event.ENTER_FRAME, function () {
-
-        });
+        const playerNameElement = document.createElement('input');
+        playerNameElement.setAttribute('type', 'text');
+        playerNameElement.setAttribute('maxlength', '10');
+        playerNameElement.setAttribute('id', 'test');
+        playerNameElement.setAttribute('value', 'name');
+        domComponent.playerName._element = playerNameElement;
 
         // 手札枚数
-        var handCardNum = new Entity();
-        handCardNum._element = document.createElement('p');
-        handCardNum._element.setAttribute('class', 'hand-card-num');
-        handCardNum.width = 125;
-        handCardNum.height = 50;
-        handCardNum.x = 1100;
-        handCardNum.y = 10;
-        setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
+        const handCardNumElement = document.createElement('p');
+        handCardNumElement.setAttribute('class', 'hand-card-num');
+        domComponent.handCardNum._element = handCardNumElement;
+        setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
 
         // ライフカウンター
-        var lifeCounter = new Entity();
-        lifeCounter._element = document.createElement('input');
-        lifeCounter._element.setAttribute('type', 'number');
-        lifeCounter._element.setAttribute('id', 'life-counter');
-        lifeCounter._element.setAttribute('value', '0');
-        lifeCounter.width = 100;
-        lifeCounter.height = 50;
-        lifeCounter.x = 1250;
-        lifeCounter.y = 10;
+        const lifeCounterElement = document.createElement('input');
+        lifeCounterElement.setAttribute('type', 'number');
+        lifeCounterElement.setAttribute('id', 'life-counter');
+        lifeCounterElement.setAttribute('value', '0');
+        domComponent.lifeCounter._element = lifeCounterElement;
 
         // 各種コンポーネントの生成 (Sprite)
         const fieldComponent = {
@@ -225,7 +229,7 @@ window.onload = function () {
                     type.sprite.splice(0);
                     type.number.splice(0);
                 }
-                setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
+                setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
                 reset_flag = false;
             } else {
                 reset_flag = true;
@@ -269,7 +273,7 @@ window.onload = function () {
 
         socket.on('draw', function (data) {
             setCard(data, cardList.hand, cardProperties.hand, cardProperties.imagePath.card, core, touchFuncHand);
-            setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
+            setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
         });
 
         socket.on('opplay', function (data) {
@@ -300,19 +304,19 @@ window.onload = function () {
                 setCard(targetCardNum, fieldList, cardProperties.play, cardProperties.imagePath.card, core, touchFuncPlay);
                 setCounter(cardList.counter, cardProperties.counter, fieldList.sprite[fieldList.sprite.length - 1], core);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
-                setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
+                setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
                 socket.emit('play', targetCardNum);
             });
 
             operationSprite.setLand.addEventListener('touchstart', function () {
                 setCard(10001, cardList.land, cardProperties.land, cardProperties.imagePath.component, core, touchFuncLand);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
-                setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
+                setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
 
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
-                setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
+                setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {
@@ -322,7 +326,7 @@ window.onload = function () {
             operationSprite.reTower.addEventListener('touchstart', function () {
                 socket.emit('return', targetCardNum);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
-                setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
+                setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
 
             operationSprite.zoom.addEventListener('touchstart', function () {
@@ -375,7 +379,7 @@ window.onload = function () {
                 removeCard(targetCard, cardList.field, cardProperties.play, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
                 setCard(targetCardNum, cardList.hand, cardProperties.hand, cardProperties.imagePath.card, core, touchFuncHand);
-                setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
+                setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
 
             operationSprite.left.addEventListener('touchstart', function () {
@@ -532,7 +536,7 @@ window.onload = function () {
             operationSprite.reHand.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.playUp, core, touchRemoveFuncUp);
                 setCard(targetCardNum, cardList.hand, cardProperties.hand, cardProperties.imagePath.card, core, touchFuncHand);
-                setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
+                setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
 
             operationSprite.zoom.addEventListener('touchstart', function () {
@@ -561,11 +565,10 @@ window.onload = function () {
         // 手札領域の描画
         core.rootScene.addChild(hand_space);
 
-        // コンポーネント画像の描画 (Entity)
-        core.rootScene.addChild(playOrder);
-        core.rootScene.addChild(input);
-        core.rootScene.addChild(handCardNum);
-        core.rootScene.addChild(lifeCounter);
+        // DOMコンポーネントの描画 (Entity)
+        for (const cmpnt of Object.values(domComponent)) {
+            core.rootScene.addChild(cmpnt);
+        }
 
         // コンポーネント画像の描画 (Sprite)
         for (const cmpnt of Object.values(fieldComponent)) {
