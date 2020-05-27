@@ -18,13 +18,7 @@ window.onload = function () {
         upField: { sprite: [], number: [] },
         counter: { sprite: [], number: [] }
     }
-    var back_scale = 0.7;
-    var make_scale = 0.7;
-    var reset_scale = 0.69;
-    var token_scale = 0.6;
-    var dice_scale = 0.4;
     var cards_path = 'images/cards/';
-    var components_path = 'images/components/';
     const cardProperties = {
         hand: {
             image: { width: 223, height: 311, scale: 0.6 },
@@ -54,35 +48,53 @@ window.onload = function () {
     }
     var scene = core.rootScene;
     scene.backgroundColor = "green";
-    core.preload(components_path + 'back_image.jpg');
-    core.preload(components_path + 'make_tower.jpg');
-    core.preload(components_path + 'tower_land.jpg');
-    core.preload(components_path + 'setland.jpg');
-    core.preload(components_path + 'play.jpg');
-    core.preload(components_path + 'discard.jpg');
-    core.preload(components_path + 'cancel.jpg');
-    core.preload(components_path + 'tap.jpg');
-    core.preload(components_path + 'reset.jpg');
-    core.preload(components_path + 'return_hand.jpg');
-    core.preload(components_path + 'untap.jpg');
-    core.preload(components_path + 'plus.jpg');
-    core.preload(components_path + 'minus.jpg');
-    core.preload(components_path + 'left.jpg');
-    core.preload(components_path + 'right.jpg');
-    core.preload(components_path + 'up.jpg');
-    core.preload(components_path + 'token.jpg');
-    core.preload(components_path + 'maotoken.jpg');
-    core.preload(components_path + 'return_tower.jpg');
-    core.preload(components_path + 'zoom.jpg');
-    core.preload(components_path + 'destroyland.jpg');
-    core.preload(components_path + 'dice.gif');
 
+    // コンポーネントのプロパティ (Sprite)
+    const componentProp = {
+        operation: {
+            play: { imgName: 'play.jpg', offset: { x: 30, y: 30 }, scale: 1.0 },
+            setLand: { imgName: 'setland.jpg', offset: { x: 167, y: 150 }, scale: 0.95 },
+            discard: { imgName: 'discard.jpg', offset: { x: 170, y: 90 }, scale: 1.0 },
+            tap: { imgName: 'tap.jpg', offset: { x: 30, y: 25 }, scale: 1.0 },
+            cancel: { imgName: 'cancel.jpg', offset: { x: 30, y: 215 }, scale: 1.0 },
+            plus: { imgName: 'plus.jpg', offset: { x: 65, y: 290 }, scale: 1.0 },
+            minus: { imgName: 'minus.jpg', offset: { x: 130, y: 290 }, scale: 1.0 },
+            left: { imgName: 'left.jpg', offset: { x: 0, y: 290 }, scale: 1.0 },
+            right: { imgName: 'right.jpg', offset: { x: 195, y: 290 }, scale: 1.0 },
+            reHand: { imgName: 'return_hand.jpg', offset: { x: 167, y: 150 }, scale: 0.95 },
+            reTower: { imgName: 'return_tower.jpg', offset: { x: -105, y: 150 }, scale: 0.9 },
+            zoom: { imgName: 'zoom.jpg', offset: { x: -104, y: 85 }, scale: 0.9 },
+            up: { imgName: 'up.jpg', offset: { x: -32, y: 20 }, scale: 1.0 }
+        },
+        field: {
+            cardBack: { imgName: 'back_image.jpg', x: SCREEN_WIDTH / 2 - 50, y: -70, scale: 0.7, rotation: 90 },
+            makeTower: { imgName: 'make_tower.jpg', x: SCREEN_WIDTH - 170, y: 0, scale: 0.7, rotation: 0 },
+            reset: { imgName: 'reset.jpg', x: SCREEN_WIDTH - 172, y: 80, scale: 0.69, rotation: 0 },
+            untapAll: { imgName: 'untap.jpg', x: 10, y: 250, scale: 1.0, rotation: 0 },
+            addToken: { imgName: 'token.jpg', x: -45, y: 310, scale: 0.6, rotation: 0 },
+            destroyLand: { imgName: 'destroyland.jpg', x: 10, y: 450, scale: 1.0, rotation: 0 },
+            dice: { imgName: 'dice.gif', x: -25, y: 110, scale: 0.4, rotation: 0 }
+        },
+        card: {
+            land: { imgName: 'tower_land.jpg' },
+            token: { imgName: 'maotoken.jpg' }
+        }
+    };
+
+    // コンポーネント画像のロード
+    for (const category of Object.values(componentProp)) {
+        for (const prop of Object.values(category)) {
+            core.preload(`${cardProperties.imagePath.component}${prop.imgName}`);
+        }
+    }
+
+    // カード画像のロード
     for (var i = 1; i < towerHeight; i++) {
         var precard = cards_path + 'tower (' + i + ').jpg';
         core.preload(precard);
     };
 
-    const createOperationSprite = (card, operation) => {
+    const createOperationSprite = (card, operation, operationProp) => {
         const operationSprite = {
             play: new Sprite(162, 63),
             setLand: new Sprite(179, 65),
@@ -97,22 +109,6 @@ window.onload = function () {
             reTower: new Sprite(186, 72),
             zoom: new Sprite(184, 74),
             up: new Sprite(61, 59)
-        };
-
-        const operationProp = {
-            play: { imgName: 'play.jpg', offset: { x: 30, y: 30 }, scale: 1.0 },
-            setLand: { imgName: 'setland.jpg', offset: { x: 167, y: 150 }, scale: 0.95 },
-            discard: { imgName: 'discard.jpg', offset: { x: 170, y: 90 }, scale: 1.0 },
-            tap: { imgName: 'tap.jpg', offset: { x: 30, y: 25 }, scale: 1.0 },
-            cancel: { imgName: 'cancel.jpg', offset: { x: 30, y: 215 }, scale: 1.0 },
-            plus: { imgName: 'plus.jpg', offset: { x: 65, y: 290 }, scale: 1.0 },
-            minus: { imgName: 'minus.jpg', offset: { x: 130, y: 290 }, scale: 1.0 },
-            left: { imgName: 'left.jpg', offset: { x: 0, y: 290 }, scale: 1.0 },
-            right: { imgName: 'right.jpg', offset: { x: 195, y: 290 }, scale: 1.0 },
-            reHand: { imgName: 'return_hand.jpg', offset: { x: 167, y: 150 }, scale: 0.95 },
-            reTower: { imgName: 'return_tower.jpg', offset: { x: -105, y: 150 }, scale: 0.9 },
-            zoom: { imgName: 'zoom.jpg', offset: { x: -104, y: 85 }, scale: 0.9 },
-            up: { imgName: 'up.jpg', offset: { x: -32, y: 20 }, scale: 1.0 }
         };
 
         for (const op of operation) {
@@ -188,53 +184,37 @@ window.onload = function () {
         lifeCounter.x = 1250;
         lifeCounter.y = 10;
 
-        var backImage = new Sprite(223, 319);
-        backImage.image = core.assets[components_path + 'back_image.jpg'];
-        backImage.x = SCREEN_WIDTH / 2 - 50;
-        backImage.y = -70
-        backImage.scaleX = back_scale;
-        backImage.scaleY = back_scale;
-        backImage.rotation = 90;
-        backImage.addEventListener('touchstart', function () {
+        // 各種コンポーネントの生成 (Sprite)
+        const fieldComponent = {
+            cardBack: new Sprite(223, 319),
+            makeTower: new Sprite(210, 99),
+            reset: new Sprite(217, 94),
+            untapAll: new Sprite(108, 74),
+            addToken: new Sprite(218, 93),
+            destroyLand: new Sprite(115, 78),
+            dice: new Sprite(175, 175)
+        }
+
+        for (const [key, value] of Object.entries(componentProp.field)) {
+            fieldComponent[key].image = core.assets[`${cardProperties.imagePath.component}${value.imgName}`];
+            fieldComponent[key].moveTo(value.x, value.y);
+            fieldComponent[key].scale(value.scale, value.scale);
+            fieldComponent[key].rotate(value.rotation);
+        }
+
+        // タワー
+        fieldComponent.cardBack.addEventListener('touchstart', function () {
             socket.emit('drawcard');
         });
-        var makeTower = new Sprite(210, 99);
-        makeTower.image = core.assets[components_path + 'make_tower.jpg'];
-        makeTower.x = SCREEN_WIDTH - 170;
-        makeTower.y = 0;
-        makeTower.scaleX = make_scale;
-        makeTower.scaleY = make_scale;
-        makeTower.addEventListener('touchstart', function () {
+
+        // タワー再構築
+        fieldComponent.makeTower.addEventListener('touchstart', function () {
             socket.emit('maketower');
         });
 
-        var diceImage = new Sprite(175, 175);
-        diceImage.image = core.assets[components_path + 'dice.gif'];
-        diceImage.x = -25;
-        diceImage.y = 110;
-        diceImage.scaleX = dice_scale;
-        diceImage.scaleY = dice_scale;
-        var diceLabel = new Label('0');
-        diceLabel.color = "black";
-        diceLabel.font = "normal normal 30px/1.0 monospace";
-        diceLabel.x = 60;
-        diceLabel.y = 120;
-        scene.addChild(diceLabel);
-        diceImage.addEventListener('touchstart', function () {
-            core.rootScene.removeChild(diceLabel);
-            var diceNum = Math.floor(Math.random() * 6) + 1;
-            diceLabel.text = String(diceNum);
-            //socket.emit('dice', diceNum);
-            scene.addChild(diceLabel);
-        });
-        var resetImage = new Sprite(217, 94);
-        resetImage.image = core.assets[components_path + 'reset.jpg'];
-        resetImage.x = SCREEN_WIDTH - 172;
-        resetImage.y = 80;
-        resetImage.scaleX = reset_scale;
-        resetImage.scaleY = reset_scale;
+        // 盤面リセット
         var reset_flag = false;
-        resetImage.addEventListener('touchstart', function () {
+        fieldComponent.reset.addEventListener('touchstart', function () {
             if (reset_flag) {
                 for (var i = 0; i < cardList.hand.sprite.length; ++i) {
                     var discard = cardList.hand.sprite[i];
@@ -276,11 +256,8 @@ window.onload = function () {
             };
         });
 
-        var untapImage = new Sprite(108, 74);
-        untapImage.image = core.assets[components_path + 'untap.jpg'];
-        untapImage.x = 10;
-        untapImage.y = 250;
-        untapImage.addEventListener('touchstart', function () {
+        // 全アンタップ
+        fieldComponent.untapAll.addEventListener('touchstart', function () {
             const targetFields = [cardList.field.sprite, cardList.upField.sprite, cardList.land.sprite];
             for (let field of targetFields) {
                 for (let card of field) {
@@ -289,26 +266,29 @@ window.onload = function () {
             }
         });
 
-        // 土地破壊
-        var destroyLandButton = new Sprite(115, 78);
-        destroyLandButton.image = core.assets[components_path + 'destroyland.jpg'];
-        destroyLandButton.x = 10;
-        destroyLandButton.y = 450;
-        destroyLandButton.addEventListener('touchstart', () => {
-            destroyLand(core, cardList.land.sprite);
-        });
-
-        var tokenImage = new Sprite(218, 93);
-        tokenImage.image = core.assets[components_path + 'token.jpg'];
-        tokenImage.x = -45;
-        tokenImage.y = 310;
-        tokenImage.scaleX = token_scale - 0.1;
-        tokenImage.scaleY = token_scale;
-
-        tokenImage.addEventListener('touchstart', function () {
+        // トークン生成
+        fieldComponent.addToken.addEventListener('touchstart', function () {
             const fieldList = cardList.field;
             setCard(10000, fieldList, cardProperties.play, cardProperties.imagePath.component, core, touchFuncPlayToken);
             setCounter(cardList.counter, cardProperties.counter, fieldList.sprite[fieldList.sprite.length - 1], core);
+        });
+
+        fieldComponent.destroyLand.addEventListener('touchstart', () => {
+            destroyLand(core, cardList.land.sprite);
+        });
+
+        // サイコロ
+        const diceLabel = new Label('0');
+        diceLabel.color = "black";
+        diceLabel.font = "normal normal 30px/1.0 monospace";
+        diceLabel.moveTo(60, 120);
+        scene.addChild(diceLabel);
+
+        fieldComponent.dice.addEventListener('touchstart', function () {
+            core.rootScene.removeChild(diceLabel);
+            var diceNum = Math.floor(Math.random() * 6) + 1;
+            diceLabel.text = String(diceNum);
+            scene.addChild(diceLabel);
         });
 
         socket.on('draw', function (data) {
@@ -331,7 +311,7 @@ window.onload = function () {
             const targetCardIdx = cardList.hand.sprite.findIndex((card) => card === targetCard);
             const targetCardNum = cardList.hand.number[targetCardIdx];
             const operation = ['setLand', 'discard', 'play', 'cancel', 'reTower', 'zoom'];
-            const operationSprite = createOperationSprite(targetCard, operation);
+            const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
             const touchRemoveFuncHand = function () {
                 for (const op of operation) {
@@ -388,7 +368,7 @@ window.onload = function () {
                 'discard', 'tap', 'cancel', 'plus', 'minus', 'left', 'right',
                 'up', 'reHand', 'reTower', 'zoom'
             ];
-            const operationSprite = createOperationSprite(targetCard, operation);
+            const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
             //remove button
             const touchRemoveFunc = function () {
@@ -478,7 +458,7 @@ window.onload = function () {
             const targetCard = this;
             const targetCardIdx = cardList.field.sprite.findIndex((card) => card === targetCard);
             const operation = ['discard', 'tap', 'cancel', 'plus', 'minus', 'left', 'right'];
-            const operationSprite = createOperationSprite(targetCard, operation);
+            const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
             //remove button
             var touchRemoveFuncToken = function () {
@@ -547,7 +527,7 @@ window.onload = function () {
             const operation = [
                 'discard', 'tap', 'cancel', 'reHand', 'reTower', 'zoom'
             ];
-            const operationSprite = createOperationSprite(targetCard, operation);
+            const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
             //remove button
             const touchRemoveFuncUp = function () {
@@ -602,18 +582,19 @@ window.onload = function () {
             };
         };
 
+        // 手札領域の描画
         core.rootScene.addChild(hand_space);
+
+        // コンポーネント画像の描画 (Entity)
         core.rootScene.addChild(playOrder);
         core.rootScene.addChild(input);
         core.rootScene.addChild(handCardNum);
         core.rootScene.addChild(lifeCounter);
-        core.rootScene.addChild(diceImage);
-        core.rootScene.addChild(backImage);
-        core.rootScene.addChild(makeTower);
-        core.rootScene.addChild(resetImage);
-        core.rootScene.addChild(untapImage);
-        core.rootScene.addChild(tokenImage);
-        core.rootScene.addChild(destroyLandButton);
+
+        // コンポーネント画像の描画 (Sprite)
+        for (const cmpnt of Object.values(fieldComponent)) {
+            core.rootScene.addChild(cmpnt);
+        }
     };
     core.start();
 };
