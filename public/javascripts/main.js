@@ -18,7 +18,7 @@ window.onload = function () {
         land: { sprite: [], number: [] },
         field: { sprite: [], number: [] },
         upField: { sprite: [], number: [] },
-        counter: { sprite: [], number: [] }
+        counter: { sprite: [], number: [] }  // spriteに格納されるのはLabelオブジェクト
     }
 
     const cardProperties = {
@@ -216,40 +216,16 @@ window.onload = function () {
         var reset_flag = false;
         fieldComponent.reset.addEventListener('touchstart', function () {
             if (reset_flag) {
-                for (var i = 0; i < cardList.hand.sprite.length; ++i) {
-                    var discard = cardList.hand.sprite[i];
-                    core.rootScene.removeChild(discard);
-                };
-
-                for (var i = 0; i < cardList.field.sprite.length; ++i) {
-                    var discard = cardList.field.sprite[i];
-                    core.rootScene.removeChild(discard);
-                };
-
-                for (var i = 0; i < cardList.land.sprite.length; ++i) {
-                    var discard = cardList.land.sprite[i];
-                    core.rootScene.removeChild(discard);
-                };
-                for (var i = 0; i < cardList.counter.sprite.length; ++i) {
-                    var discard = cardList.counter.sprite[i];
-                    core.rootScene.removeChild(discard);
-                };
-                for (var i = 0; i < cardList.upField.sprite.length; ++i) {
-                    var discard = cardList.upField.sprite[i];
-                    core.rootScene.removeChild(discard);
-                };
-                cardList.hand.sprite.splice(0);
-                cardList.hand.number.splice(0);
-                cardList.field.sprite.splice(0);
-                cardList.field.number.splice(0);
-                cardList.land.sprite.splice(0);
-                cardList.counter.sprite.splice(0);
-                cardList.counter.number.splice(0);
-                cardList.upField.sprite.splice(0);
-                cardList.upField.number.splice(0);
-
+                for (const type of Object.values(cardList)) {
+                    // 描画の削除
+                    for (const card of type.sprite) {
+                        core.rootScene.removeChild(card);
+                    }
+                    // リストの初期化
+                    type.sprite.splice(0);
+                    type.number.splice(0);
+                }
                 setHandCardNum(handCardNum._element, cardList.hand.sprite.length);
-
                 reset_flag = false;
             } else {
                 reset_flag = true;
