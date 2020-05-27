@@ -10,7 +10,9 @@ var SCREEN_HEIGHT = 960; //スクリーン高さ
 var towerHeight = 200;
 
 window.onload = function () {
-    var core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT);
+    const core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT);
+    core.rootScene.backgroundColor = "green";
+
     const cardList = {
         hand: { sprite: [], number: [] },
         land: { sprite: [], number: [] },
@@ -18,7 +20,7 @@ window.onload = function () {
         upField: { sprite: [], number: [] },
         counter: { sprite: [], number: [] }
     }
-    var cards_path = 'images/cards/';
+
     const cardProperties = {
         hand: {
             image: { width: 223, height: 311, scale: 0.6 },
@@ -46,8 +48,6 @@ window.onload = function () {
         counter: { x: 70, y: 30 },
         imagePath: { card: 'images/cards/', component: 'images/components/' }
     }
-    var scene = core.rootScene;
-    scene.backgroundColor = "green";
 
     // コンポーネントのプロパティ (Sprite)
     const componentProp = {
@@ -90,7 +90,7 @@ window.onload = function () {
 
     // カード画像のロード
     for (var i = 1; i < towerHeight; i++) {
-        var precard = cards_path + 'tower (' + i + ').jpg';
+        var precard = `${cardProperties.imagePath.card}tower (${i}).jpg`;
         core.preload(precard);
     };
 
@@ -282,13 +282,13 @@ window.onload = function () {
         diceLabel.color = "black";
         diceLabel.font = "normal normal 30px/1.0 monospace";
         diceLabel.moveTo(60, 120);
-        scene.addChild(diceLabel);
+        core.rootScene.addChild(diceLabel);
 
         fieldComponent.dice.addEventListener('touchstart', function () {
             core.rootScene.removeChild(diceLabel);
             var diceNum = Math.floor(Math.random() * 6) + 1;
             diceLabel.text = String(diceNum);
-            scene.addChild(diceLabel);
+            core.rootScene.addChild(diceLabel);
         });
 
         socket.on('draw', function (data) {
@@ -297,7 +297,7 @@ window.onload = function () {
         });
 
         socket.on('opplay', function (data) {
-            const opplayName = `${cards_path}tower (${data}).jpg`;
+            const opplayName = `${cardProperties.imagePath.card}tower (${data}).jpg`;
             const opLabel = new Label('opponent play');
             opLabel.x = cardProperties.opCard.zoom.x;
             opLabel.y = cardProperties.opCard.zoom.y + 350;
