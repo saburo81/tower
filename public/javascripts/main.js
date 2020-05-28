@@ -13,6 +13,8 @@ window.onload = function () {
     const core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT);
     core.rootScene.backgroundColor = "green";
 
+    const playHistory = [];
+
     const cardList = {
         hand: { sprite: [], number: [] },
         land: { sprite: [], number: [] },
@@ -70,8 +72,8 @@ window.onload = function () {
             cardBack: { imgName: 'back_image.jpg', x: SCREEN_WIDTH / 2 - 50, y: -70, scale: 0.7, rotation: 90 },
             makeTower: { imgName: 'make_tower.jpg', x: SCREEN_WIDTH - 170, y: 0, scale: 0.7, rotation: 0 },
             reset: { imgName: 'reset.jpg', x: SCREEN_WIDTH - 172, y: 80, scale: 0.69, rotation: 0 },
-            untapAll: { imgName: 'untap.jpg', x: 10, y: 250, scale: 1.0, rotation: 0 },
-            addToken: { imgName: 'token.jpg', x: -45, y: 310, scale: 0.6, rotation: 0 },
+            untapAll: { imgName: 'untap.jpg', x: 10, y: 300, scale: 1.0, rotation: 0 },
+            addToken: { imgName: 'token.jpg', x: -45, y: 360, scale: 0.6, rotation: 0 },
             destroyLand: { imgName: 'destroyland.jpg', x: 10, y: 450, scale: 1.0, rotation: 0 },
             dice: { imgName: 'dice.gif', x: -25, y: 110, scale: 0.4, rotation: 0 }
         },
@@ -83,7 +85,8 @@ window.onload = function () {
             playOrder: { width: 56, height: 56, x: 5, y: 10 },
             playerName: { width: 150, height: 50, x: 75, y: 10 },
             handCardNum: { width: 125, height: 50, x: 1100, y: 10 },
-            lifeCounter: { width: 100, height: 50, x: 1250, y: 10 }
+            lifeCounter: { width: 100, height: 50, x: 1250, y: 10 },
+            undo: { width: 110, height: 50, x: 10, y: 245 }
         }
     };
 
@@ -142,7 +145,8 @@ window.onload = function () {
             playOrder: new Entity(),
             playerName: new Entity(),
             handCardNum: new Entity(),
-            lifeCounter: new Entity()
+            lifeCounter: new Entity(),
+            undo: new Entity()
         }
 
         for (const [key, entity] of Object.entries(domComponent)) {
@@ -187,6 +191,46 @@ window.onload = function () {
         lifeCounterElement.setAttribute('id', 'life-counter');
         lifeCounterElement.setAttribute('value', '0');
         domComponent.lifeCounter._element = lifeCounterElement;
+
+        // UnDo
+        const undo = () => {
+            if (!playHistory.length) { return; }
+
+            const action = playHistory.pop();
+            const touchFunc = {
+                'hand': touchFuncHand,
+                'field': touchFuncPlay,
+                'upField': touchFuncPlayUp
+            }
+            const undoFunc = {
+                'setLand': (cardNum, from) => {
+                    destroyLand(core, cardList.land.sprite);
+                    setCard(
+                        cardNum, cardList[from], cardProperties[from],
+                        cardProperties.imagePath.card, core, touchFunc[from]
+                    );
+                },
+                'discard': (cardNum, from) => {
+                    setCard(
+                        cardNum, cardList[from], cardProperties[from],
+                        cardProperties.imagePath.card, core, touchFunc[from]
+                    );
+                    if (from === 'field') {
+                        setCounter(
+                            cardList.counter, cardProperties.counter,
+                            cardList[from].sprite[cardList[from].sprite.length - 1], core
+                        );
+                    }
+                }
+            };
+            undoFunc[action.type](action.cardNum, action.from);
+        };
+
+        const undoElement = document.createElement('button');
+        undoElement.innerText = 'UNDO';
+        undoElement.setAttribute('id', 'undo');
+        undoElement.addEventListener('click', undo);
+        domComponent.undo._element = undoElement;
 
         // 各種コンポーネントの生成 (Sprite)
         const fieldComponent = {
@@ -312,11 +356,13 @@ window.onload = function () {
                 setCard(10001, cardList.land, cardProperties.land, cardProperties.imagePath.component, core, touchFuncLand);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
+                playHistory.push({ type: 'setLand', cardNum: targetCardNum, from: 'hand' });
             });
 
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
+                playHistory.push({ type: 'discard', cardNum: targetCardNum, from: 'hand' });
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {
@@ -360,6 +406,7 @@ window.onload = function () {
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
+                playHistory.push({ type: 'discard', cardNum: targetCardNum, from: 'field' });
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {
@@ -518,6 +565,7 @@ window.onload = function () {
 
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFuncUp);
+                playHistory.push({ type: 'discard', cardNum: targetCardNum, from: 'upField' });
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {

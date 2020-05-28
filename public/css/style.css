@@ -19,6 +19,10 @@ button.team-blue {
     background-color: lightskyblue;
 }
 
+#undo {
+    font-size: 32px;
+}
+
 p.hand-card-num {
     margin: 0px;
     padding: 3px;
