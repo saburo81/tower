@@ -226,6 +226,7 @@ window.onload = function () {
                 }
             };
             undoFunc[action.type](action.cardNum, action.from);
+            setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
         };
 
         const undoElement = document.createElement('button');
