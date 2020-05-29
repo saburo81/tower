@@ -1,7 +1,7 @@
 enchant(); // enchantjs おまじない
 import {
-    setCard, removeCard, swapCard, tapCard, untapCard, destroyLand, setCounter,
-    setCounterNum, removeCounter, swapCounter, zoomCard
+    setCard, removeCard, swapCard, tapCard, untapCard, faceUpDown, destroyLand,
+    setCounter, setCounterNum, removeCounter, swapCounter, zoomCard
 } from './modules/action.js';
 
 var socket = io();
@@ -16,10 +16,10 @@ window.onload = function () {
     const playHistory = [];
 
     const cardList = {
-        hand: { sprite: [], number: [] },
+        hand: { sprite: [], number: [], isFaceDown: [] },
         land: { sprite: [], number: [] },
-        field: { sprite: [], number: [] },
-        upField: { sprite: [], number: [] },
+        field: { sprite: [], number: [], isFaceDown: [] },
+        upField: { sprite: [], number: [], isFaceDown: [] },
         counter: { sprite: [], number: [] }  // spriteに格納されるのはLabelオブジェクト
     }
 
@@ -55,6 +55,7 @@ window.onload = function () {
     const componentProp = {
         operation: {
             play: { imgName: 'play.jpg', offset: { x: 30, y: 30 }, scale: 1.0 },
+            faceUpDown: { imgName: 'face_up_down.jpg', offset: { x: 210, y: 30 }, scale: 1.0 },
             setLand: { imgName: 'setland.jpg', offset: { x: 167, y: 150 }, scale: 0.95 },
             discard: { imgName: 'discard.jpg', offset: { x: 170, y: 90 }, scale: 1.0 },
             tap: { imgName: 'tap.jpg', offset: { x: 30, y: 25 }, scale: 1.0 },
@@ -108,6 +109,7 @@ window.onload = function () {
     const createOperationSprite = (card, operation, operationProp) => {
         const operationSprite = {
             play: new Sprite(162, 63),
+            faceUpDown: new Sprite(60, 60),
             setLand: new Sprite(179, 65),
             discard: new Sprite(173, 65),
             tap: new Sprite(177, 71),
@@ -334,7 +336,8 @@ window.onload = function () {
             const targetCard = this;
             const targetCardIdx = cardList.hand.sprite.findIndex((card) => card === targetCard);
             const targetCardNum = cardList.hand.number[targetCardIdx];
-            const operation = ['setLand', 'discard', 'play', 'cancel', 'reTower', 'zoom'];
+            const isFaceDown = cardList.hand.isFaceDown[targetCardIdx];
+            const operation = ['setLand', 'discard', 'play', 'cancel', 'reTower', 'zoom', 'faceUpDown'];
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
             const touchRemoveFuncHand = function () {
@@ -345,11 +348,17 @@ window.onload = function () {
 
             operationSprite.play.addEventListener('touchstart', function () {
                 const fieldList = cardList.field;
-                setCard(targetCardNum, fieldList, cardProperties.field, cardProperties.imagePath.card, core, touchFuncPlay);
+                const cardPath = (isFaceDown) ? cardProperties.imagePath.component : cardProperties.imagePath.card;
+                setCard(targetCardNum, fieldList, cardProperties.field, cardPath, core, touchFuncPlay, isFaceDown);
                 setCounter(cardList.counter, cardProperties.counter, fieldList.sprite[fieldList.sprite.length - 1], core);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
-                socket.emit('play', targetCardNum);
+                if (!isFaceDown) { socket.emit('play', targetCardNum); };
+            });
+
+            operationSprite.faceUpDown.addEventListener('touchstart', function () {
+                faceUpDown(targetCardIdx, cardList.hand, cardProperties.imagePath, componentProp, core);
+                touchRemoveFuncHand();
             });
 
             operationSprite.setLand.addEventListener('touchstart', function () {
@@ -390,9 +399,10 @@ window.onload = function () {
             const targetCard = this;
             const targetCardIdx = cardList.field.sprite.findIndex((card) => card === targetCard);
             const targetCardNum = cardList.field.number[targetCardIdx];
+            const isFaceDown = cardList.field.isFaceDown[targetCardIdx];
             const operation = [
                 'discard', 'tap', 'cancel', 'plus', 'minus', 'left', 'right',
-                'up', 'reHand', 'reTower', 'zoom'
+                'up', 'reHand', 'reTower', 'zoom', 'faceUpDown'
             ];
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
@@ -448,9 +458,10 @@ window.onload = function () {
             });
 
             operationSprite.up.addEventListener('touchstart', function () {
+                const cardPath = (isFaceDown) ? cardProperties.imagePath.component : cardProperties.imagePath.card;
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
-                setCard(targetCardNum, cardList.upField, cardProperties.upField, cardProperties.imagePath.card, core, touchFuncPlayUp);
+                setCard(targetCardNum, cardList.upField, cardProperties.upField, cardPath, core, touchFuncPlayUp, isFaceDown);
             });
 
             operationSprite.plus.addEventListener('touchstart', function () {
@@ -474,6 +485,12 @@ window.onload = function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
                 socket.emit('return', targetCardNum);
+            });
+
+            operationSprite.faceUpDown.addEventListener('touchstart', function () {
+                faceUpDown(targetCardIdx, cardList.field, cardProperties.imagePath, componentProp, core);
+                touchRemoveFunc();
+                if (isFaceDown) { socket.emit('play', targetCardNum); };
             });
 
             for (const op of operation) {
@@ -551,8 +568,9 @@ window.onload = function () {
             const targetCard = this;
             const targetCardIdx = cardList.upField.sprite.findIndex((card) => card === targetCard);
             const targetCardNum = cardList.upField.number[targetCardIdx];
+            const isFaceDown = cardList.upField.isFaceDown[targetCardIdx];
             const operation = [
-                'discard', 'tap', 'cancel', 'reHand', 'reTower', 'zoom'
+                'discard', 'tap', 'cancel', 'reHand', 'reTower', 'zoom', 'faceUpDown'
             ];
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
@@ -595,6 +613,12 @@ window.onload = function () {
             operationSprite.reTower.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFuncUp);
                 socket.emit('return', targetCardNum);
+            });
+
+            operationSprite.faceUpDown.addEventListener('touchstart', function () {
+                faceUpDown(targetCardIdx, cardList.upField, cardProperties.imagePath, componentProp, core);
+                touchRemoveFuncUp();
+                if (isFaceDown) { socket.emit('play', targetCardNum); }
             });
 
             for (const op of operation) {
