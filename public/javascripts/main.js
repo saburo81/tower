@@ -278,6 +278,7 @@ window.onload = function () {
                     type.sprite.splice(0);
                     type.number.splice(0);
                 }
+                playHistory.splice(0);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
                 reset_flag = false;
             } else {
