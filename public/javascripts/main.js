@@ -205,17 +205,19 @@ window.onload = function () {
                 'upField': touchFuncPlayUp
             }
             const undoFunc = {
-                'setLand': (cardNum, from) => {
+                'setLand': (cardNum, from, isFaceDown) => {
                     destroyLand(core, cardList.land.sprite);
                     setCard(
                         cardNum, cardList[from], cardProperties[from],
-                        cardProperties.imagePath.card, core, touchFunc[from]
+                        cardProperties.imagePath, core, touchFunc[from],
+                        isFaceDown
                     );
                 },
-                'discard': (cardNum, from) => {
+                'discard': (cardNum, from, isFaceDown) => {
                     setCard(
                         cardNum, cardList[from], cardProperties[from],
-                        cardProperties.imagePath.card, core, touchFunc[from]
+                        cardProperties.imagePath, core, touchFunc[from],
+                        isFaceDown
                     );
                     if (from === 'field') {
                         setCounter(
@@ -225,7 +227,7 @@ window.onload = function () {
                     }
                 }
             };
-            undoFunc[action.type](action.cardNum, action.from);
+            undoFunc[action.type](action.cardNum, action.from, action.isFaceDown);
             setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
         };
 
@@ -296,7 +298,7 @@ window.onload = function () {
         // トークン生成
         fieldComponent.addToken.addEventListener('touchstart', function () {
             const fieldList = cardList.field;
-            setCard(10000, fieldList, cardProperties.field, cardProperties.imagePath.component, core, touchFuncPlayToken);
+            setCard(10000, fieldList, cardProperties.field, cardProperties.imagePath, core, touchFuncPlayToken);
             setCounter(cardList.counter, cardProperties.counter, fieldList.sprite[fieldList.sprite.length - 1], core);
         });
 
@@ -319,7 +321,7 @@ window.onload = function () {
         });
 
         socket.on('draw', function (data) {
-            setCard(data, cardList.hand, cardProperties.hand, cardProperties.imagePath.card, core, touchFuncHand);
+            setCard(data, cardList.hand, cardProperties.hand, cardProperties.imagePath, core, touchFuncHand);
             setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
         });
 
@@ -349,8 +351,7 @@ window.onload = function () {
 
             operationSprite.play.addEventListener('touchstart', function () {
                 const fieldList = cardList.field;
-                const cardPath = (isFaceDown) ? cardProperties.imagePath.component : cardProperties.imagePath.card;
-                setCard(targetCardNum, fieldList, cardProperties.field, cardPath, core, touchFuncPlay, isFaceDown);
+                setCard(targetCardNum, fieldList, cardProperties.field, cardProperties.imagePath, core, touchFuncPlay, isFaceDown);
                 setCounter(cardList.counter, cardProperties.counter, fieldList.sprite[fieldList.sprite.length - 1], core);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
@@ -363,16 +364,16 @@ window.onload = function () {
             });
 
             operationSprite.setLand.addEventListener('touchstart', function () {
-                setCard(10001, cardList.land, cardProperties.land, cardProperties.imagePath.component, core, touchFuncLand);
+                setCard(10001, cardList.land, cardProperties.land, cardProperties.imagePath, core, touchFuncLand);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
-                playHistory.push({ type: 'setLand', cardNum: targetCardNum, from: 'hand' });
+                playHistory.push({ type: 'setLand', cardNum: targetCardNum, from: 'hand', isFaceDown: isFaceDown });
             });
 
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
-                playHistory.push({ type: 'discard', cardNum: targetCardNum, from: 'hand' });
+                playHistory.push({ type: 'discard', cardNum: targetCardNum, from: 'hand', isFaceDown: isFaceDown });
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {
@@ -417,7 +418,7 @@ window.onload = function () {
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
-                playHistory.push({ type: 'discard', cardNum: targetCardNum, from: 'field' });
+                playHistory.push({ type: 'discard', cardNum: targetCardNum, from: 'field', isFaceDown: isFaceDown });
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {
@@ -436,7 +437,7 @@ window.onload = function () {
             operationSprite.reHand.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
-                setCard(targetCardNum, cardList.hand, cardProperties.hand, cardProperties.imagePath.card, core, touchFuncHand);
+                setCard(targetCardNum, cardList.hand, cardProperties.hand, cardProperties.imagePath, core, touchFuncHand);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
 
@@ -459,10 +460,9 @@ window.onload = function () {
             });
 
             operationSprite.up.addEventListener('touchstart', function () {
-                const cardPath = (isFaceDown) ? cardProperties.imagePath.component : cardProperties.imagePath.card;
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
-                setCard(targetCardNum, cardList.upField, cardProperties.upField, cardPath, core, touchFuncPlayUp, isFaceDown);
+                setCard(targetCardNum, cardList.upField, cardProperties.upField, cardProperties.imagePath, core, touchFuncPlayUp, isFaceDown);
             });
 
             operationSprite.plus.addEventListener('touchstart', function () {
@@ -584,7 +584,7 @@ window.onload = function () {
 
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFuncUp);
-                playHistory.push({ type: 'discard', cardNum: targetCardNum, from: 'upField' });
+                playHistory.push({ type: 'discard', cardNum: targetCardNum, from: 'upField', isFaceDown: isFaceDown });
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {
@@ -602,7 +602,7 @@ window.onload = function () {
 
             operationSprite.reHand.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFuncUp);
-                setCard(targetCardNum, cardList.hand, cardProperties.hand, cardProperties.imagePath.card, core, touchFuncHand);
+                setCard(targetCardNum, cardList.hand, cardProperties.hand, cardProperties.imagePath, core, touchFuncHand);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
 

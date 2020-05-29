@@ -11,13 +11,13 @@ export const setCard = (cardNum, dstCardList, dstCardProp, imagePath, core,
                         touchFunc, isFaceDown = false) => {
     // カードを生成
     const cardMap = {
-        10000: { type: 'token', name: `${imagePath}maotoken.jpg` },
-        10001: { type: 'land', name: `${imagePath}tower_land.jpg` }
+        10000: { type: 'token', name: `${imagePath.component}maotoken.jpg` },
+        10001: { type: 'land', name: `${imagePath.component}tower_land.jpg` }
     };
-    const cardInfo = cardMap[cardNum] || { type: 'card', name: `${imagePath}tower (${cardNum}).jpg` };
+    const cardInfo = cardMap[cardNum] || { type: 'card', name: `${imagePath.card}tower (${cardNum}).jpg` };
     const card = new Sprite(dstCardProp.image.width, dstCardProp.image.height);
     card.image = (isFaceDown) ?
-        core.assets[`${imagePath}back_image.jpg`] :
+        core.assets[`${imagePath.component}back_image.jpg`] :
         core.assets[cardInfo.name];
     card.scaleX = dstCardProp.image.scale;
     card.scaleY = dstCardProp.image.scale;
