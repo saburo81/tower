@@ -8,15 +8,17 @@
 //   core: EnchantJSオブジェクト
 //   touchFunc: カードクリック時に呼び出す関数
 export const setCard = (cardNum, dstCardList, dstCardProp, imagePath, core,
-                        touchFunc) => {
+                        touchFunc, isFaceDown = false) => {
     // カードを生成
     const cardMap = {
-        10000: { type: 'token', name: `${imagePath}maotoken.jpg` },
-        10001: { type: 'land', name: `${imagePath}tower_land.jpg` }
+        10000: { type: 'token', name: `${imagePath.component}maotoken.jpg` },
+        10001: { type: 'land', name: `${imagePath.component}tower_land.jpg` }
     };
-    const cardInfo = cardMap[cardNum] || { type: 'card', name: `${imagePath}tower (${cardNum}).jpg` };
+    const cardInfo = cardMap[cardNum] || { type: 'card', name: `${imagePath.card}tower (${cardNum}).jpg` };
     const card = new Sprite(dstCardProp.image.width, dstCardProp.image.height);
-    card.image = core.assets[cardInfo.name];
+    card.image = (isFaceDown) ?
+        core.assets[`${imagePath.component}back_image.jpg`] :
+        core.assets[cardInfo.name];
     card.scaleX = dstCardProp.image.scale;
     card.scaleY = dstCardProp.image.scale;
     card.moveTo(
@@ -26,10 +28,11 @@ export const setCard = (cardNum, dstCardList, dstCardProp, imagePath, core,
     card.ontouchstart = touchFunc;
     core.currentScene.addChild(card);
 
-    // 手札情報の更新
+    // カードリストの更新
     dstCardList.sprite.push(card);
     if (cardInfo.type !== 'land') {
         dstCardList.number.push(cardNum);
+        dstCardList.isFaceDown.push(isFaceDown);
     }
 }
 
@@ -41,20 +44,19 @@ export const setCard = (cardNum, dstCardList, dstCardProp, imagePath, core,
 //   touchRemoveFunc: カードを取り除く際に呼び出す関数
 export const removeCard = (targetCard, targetCardList, targetCardProp, core,
                             touchRemoveFunc) => {
-    const discardNum = targetCardList.sprite.findIndex((card) => card.x === targetCard.x);
-    const discardSet = targetCardList.sprite[discardNum];
+    const discardIdx = targetCardList.sprite.findIndex((card) => card.x === targetCard.x);
+    const discardSet = targetCardList.sprite[discardIdx];
     core.currentScene.removeChild(discardSet);
-    for (let j = discardNum + 1; j < targetCardList.sprite.length; ++j) {
+    for (let j = discardIdx + 1; j < targetCardList.sprite.length; ++j) {
         const moveCard = targetCardList.sprite[j];
         moveCard.moveTo(
             moveCard.x - Math.ceil(targetCardProp.image.width * targetCardProp.image.scale),
             targetCardProp.field.y
         );
-        targetCardList.sprite[j - 1] = targetCardList.sprite[j];
-        targetCardList.number[j - 1] = targetCardList.number[j];
     };
-    targetCardList.sprite.pop();
-    targetCardList.number.pop();
+    targetCardList.sprite.splice(discardIdx, 1);
+    targetCardList.number.splice(discardIdx, 1);
+    targetCardList.isFaceDown.splice(discardIdx, 1);
     touchRemoveFunc();
 }
 
@@ -65,10 +67,12 @@ export const removeCard = (targetCard, targetCardList, targetCardProp, core,
 export const swapCard = (cardA, cardB, targetCardList) => {
     const cardAIdx = targetCardList.sprite.findIndex((card) => card === cardA);
     const cardANum = targetCardList.number[cardAIdx];
-    const cardACoord = {x: cardA.x, y: cardA.y};
+    const cardACoord = { x: cardA.x, y: cardA.y };
+    const cardAisFaceDown = targetCardList.isFaceDown[cardAIdx];
     const cardBIdx = targetCardList.sprite.findIndex((card) => card === cardB);
     const cardBNum = targetCardList.number[cardBIdx];
     const cardBCoord = { x: cardB.x, y: cardB.y };
+    const cardBisFaceDown = targetCardList.isFaceDown[cardBIdx];
 
     cardA.moveTo(cardBCoord.x, cardBCoord.y);
     cardB.moveTo(cardACoord.x, cardACoord.y);
@@ -77,6 +81,8 @@ export const swapCard = (cardA, cardB, targetCardList) => {
     targetCardList.sprite[cardBIdx] = cardA;
     targetCardList.number[cardAIdx] = cardBNum;
     targetCardList.number[cardBIdx] = cardANum;
+    targetCardList.isFaceDown[cardAIdx] = cardBisFaceDown;
+    targetCardList.isFaceDown[cardBIdx] = cardAisFaceDown;
 }
 
 // カードをタップする
@@ -89,6 +95,20 @@ export const tapCard = (card) => {
 //   card: 対象とするカードのSpriteオブジェクト
 export const untapCard = (card) => {
     card.rotation = 0;
+}
+
+// カードの裏表を入れ替える
+//   cardIdx: 対象とするカードのカードリストにおけるインデックス
+//   cardList: 対象とするカードのカードリスト
+//   imagePath: カードのベースパス
+//   cmpntProp: コンポーネントのプロパティ
+export const faceUpDown = (cardIdx, cardList, imagePath, cmpntProp, core) => {
+    const cardNum = cardList.number[cardIdx];
+    const isFaceDown = cardList.isFaceDown[cardIdx];
+    cardList.sprite[cardIdx].image = (isFaceDown) ?
+        core.assets[`${imagePath.card}tower (${cardNum}).jpg`] :
+        core.assets[`${imagePath.component}${cmpntProp.field.cardBack.imgName}`];
+    cardList.isFaceDown[cardIdx] = !isFaceDown;
 }
 
 // 一番右の土地を破壊する
