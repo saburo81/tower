@@ -23,6 +23,9 @@ window.onload = function () {
         counter: { sprite: [], number: [] }  // spriteに格納されるのはLabelオブジェクト
     }
 
+    // 表示中のoperationSprite一覧
+    const operationSpriteList = [];
+
     const cardProperties = {
         hand: {
             image: { width: 223, height: 311, scale: 0.6 },
@@ -54,20 +57,20 @@ window.onload = function () {
     // コンポーネントのプロパティ
     const componentProp = {
         operation: {
-            play: { imgName: 'play.jpg', offset: { x: 30, y: 30 }, scale: 1.0 },
-            faceUpDown: { imgName: 'face_up_down.jpg', offset: { x: 210, y: 30 }, scale: 1.0 },
-            setLand: { imgName: 'setland.jpg', offset: { x: 167, y: 150 }, scale: 0.95 },
-            discard: { imgName: 'discard.jpg', offset: { x: 170, y: 90 }, scale: 1.0 },
-            tap: { imgName: 'tap.jpg', offset: { x: 30, y: 25 }, scale: 1.0 },
-            cancel: { imgName: 'cancel.jpg', offset: { x: 30, y: 215 }, scale: 1.0 },
-            plus: { imgName: 'plus.jpg', offset: { x: 65, y: 290 }, scale: 1.0 },
-            minus: { imgName: 'minus.jpg', offset: { x: 130, y: 290 }, scale: 1.0 },
-            left: { imgName: 'left.jpg', offset: { x: 0, y: 290 }, scale: 1.0 },
-            right: { imgName: 'right.jpg', offset: { x: 195, y: 290 }, scale: 1.0 },
-            reHand: { imgName: 'return_hand.jpg', offset: { x: 167, y: 150 }, scale: 0.95 },
-            reTower: { imgName: 'return_tower.jpg', offset: { x: -105, y: 150 }, scale: 0.9 },
-            zoom: { imgName: 'zoom.jpg', offset: { x: -104, y: 85 }, scale: 0.9 },
-            up: { imgName: 'up.jpg', offset: { x: -32, y: 20 }, scale: 1.0 }
+            play: { imgName: 'play.jpg', width: 162, height: 63, offset: { x: 30, y: 30 }, scale: 1.0 },
+            faceUpDown: { imgName: 'face_up_down.jpg', width: 60, height: 60, offset: { x: 210, y: 30 }, scale: 1.0 },
+            setLand: { imgName: 'setland.jpg', width: 179, height: 65, offset: { x: 167, y: 150 }, scale: 0.95 },
+            discard: { imgName: 'discard.jpg', width: 173, height: 65, offset: { x: 170, y: 90 }, scale: 1.0 },
+            tap: { imgName: 'tap.jpg', width: 177, height: 71, offset: { x: 30, y: 25 }, scale: 1.0 },
+            cancel: { imgName: 'cancel.jpg', width: 181, height: 69, offset: { x: 30, y: 215 }, scale: 1.0 },
+            plus: { imgName: 'plus.jpg', width: 63, height: 57, offset: { x: 65, y: 290 }, scale: 1.0 },
+            minus: { imgName: 'minus.jpg', width: 59, height: 58, offset: { x: 130, y: 290 }, scale: 1.0 },
+            left: { imgName: 'left.jpg', width: 61, height: 59, offset: { x: 0, y: 290 }, scale: 1.0 },
+            right: { imgName: 'right.jpg', width: 60, height: 60, offset: { x: 195, y: 290 }, scale: 1.0 },
+            reHand: { imgName: 'return_hand.jpg', width: 180, height: 70, offset: { x: 167, y: 150 }, scale: 0.95 },
+            reTower: { imgName: 'return_tower.jpg', width: 186, height: 72, offset: { x: -105, y: 150 }, scale: 0.9 },
+            zoom: { imgName: 'zoom.jpg', width: 184, height: 74, offset: { x: -104, y: 85 }, scale: 0.9 },
+            up: { imgName: 'up.jpg', width: 61, height: 59, offset: { x: -32, y: 20 }, scale: 1.0 }
         },
         field: {
             cardBack: { imgName: 'back_image.jpg', x: SCREEN_WIDTH / 2 - 50, y: -70, scale: 0.7, rotation: 90 },
@@ -107,24 +110,13 @@ window.onload = function () {
     };
 
     const createOperationSprite = (card, operation, operationProp) => {
-        const operationSprite = {
-            play: new Sprite(162, 63),
-            faceUpDown: new Sprite(60, 60),
-            setLand: new Sprite(179, 65),
-            discard: new Sprite(173, 65),
-            tap: new Sprite(177, 71),
-            cancel: new Sprite(181, 69),
-            plus: new Sprite(63, 57),
-            minus: new Sprite(59, 58),
-            left: new Sprite(61, 59),
-            right: new Sprite(60, 60),
-            reHand: new Sprite(180, 70),
-            reTower: new Sprite(186, 72),
-            zoom: new Sprite(184, 74),
-            up: new Sprite(61, 59)
-        };
+        const operationSprite = {};
 
         for (const op of operation) {
+            operationSprite[op] = new Sprite(
+                componentProp.operation[op].width,
+                componentProp.operation[op].height
+            );
             const imagePath = `${cardProperties.imagePath.component}${operationProp[op].imgName}`;
             operationSprite[op].image = core.assets[imagePath];
             operationSprite[op].scale(operationProp[op].scale, operationProp[op].scale);
@@ -345,9 +337,12 @@ window.onload = function () {
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
             const touchRemoveFuncHand = function () {
-                for (const op of operation) {
-                    core.currentScene.removeChild(operationSprite[op]);
+                for (const opSprite of operationSpriteList) {
+                    for (const sprite of Object.values(opSprite)) {
+                        core.rootScene.removeChild(sprite);
+                    }
                 }
+                operationSpriteList.length = 0;
             };
 
             operationSprite.play.addEventListener('touchstart', function () {
@@ -395,6 +390,7 @@ window.onload = function () {
             for (const op of operation) {
                 core.currentScene.addChild(operationSprite[op]);
             }
+            operationSpriteList.push(operationSprite);
         };
 
         // touch function field card
@@ -411,9 +407,12 @@ window.onload = function () {
 
             //remove button
             const touchRemoveFunc = function () {
-                for (const op of operation) {
-                    core.currentScene.removeChild(operationSprite[op]);
+                for (const opSprite of operationSpriteList) {
+                    for (const sprite of Object.values(opSprite)) {
+                        core.rootScene.removeChild(sprite);
+                    }
                 }
+                operationSpriteList.length = 0;
             };
 
             operationSprite.discard.addEventListener('touchstart', function () {
@@ -498,6 +497,7 @@ window.onload = function () {
             for (const op of operation) {
                 core.currentScene.addChild(operationSprite[op]);
             }
+            operationSpriteList.push(operationSprite);
         };
 
         var touchFuncPlayToken = function () {
@@ -508,9 +508,12 @@ window.onload = function () {
 
             //remove button
             var touchRemoveFuncToken = function () {
-                for (const op of operation) {
-                    core.currentScene.removeChild(operationSprite[op]);
+                for (const opSprite of operationSpriteList) {
+                    for (const sprite of Object.values(opSprite)) {
+                        core.rootScene.removeChild(sprite);
+                    }
                 }
+                operationSpriteList.length = 0;
             };
 
             operationSprite.discard.addEventListener('touchstart', function () {
@@ -564,6 +567,7 @@ window.onload = function () {
             for (const op of operation) {
                 core.currentScene.addChild(operationSprite[op]);
             }
+            operationSpriteList.push(operationSprite);
         };
 
         var touchFuncPlayUp = function () {
@@ -578,9 +582,12 @@ window.onload = function () {
 
             //remove button
             const touchRemoveFuncUp = function () {
-                for (const op of operation) {
-                    core.currentScene.removeChild(operationSprite[op]);
+                for (const opSprite of operationSpriteList) {
+                    for (const sprite of Object.values(opSprite)) {
+                        core.rootScene.removeChild(sprite);
+                    }
                 }
+                operationSpriteList.length = 0;
             };
 
             operationSprite.discard.addEventListener('touchstart', function () {
@@ -626,6 +633,7 @@ window.onload = function () {
             for (const op of operation) {
                 core.currentScene.addChild(operationSprite[op]);
             }
+            operationSpriteList.push(operationSprite);
         };
 
         var touchFuncLand = function () {
