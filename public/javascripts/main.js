@@ -23,8 +23,8 @@ window.onload = function () {
         counter: { sprite: [], number: [] }  // spriteに格納されるのはLabelオブジェクト
     }
 
-    // 表示中のoperationSprite一覧
-    const operationSpriteList = [];
+    // 表示中のoperationSprite
+    let displayedOpSprite = null;
 
     const cardProperties = {
         hand: {
@@ -125,6 +125,16 @@ window.onload = function () {
 
         return operationSprite;
     }
+
+    // 表示中のoperationSpriteを削除する
+    const touchRemoveFunc = function () {
+        if (displayedOpSprite) {
+            for (const sprite of Object.values(displayedOpSprite)) {
+                core.rootScene.removeChild(sprite);
+            }
+            displayedOpSprite = null;
+        }
+    };
 
     core.onload = function () {
         var hand_space = new Sprite(SCREEN_WIDTH, 400);
@@ -336,61 +346,53 @@ window.onload = function () {
             const operation = ['setLand', 'discard', 'play', 'cancel', 'reTower', 'zoom', 'faceUpDown'];
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
-            const touchRemoveFuncHand = function () {
-                for (const opSprite of operationSpriteList) {
-                    for (const sprite of Object.values(opSprite)) {
-                        core.rootScene.removeChild(sprite);
-                    }
-                }
-                operationSpriteList.length = 0;
-            };
-
             operationSprite.play.addEventListener('touchstart', function () {
                 const fieldList = cardList.field;
                 setCard(targetCardNum, fieldList, cardProperties.field, cardProperties.imagePath, core, touchFuncPlay, isFaceDown);
                 setCounter(cardList.counter, cardProperties.counter, fieldList.sprite[fieldList.sprite.length - 1], core);
-                removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
+                removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFunc);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
                 if (!isFaceDown) { socket.emit('play', targetCardNum); };
             });
 
             operationSprite.faceUpDown.addEventListener('touchstart', function () {
                 faceUpDown(targetCardIdx, cardList.hand, cardProperties.imagePath, componentProp, core);
-                touchRemoveFuncHand();
+                touchRemoveFunc();
             });
 
             operationSprite.setLand.addEventListener('touchstart', function () {
                 setCard(10001, cardList.land, cardProperties.land, cardProperties.imagePath, core, touchFuncLand);
-                removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
+                removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFunc);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
                 playHistory.push({ type: 'setLand', cardNum: targetCardNum, from: 'hand', isFaceDown: isFaceDown });
             });
 
             operationSprite.discard.addEventListener('touchstart', function () {
-                removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
+                removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFunc);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
                 playHistory.push({ type: 'discard', cardNum: targetCardNum, from: 'hand', isFaceDown: isFaceDown });
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {
-                touchRemoveFuncHand();
+                touchRemoveFunc();
             });
 
             operationSprite.reTower.addEventListener('touchstart', function () {
                 socket.emit('return', targetCardNum);
-                removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFuncHand);
+                removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFunc);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
 
             operationSprite.zoom.addEventListener('touchstart', function () {
                 zoomCard(targetCard.image, cardProperties.hand, core);
-                touchRemoveFuncHand();
+                touchRemoveFunc();
             });
 
+            touchRemoveFunc();
             for (const op of operation) {
                 core.currentScene.addChild(operationSprite[op]);
             }
-            operationSpriteList.push(operationSprite);
+            displayedOpSprite = operationSprite;
         };
 
         // touch function field card
@@ -404,16 +406,6 @@ window.onload = function () {
                 'up', 'reHand', 'reTower', 'zoom', 'faceUpDown'
             ];
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
-
-            //remove button
-            const touchRemoveFunc = function () {
-                for (const opSprite of operationSpriteList) {
-                    for (const sprite of Object.values(opSprite)) {
-                        core.rootScene.removeChild(sprite);
-                    }
-                }
-                operationSpriteList.length = 0;
-            };
 
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
@@ -494,10 +486,12 @@ window.onload = function () {
                 if (isFaceDown) { socket.emit('play', targetCardNum); };
             });
 
+            touchRemoveFunc();
             for (const op of operation) {
                 core.currentScene.addChild(operationSprite[op]);
             }
-            operationSpriteList.push(operationSprite);
+            displayedOpSprite = operationSprite;
+
         };
 
         var touchFuncPlayToken = function () {
@@ -506,23 +500,13 @@ window.onload = function () {
             const operation = ['discard', 'tap', 'cancel', 'plus', 'minus', 'left', 'right'];
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
-            //remove button
-            var touchRemoveFuncToken = function () {
-                for (const opSprite of operationSpriteList) {
-                    for (const sprite of Object.values(opSprite)) {
-                        core.rootScene.removeChild(sprite);
-                    }
-                }
-                operationSpriteList.length = 0;
-            };
-
             operationSprite.discard.addEventListener('touchstart', function () {
-                removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFuncToken);
+                removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {
-                touchRemoveFuncToken();
+                touchRemoveFunc();
             });
 
             operationSprite.tap.addEventListener('touchstart', function () {
@@ -531,7 +515,7 @@ window.onload = function () {
                 } else {
                     tapCard(targetCard);
                 };
-                touchRemoveFuncToken();
+                touchRemoveFunc();
             });
 
             operationSprite.left.addEventListener('touchstart', function () {
@@ -540,7 +524,7 @@ window.onload = function () {
                     swapCard(targetCard, cardList.field.sprite[targetCardIdx - 1], cardList.field);
                     swapCounter(counterList.sprite[targetCardIdx], counterList.sprite[targetCardIdx - 1], counterList);
                 };
-                touchRemoveFuncToken();
+                touchRemoveFunc();
             });
 
             operationSprite.right.addEventListener('touchstart', function () {
@@ -549,25 +533,27 @@ window.onload = function () {
                     swapCard(targetCard, cardList.field.sprite[targetCardIdx + 1], cardList.field);
                     swapCounter(counterList.sprite[targetCardIdx], counterList.sprite[targetCardIdx + 1], counterList);
                 };
-                touchRemoveFuncToken();
+                touchRemoveFunc();
             });
 
             operationSprite.plus.addEventListener('touchstart', function () {
                 const counterList = cardList.counter;
                 setCounterNum(counterList.sprite[targetCardIdx], counterList.number[targetCardIdx] + 1, counterList);
-                touchRemoveFuncToken();
+                touchRemoveFunc();
             });
 
             operationSprite.minus.addEventListener('touchstart', function () {
                 const counterList = cardList.counter;
                 setCounterNum(counterList.sprite[targetCardIdx], counterList.number[targetCardIdx] - 1, counterList);
-                touchRemoveFuncToken();
+                touchRemoveFunc();
             });
 
+            touchRemoveFunc();
             for (const op of operation) {
                 core.currentScene.addChild(operationSprite[op]);
             }
-            operationSpriteList.push(operationSprite);
+            displayedOpSprite = operationSprite;
+
         };
 
         var touchFuncPlayUp = function () {
@@ -580,23 +566,13 @@ window.onload = function () {
             ];
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
-            //remove button
-            const touchRemoveFuncUp = function () {
-                for (const opSprite of operationSpriteList) {
-                    for (const sprite of Object.values(opSprite)) {
-                        core.rootScene.removeChild(sprite);
-                    }
-                }
-                operationSpriteList.length = 0;
-            };
-
             operationSprite.discard.addEventListener('touchstart', function () {
-                removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFuncUp);
+                removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFunc);
                 playHistory.push({ type: 'discard', cardNum: targetCardNum, from: 'upField', isFaceDown: isFaceDown });
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {
-                touchRemoveFuncUp();
+                touchRemoveFunc();
             });
 
             operationSprite.tap.addEventListener('touchstart', function () {
@@ -605,35 +581,37 @@ window.onload = function () {
                 } else {
                     tapCard(targetCard);
                 };
-                touchRemoveFuncUp();
+                touchRemoveFunc();
             });
 
             operationSprite.reHand.addEventListener('touchstart', function () {
-                removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFuncUp);
+                removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFunc);
                 setCard(targetCardNum, cardList.hand, cardProperties.hand, cardProperties.imagePath, core, touchFuncHand);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
 
             operationSprite.zoom.addEventListener('touchstart', function () {
                 zoomCard(targetCard.image, cardProperties.upField, core);
-                touchRemoveFuncUp();
+                touchRemoveFunc();
             });
 
             operationSprite.reTower.addEventListener('touchstart', function () {
-                removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFuncUp);
+                removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFunc);
                 socket.emit('return', targetCardNum);
             });
 
             operationSprite.faceUpDown.addEventListener('touchstart', function () {
                 faceUpDown(targetCardIdx, cardList.upField, cardProperties.imagePath, componentProp, core);
-                touchRemoveFuncUp();
+                touchRemoveFunc();
                 if (isFaceDown) { socket.emit('play', targetCardNum); }
             });
 
+            touchRemoveFunc();
             for (const op of operation) {
                 core.currentScene.addChild(operationSprite[op]);
             }
-            operationSpriteList.push(operationSprite);
+            displayedOpSprite = operationSprite;
+
         };
 
         var touchFuncLand = function () {
