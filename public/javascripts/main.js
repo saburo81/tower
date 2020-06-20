@@ -78,8 +78,7 @@ window.onload = function () {
             reset: { imgName: 'reset.jpg', x: SCREEN_WIDTH - 172, y: 80, scale: 0.69, rotation: 0 },
             untapAll: { imgName: 'untap.jpg', x: 10, y: 300, scale: 1.0, rotation: 0 },
             addToken: { imgName: 'token.jpg', x: -45, y: 360, scale: 0.6, rotation: 0 },
-            destroyLand: { imgName: 'destroyland.jpg', x: 10, y: 450, scale: 1.0, rotation: 0 },
-            dice: { imgName: 'dice.gif', x: -25, y: 110, scale: 0.4, rotation: 0 }
+            destroyLand: { imgName: 'destroyland.jpg', x: 10, y: 450, scale: 1.0, rotation: 0 }
         },
         card: {
             land: { imgName: 'tower_land.jpg' },
@@ -90,7 +89,8 @@ window.onload = function () {
             playerName: { width: 150, height: 50, x: 75, y: 10 },
             handCardNum: { width: 125, height: 50, x: 1100, y: 10 },
             lifeCounter: { width: 100, height: 50, x: 1250, y: 10 },
-            undo: { width: 110, height: 50, x: 10, y: 245 }
+            undo: { width: 110, height: 50, x: 10, y: 245 },
+            dice: { width: 76, height: 76, x: 25, y: 150 }
         }
     };
 
@@ -150,7 +150,8 @@ window.onload = function () {
             playerName: new Entity(),
             handCardNum: new Entity(),
             lifeCounter: new Entity(),
-            undo: new Entity()
+            undo: new Entity(),
+            dice: new Entity()
         }
 
         for (const [key, entity] of Object.entries(domComponent)) {
@@ -239,6 +240,18 @@ window.onload = function () {
         undoElement.addEventListener('click', undo);
         domComponent.undo._element = undoElement;
 
+        // サイコロ
+        // 素材元：https://commons.nicovideo.jp/material/nc122454
+        const diceRoll = () => {
+            const diceNum = Math.floor(Math.random() * 6) + 1;
+            diceElement.setAttribute('src', `${cardProperties.imagePath.component}6d_0${diceNum}.gif`);
+        }
+
+        const diceElement = document.createElement('img');
+        diceElement.setAttribute('src', `${cardProperties.imagePath.component}6d_01.gif`);
+        diceElement.addEventListener('click', diceRoll);
+        domComponent.dice._element = diceElement;
+
         // 各種コンポーネントの生成 (Sprite)
         const fieldComponent = {
             cardBack: new Sprite(223, 319),
@@ -307,20 +320,6 @@ window.onload = function () {
 
         fieldComponent.destroyLand.addEventListener('touchstart', () => {
             destroyLand(core, cardList.land.sprite);
-        });
-
-        // サイコロ
-        const diceLabel = new Label('0');
-        diceLabel.color = "black";
-        diceLabel.font = "normal normal 30px/1.0 monospace";
-        diceLabel.moveTo(60, 120);
-        core.rootScene.addChild(diceLabel);
-
-        fieldComponent.dice.addEventListener('touchstart', function () {
-            core.rootScene.removeChild(diceLabel);
-            var diceNum = Math.floor(Math.random() * 6) + 1;
-            diceLabel.text = String(diceNum);
-            core.rootScene.addChild(diceLabel);
         });
 
         socket.on('draw', function (data) {
