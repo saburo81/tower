@@ -7,14 +7,14 @@
 //   imagePath: カード画像ディレクトリへのパス
 //   core: EnchantJSオブジェクト
 //   touchFunc: カードクリック時に呼び出す関数
-export const setCard = (cardNum, dstCardList, dstCardProp, imagePath, core,
-                        touchFunc, isFaceDown = false) => {
+export const setCard = (cardName, dstCardList, dstCardProp, imagePath, core,
+    touchFunc, isFaceDown = false) => {
     // カードを生成
     const cardMap = {
         10000: { type: 'token', name: `${imagePath.component}maotoken.jpg` },
         10001: { type: 'land', name: `${imagePath.component}tower_land.jpg` }
     };
-    const cardInfo = cardMap[cardNum] || { type: 'card', name: `${imagePath.card}tower (${cardNum}).jpg` };
+    const cardInfo = cardMap[cardName] || { type: 'card', name: `${imagePath.card}${cardName}` };
     const card = new Sprite(dstCardProp.image.width, dstCardProp.image.height);
     card.image = (isFaceDown) ?
         core.assets[`${imagePath.component}back_image.jpg`] :
@@ -31,7 +31,7 @@ export const setCard = (cardNum, dstCardList, dstCardProp, imagePath, core,
     // カードリストの更新
     dstCardList.sprite.push(card);
     if (cardInfo.type !== 'land') {
-        dstCardList.number.push(cardNum);
+        dstCardList.number.push(cardName);
         dstCardList.isFaceDown.push(isFaceDown);
     }
 }
@@ -43,7 +43,7 @@ export const setCard = (cardNum, dstCardList, dstCardProp, imagePath, core,
 //   core: EnchantJSオブジェクト
 //   touchRemoveFunc: カードを取り除く際に呼び出す関数
 export const removeCard = (targetCard, targetCardList, targetCardProp, core,
-                            touchRemoveFunc) => {
+    touchRemoveFunc) => {
     const discardIdx = targetCardList.sprite.findIndex((card) => card.x === targetCard.x);
     const discardSet = targetCardList.sprite[discardIdx];
     core.currentScene.removeChild(discardSet);
@@ -103,10 +103,10 @@ export const untapCard = (card) => {
 //   imagePath: カードのベースパス
 //   cmpntProp: コンポーネントのプロパティ
 export const faceUpDown = (cardIdx, cardList, imagePath, cmpntProp, core) => {
-    const cardNum = cardList.number[cardIdx];
+    const cardName = cardList.number[cardIdx];
     const isFaceDown = cardList.isFaceDown[cardIdx];
     cardList.sprite[cardIdx].image = (isFaceDown) ?
-        core.assets[`${imagePath.card}tower (${cardNum}).jpg`] :
+        core.assets[`${imagePath.card}${cardName}`] :
         core.assets[`${imagePath.component}${cmpntProp.field.cardBack.imgName}`];
     cardList.isFaceDown[cardIdx] = !isFaceDown;
 }

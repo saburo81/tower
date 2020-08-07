@@ -10,50 +10,44 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
-var towerHeight = 1300;
-var topcardNum = 0;
-var tower = [];
-var min = 1, max = towerHeight
-function intRandom(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-};
+const shuffle = (array) => {
+    for (let i = array.length - 1; i >= 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+const tower = { all: [], current: [] };
+const fs = require("fs");
+const dirPath = "public/images/cards";
+const allDirents = fs.readdirSync(dirPath, { withFileTypes: true });
+tower.all = allDirents.filter(dirent => dirent.isFile()).map(({ name }) => name);
+tower.current = shuffle([...tower.all]);
 
 io.on('connection', function (socket) {
     id++;
     console.log("userid" + id);
     socket.on('drawcard', function () {
-        if (tower.length == 0) {
+        if (tower.current.length == 0) {
             console.log("tower over");
         } else {
-            topcardNum = tower[0];
-            socket.emit('draw', topcardNum);
-            tower.shift();
+            socket.emit('draw', tower.current.shift());
         };
     });
     socket.on('maketower', function () {
         console.log("make tower");
-        ft = 0;
-        var randoms = [];
-        for (var i = min; i <= max; i++) {
-            while (true) {
-                var tmp = intRandom(min, max);
-                if (!randoms.includes(tmp)) {
-                    randoms.push(tmp);
-                    break;
-                };
-            };
-        };
-        tower = [];
-        tower = randoms;
+        tower.current = shuffle([...tower.all]);
     });
     socket.on('play', function (msg) {
         socket.broadcast.emit('opplay', msg);
     });
 
     socket.on('return', function (data) {
-        tower.unshift(data);
+        tower.current.unshift(data);
     });
 });
+
 http.listen(PORT, function () {
     console.log('server listening. Port:' + PORT);
 });

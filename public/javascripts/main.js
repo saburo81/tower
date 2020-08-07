@@ -328,7 +328,7 @@ window.onload = function () {
         });
 
         socket.on('opplay', function (data) {
-            const opplayName = `${cardProperties.imagePath.card}tower (${data}).jpg`;
+            const opplayName = `${cardProperties.imagePath.card}${data}`;
             const opLabel = new Label('opponent play');
             opLabel.x = cardProperties.opCard.zoom.x;
             opLabel.y = cardProperties.opCard.zoom.y + 350;
