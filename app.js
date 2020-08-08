@@ -20,12 +20,16 @@ const shuffle = (array) => {
     return array;
 }
 
-const tower = { all: [], current: [] };
+// タワー構築
 const fs = require("fs");
-const dirPath = "public/images/cards";
-const allDirents = fs.readdirSync(dirPath, { withFileTypes: true });
-tower.all = allDirents.filter(dirent => dirent.isFile()).map(({ name }) => name);
-tower.current = shuffle([...tower.all]);
+const tower = { all: [], current: [] };
+const cardImgDirPath = "public/images/cards";
+const cardImgDirents = fs.readdirSync(cardImgDirPath, { withFileTypes: true });
+tower.all = cardImgDirents.filter(dirent => dirent.isFile()).map(({ name }) => name);
+const banListPath = "./banList.json";
+const banList = JSON.parse(fs.readFileSync(banListPath)).cards;
+tower.current = tower.all.filter(card => !banList.includes(card));
+tower.current = shuffle([...tower.current]);
 
 io.on('connection', function (socket) {
     id++;
@@ -39,7 +43,8 @@ io.on('connection', function (socket) {
     });
     socket.on('maketower', function () {
         console.log("make tower");
-        tower.current = shuffle([...tower.all]);
+        tower.current = tower.all.filter(card => !banList.includes(card));
+        tower.current = shuffle([...tower.current]);
     });
     socket.on('play', function (msg) {
         socket.broadcast.emit('opplay', msg);
