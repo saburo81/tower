@@ -6,8 +6,10 @@ id = 0;
 const io = require('socket.io')(http);
 const PORT = process.env.PORT || 7000;
 
+app.set("view engine", "ejs");
+
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
+    res.render('index', { "cardImages": tower.all });
 });
 
 const shuffle = (array) => {

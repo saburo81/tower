@@ -4,6 +4,7 @@
   "description": "test タワーのver1.0 nodejsのインストールが必要 nodejsをインストールしたあと npm install connect さらにnpm install serve-static main.js ではenchant.jsというライブラリを使ってる カードイメージはForgeからごにょごにょして手に入れた",
   "main": "main.js",
   "dependencies": {
+    "ejs": "^3.1.3",
     "express": "^4.17.1",
     "socket.io": "^2.3.0"
   },

@@ -7,7 +7,6 @@ import {
 var socket = io();
 var SCREEN_WIDTH = 1680; //スクリーン幅
 var SCREEN_HEIGHT = 960; //スクリーン高さ
-var towerHeight = 1300;
 
 window.onload = function () {
     const core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -104,8 +103,8 @@ window.onload = function () {
     }
 
     // カード画像のロード
-    for (var i = 1; i < towerHeight; i++) {
-        var precard = `${cardProperties.imagePath.card}tower (${i}).jpg`;
+    for (let i = 0; i < cardImages.length; i++) {
+        const precard = `${cardProperties.imagePath.card}${cardImages[i]}`;
         core.preload(precard);
     };
 
