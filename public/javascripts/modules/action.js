@@ -1,7 +1,7 @@
 /* カード操作に関する関数 */
 
 // カードを配置する
-//   cardNum: カード番号
+//   cardName: カード番号
 //   dstCardList: 配置する場のカードリスト
 //   dstCardProp: 配置する場のカードプロパティ
 //   imagePath: カード画像ディレクトリへのパス
@@ -11,8 +11,8 @@ export const setCard = (cardName, dstCardList, dstCardProp, imagePath, core,
     touchFunc, isFaceDown = false) => {
     // カードを生成
     const cardMap = {
-        10000: { type: 'token', name: `${imagePath.component}maotoken.jpg` },
-        10001: { type: 'land', name: `${imagePath.component}tower_land.jpg` }
+        'token': { type: 'token', name: `${imagePath.component}maotoken.jpg` },
+        'land': { type: 'land', name: `${imagePath.component}tower_land.jpg` }
     };
     const cardInfo = cardMap[cardName] || { type: 'card', name: `${imagePath.card}${cardName}` };
     const card = new Sprite(dstCardProp.image.width, dstCardProp.image.height);
@@ -31,7 +31,7 @@ export const setCard = (cardName, dstCardList, dstCardProp, imagePath, core,
     // カードリストの更新
     dstCardList.sprite.push(card);
     if (cardInfo.type !== 'land') {
-        dstCardList.number.push(cardName);
+        dstCardList.name.push(cardName);
         dstCardList.isFaceDown.push(isFaceDown);
     }
 }
@@ -55,7 +55,7 @@ export const removeCard = (targetCard, targetCardList, targetCardProp, core,
         );
     };
     targetCardList.sprite.splice(discardIdx, 1);
-    targetCardList.number.splice(discardIdx, 1);
+    targetCardList.name.splice(discardIdx, 1);
     targetCardList.isFaceDown.splice(discardIdx, 1);
     touchRemoveFunc();
 }
@@ -66,11 +66,11 @@ export const removeCard = (targetCard, targetCardList, targetCardProp, core,
 //   targetCardList: 配置する場のカードリスト
 export const swapCard = (cardA, cardB, targetCardList) => {
     const cardAIdx = targetCardList.sprite.findIndex((card) => card === cardA);
-    const cardANum = targetCardList.number[cardAIdx];
+    const cardAName = targetCardList.name[cardAIdx];
     const cardACoord = { x: cardA.x, y: cardA.y };
     const cardAisFaceDown = targetCardList.isFaceDown[cardAIdx];
     const cardBIdx = targetCardList.sprite.findIndex((card) => card === cardB);
-    const cardBNum = targetCardList.number[cardBIdx];
+    const cardBName = targetCardList.name[cardBIdx];
     const cardBCoord = { x: cardB.x, y: cardB.y };
     const cardBisFaceDown = targetCardList.isFaceDown[cardBIdx];
 
@@ -79,8 +79,8 @@ export const swapCard = (cardA, cardB, targetCardList) => {
 
     targetCardList.sprite[cardAIdx] = cardB;
     targetCardList.sprite[cardBIdx] = cardA;
-    targetCardList.number[cardAIdx] = cardBNum;
-    targetCardList.number[cardBIdx] = cardANum;
+    targetCardList.name[cardAIdx] = cardBName;
+    targetCardList.name[cardBIdx] = cardAName;
     targetCardList.isFaceDown[cardAIdx] = cardBisFaceDown;
     targetCardList.isFaceDown[cardBIdx] = cardAisFaceDown;
 }
@@ -103,7 +103,7 @@ export const untapCard = (card) => {
 //   imagePath: カードのベースパス
 //   cmpntProp: コンポーネントのプロパティ
 export const faceUpDown = (cardIdx, cardList, imagePath, cmpntProp, core) => {
-    const cardName = cardList.number[cardIdx];
+    const cardName = cardList.name[cardIdx];
     const isFaceDown = cardList.isFaceDown[cardIdx];
     cardList.sprite[cardIdx].image = (isFaceDown) ?
         core.assets[`${imagePath.card}${cardName}`] :
