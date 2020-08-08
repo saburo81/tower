@@ -161,16 +161,16 @@ window.onload = function () {
         }
 
         // プレイ順
-        const playOrderElement = document.createElement('button');
+        const playOrderElement = document.createElement('a');
         playOrderElement.setAttribute('id', 'playOrder');
-        playOrderElement.setAttribute('class', 'team-red');
+        playOrderElement.setAttribute('class', 'btn red lighten-2');
         playOrderElement.innerText = 1;
         playOrderElement.onclick = function () {
             this.innerText = this.innerText++ % 4 + 1;
             if (this.innerText % 2 != 0) {
-                this.setAttribute('class', 'team-red');
+                this.setAttribute('class', 'btn red lighten-2');
             } else {
-                this.setAttribute('class', 'team-blue');
+                this.setAttribute('class', 'btn blue lighten-2');
             };
         };
         domComponent.playOrder._element = playOrderElement;
@@ -179,13 +179,13 @@ window.onload = function () {
         const playerNameElement = document.createElement('input');
         playerNameElement.setAttribute('type', 'text');
         playerNameElement.setAttribute('maxlength', '10');
-        playerNameElement.setAttribute('id', 'test');
-        playerNameElement.setAttribute('value', 'name');
+        playerNameElement.setAttribute('id', 'name');
+        playerNameElement.setAttribute('placeholder', 'Name');
         domComponent.playerName._element = playerNameElement;
 
         // 手札枚数
         const handCardNumElement = document.createElement('p');
-        handCardNumElement.setAttribute('class', 'hand-card-num');
+        handCardNumElement.setAttribute('id', 'hand-card-num');
         domComponent.handCardNum._element = handCardNumElement;
         setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
 
