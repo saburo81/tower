@@ -5,7 +5,9 @@
     <meta http-equiv="x-ua-compatible" content="IE=Edge">
     <meta name="viewport" content="width=device-width, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="javascripts/enchant.js"></script>
     <script type="text/javascript">
@@ -14,6 +16,13 @@
     <script type="module" src="javascripts/main.js"></script>
 </head>
 <body>
+    <ul id="slide-out" class="sidenav">
+        <li><a class="subheader">盤面操作</a></li>
+        <li><a id="field-reset" class="waves-effect sidenav-close">盤面リセット</a></li>
+        <li><div class="divider"></div></li>
+        <li><a class="subheader">タワー管理</a></li>
+        <li><a id="make-tower" class="waves-effect sidenav-close">タワー再構築</a></li>
+    </ul>
 </body>
 </html>
 

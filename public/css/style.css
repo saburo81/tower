@@ -3,30 +3,33 @@ body {
     padding: 0;
 }
 
-input {
+#life-counter {
     font-size: 48px;
+    background-color: white;
 }
 
-button {
+#name {
+    margin: 3px 0px;
     font-size: 48px;
+    background-color: white;
 }
 
-button.team-red {
-    background-color: lightsalmon;
-}
-
-button.team-blue {
-    background-color: lightskyblue;
+#playOrder {
+    font-size: 48px;
+    line-height: 50px;
 }
 
 #undo {
     font-size: 32px;
 }
 
-p.hand-card-num {
+#hand-card-num {
     margin: 0px;
-    padding: 3px;
     font-size: 48px;
-    line-height: 56px;
+    line-height: 48px;
     background-color: white;
+}
+
+#menu {
+    line-height: 50px;
 }
