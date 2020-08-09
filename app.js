@@ -27,13 +27,14 @@ const cardImgDirPath = "public/images/cards";
 const cardImgDirents = fs.readdirSync(cardImgDirPath, { withFileTypes: true });
 tower.all = cardImgDirents.filter(dirent => dirent.isFile()).map(({ name }) => name);
 const banListPath = "./banList.json";
-const banList = JSON.parse(fs.readFileSync(banListPath)).cards;
+let banList = JSON.parse(fs.readFileSync(banListPath)).cards;
 tower.current = tower.all.filter(card => !banList.includes(card));
 tower.current = shuffle([...tower.current]);
 
 io.on('connection', function (socket) {
     id++;
     console.log("userid" + id);
+ 
     socket.on('drawcard', function () {
         if (tower.current.length == 0) {
             console.log("tower over");
@@ -41,17 +42,33 @@ io.on('connection', function (socket) {
             socket.emit('draw', tower.current.shift());
         };
     });
+ 
     socket.on('maketower', function () {
         console.log("make tower");
         tower.current = tower.all.filter(card => !banList.includes(card));
         tower.current = shuffle([...tower.current]);
     });
+ 
     socket.on('play', function (msg) {
         socket.broadcast.emit('opplay', msg);
     });
 
     socket.on('return', function (data) {
         tower.current.unshift(data);
+    });
+
+    socket.on('banList', function (data) {
+        switch (data.type) {
+            case 'get':
+                socket.emit('updateBanList', banList);
+                break;
+            case 'update':
+                banList = data.banList;
+                fs.writeFileSync(banListPath, JSON.stringify({ 'cards': banList }));
+                tower.current = tower.current.filter(card => !banList.includes(card));
+                socket.broadcast.emit('updateBanList', banList);
+                break;
+        }
     });
 });
 
