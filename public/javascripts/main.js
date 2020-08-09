@@ -73,8 +73,6 @@ window.onload = function () {
         },
         field: {
             cardBack: { imgName: 'back_image.jpg', x: SCREEN_WIDTH / 2 - 50, y: -70, scale: 0.7, rotation: 90 },
-            makeTower: { imgName: 'make_tower.jpg', x: SCREEN_WIDTH - 170, y: 0, scale: 0.7, rotation: 0 },
-            reset: { imgName: 'reset.jpg', x: SCREEN_WIDTH - 172, y: 80, scale: 0.69, rotation: 0 },
             untapAll: { imgName: 'untap.jpg', x: 10, y: 300, scale: 1.0, rotation: 0 },
             addToken: { imgName: 'token.jpg', x: -45, y: 360, scale: 0.6, rotation: 0 },
             destroyLand: { imgName: 'destroyland.jpg', x: 10, y: 450, scale: 1.0, rotation: 0 }
@@ -88,6 +86,7 @@ window.onload = function () {
             playerName: { width: 150, height: 50, x: 75, y: 10 },
             handCardNum: { width: 125, height: 50, x: 1100, y: 10 },
             lifeCounter: { width: 100, height: 50, x: 1250, y: 10 },
+            menu: { width: 100, height: 50, x: SCREEN_WIDTH - 300, y: 10 },
             undo: { width: 110, height: 50, x: 10, y: 245 },
             dice: { width: 76, height: 76, x: 25, y: 150 }
         }
@@ -149,6 +148,7 @@ window.onload = function () {
             playerName: new Entity(),
             handCardNum: new Entity(),
             lifeCounter: new Entity(),
+            menu: new Entity(),
             undo: new Entity(),
             dice: new Entity()
         }
@@ -195,6 +195,37 @@ window.onload = function () {
         lifeCounterElement.setAttribute('id', 'life-counter');
         lifeCounterElement.setAttribute('value', '0');
         domComponent.lifeCounter._element = lifeCounterElement;
+
+        // メニュー
+        const menuElement = document.createElement('a');
+        menuElement.setAttribute('id', 'menu');
+        menuElement.setAttribute('class', 'sidenav-trigger btn blue lighten-2');
+        menuElement.setAttribute('data-target', 'slide-out');
+        menuElement.innerText = 'メニュー';
+        domComponent.menu._element = menuElement;
+
+        // 盤面リセット (サイドバー操作)
+        const resetElement = document.getElementById('field-reset');
+        resetElement.addEventListener('click', function () {
+            for (const type of Object.values(cardList)) {
+                // 描画の削除
+                for (const card of type.sprite) {
+                    core.rootScene.removeChild(card);
+                }
+                // リストの初期化
+                for (const val of Object.values(type)) {
+                    val.splice(0);
+                }
+            }
+            playHistory.splice(0);
+            setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
+        });
+
+        // タワー再構築 (サイドバー操作)
+        const makeTowerElement = document.getElementById('make-tower');
+        makeTowerElement.addEventListener('click', function () {
+            socket.emit('maketower');
+        });
 
         // UnDo
         const undo = () => {
@@ -254,8 +285,6 @@ window.onload = function () {
         // 各種コンポーネントの生成 (Sprite)
         const fieldComponent = {
             cardBack: new Sprite(223, 319),
-            makeTower: new Sprite(210, 99),
-            reset: new Sprite(217, 94),
             untapAll: new Sprite(108, 74),
             addToken: new Sprite(218, 93),
             destroyLand: new Sprite(115, 78),
@@ -272,33 +301,6 @@ window.onload = function () {
         // タワー
         fieldComponent.cardBack.addEventListener('touchstart', function () {
             socket.emit('drawcard');
-        });
-
-        // タワー再構築
-        fieldComponent.makeTower.addEventListener('touchstart', function () {
-            socket.emit('maketower');
-        });
-
-        // 盤面リセット
-        var reset_flag = false;
-        fieldComponent.reset.addEventListener('touchstart', function () {
-            if (reset_flag) {
-                for (const type of Object.values(cardList)) {
-                    // 描画の削除
-                    for (const card of type.sprite) {
-                        core.rootScene.removeChild(card);
-                    }
-                    // リストの初期化
-                    for (const val of Object.values(type)) {
-                        val.splice(0);
-                    }
-                }
-                playHistory.splice(0);
-                setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
-                reset_flag = false;
-            } else {
-                reset_flag = true;
-            };
         });
 
         // 全アンタップ
@@ -633,6 +635,9 @@ window.onload = function () {
         for (const cmpnt of Object.values(fieldComponent)) {
             core.rootScene.addChild(cmpnt);
         }
+
+        const sidenavElems = document.querySelectorAll('.sidenav');
+        M.Sidenav.init(sidenavElems, { 'edge': 'right' });
     };
     core.start();
 };

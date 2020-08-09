@@ -29,3 +29,7 @@ body {
     line-height: 48px;
     background-color: white;
 }
+
+#menu {
+    line-height: 50px;
+}
