@@ -33,3 +33,7 @@ body {
 #menu {
     line-height: 50px;
 }
+
+.tooltip-content {
+    text-align: start;
+}

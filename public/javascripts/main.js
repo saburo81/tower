@@ -22,6 +22,9 @@ window.onload = function () {
         counter: { sprite: [], number: [] }  // spriteに格納されるのはLabelオブジェクト
     }
 
+    // 禁止カードリスト
+    let banList = [];
+
     // 表示中のoperationSprite
     let displayedOpSprite = null;
 
@@ -225,6 +228,14 @@ window.onload = function () {
         const makeTowerElement = document.getElementById('make-tower');
         makeTowerElement.addEventListener('click', function () {
             socket.emit('maketower');
+        });
+
+        // 禁止カードリスト更新 (サイドバー操作)
+        // DataTablesは内部データが更新されても表示が更新されないため
+        // モーダル表示の度にDataTableを手動で更新する
+        const banListElement = document.getElementById('ban-list-sidenav');
+        banListElement.addEventListener('click', function () {
+            refreshDataTables();
         });
 
         // UnDo
@@ -636,8 +647,123 @@ window.onload = function () {
             core.rootScene.addChild(cmpnt);
         }
 
+        // サイドバー初期化
         const sidenavElems = document.querySelectorAll('.sidenav');
         M.Sidenav.init(sidenavElems, { 'edge': 'right' });
+
+        // モーダル初期化
+        const modalElems = document.querySelectorAll('.modal');
+        M.Modal.init(modalElems);
+
+        // ツールチップ初期化
+        const toolTipElems = document.querySelectorAll('.tooltipped');
+        const toolTipHtml = '許可：要タワー再構築<br>' +
+            '禁止：即時反映<br>' +
+            'Searchで「禁止/ 許可」絞り込み可能<br>' +
+            '変になったら一旦モーダルを閉じて<br>' +
+            '開き直すと上手くいったりする'
+        M.Tooltip.init(toolTipElems, { 'html': toolTipHtml });
+
+        // 禁止カードリスト取得
+        // DataTable表示中に他プレイヤーが禁止カードリストを更新した際に
+        // 表示中のDataTableへ更新を反映させるためのイベントハンドラ
+        socket.on('updateBanList', function (data) {
+            banList = data;
+            refreshDataTables();
+        });
+
+        // DataTablesの更新
+        // banListの更新をDataTablesに反映
+        const refreshDataTables = () => {
+            for (let i = 0; i < dataTableData.length; i++) {
+                const data = dataTableData[i];
+                data.banned = banList.includes(data.name);
+                data.filterIdx = data.banned ? '禁止' : '許可';
+            }
+            const datatable = $('#ban-list-table').DataTable();
+            datatable.clear();
+            datatable.search('');
+            datatable.rows.add(dataTableData);
+            datatable.draw();
+
+            // 禁止リスト更新スイッチ
+            // datatable.clearを実行することで禁止リスト更新スイッチに
+            // 紐付けたイベントハンドラも消える
+            // そのためDataTable更新の度にイベントハンドラを紐付けし直す
+            const banListSwitches = document.querySelectorAll('.banList');
+            for (let i = 0; i < banListSwitches.length; i++) {
+                const datatable = $('#ban-list-table').DataTable();
+                const banListSwitch = banListSwitches[i];
+                banListSwitch.addEventListener('click', event => {
+                    const trElem = event.target.closest('tr');
+                    const switchText = trElem.querySelector('span');
+                    let banStatus = '';
+                    if (event.target.checked) {
+                        const index = banList.indexOf(event.target.value);
+                        if (index > -1) {
+                            banList.splice(index, 1);
+                        }
+                        event.target.removeAttribute('checked');
+                        banStatus = '許可';
+                    } else {
+                        banList.push(event.target.value);
+                        event.target.setAttribute('checked', '');
+                        banStatus = '禁止';
+                    }
+                    switchText.innerText = banStatus;
+                    datatable.row(trElem).data().filterIdx = banStatus;
+                    // 重複要素の削除
+                    // 基本的には重複要素は登録されないが他プレイヤーの
+                    // 更新タイミング次第で重複要素が登録される可能性がある
+                    banList = Array.from(new Set(banList));
+                    socket.emit('banList', { 'type': 'update', 'banList': banList });
+                });
+            }
+        }
+
+        // DataTable初期化
+        const dataTableData = cardImages.map(card => {
+            return {
+                'banned': banList.includes(card),
+                'name': card,
+                'filterIdx': banList.includes(card) ? '禁止' : '許可'
+            }
+        });
+        $('#ban-list-table').DataTable({
+            'data': dataTableData,
+            'columns': [
+                {
+                    'data': 'banned',
+                    'title': 'Status',
+                    'render': function (data, type, row, meta) {
+                        const switchHTML = '<div class="switch">' +
+                            '<label>' +
+                            `<span>${!data ? "許可" : "禁止"}</span>` +
+                            `<input type="checkbox" class="banList" value="${row.name}"` +
+                            `${!data ? "checked" : ""}>` +
+                            '<span class="lever"></span>' +
+                            '</label>' +
+                            '</div>';
+                        return switchHTML;
+                    }
+                },
+                {
+                    'data': 'name',
+                    'title': 'Card Name'
+                },
+                {
+                    'data': 'filterIdx',
+                    'title': '検索用',
+                    'className': 'filterIdx',
+                    'visible': false
+                }
+            ],
+            'order': [1, 'asc'],
+            'paging': false
+        });
+
+        // 禁止リスト初回取得リクエスト
+        socket.emit('banList', { 'type': 'get' });
     };
     core.start();
 };
