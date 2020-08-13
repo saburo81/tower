@@ -30,15 +30,62 @@
         <li><a id="ban-list-sidenav" class="waves-effect modal-trigger sidenav-close" href="#ban-list-modal">
             禁止カードリスト
         </a></li>
+        <li><a id="card-upload-sidenav" class="waves-effect modal-trigger sidenav-close" href="#card-upload-modal">
+            カードアップロード
+        </a></li>
     </ul>
     <!-- Modal Structure -->
     <div id="ban-list-modal" class="modal">
         <div class="modal-content">
-            <a class="btn tooltipped" data-position="bottom"><i class='material-icons'>info</i></a>
+            <a id="ban-list-info"  class="btn tooltipped" data-position="bottom">
+                <i class='material-icons'>info</i>
+            </a>
             <table id="ban-list-table" class="display compact" width="100%"></table>
         </div>
+    </div>
+    <!-- Modal Structure -->
+    <div id="card-upload-modal" class="modal">
+        <div class="modal-content">
+            <div class="row">
+                <div class="col s11">
+                    <div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>条件</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>ファイル名</td>
+                                    <td>カード名（基本的に英名）</td>
+                                </tr>
+                                <tr>
+                                    <td>ファイル種別</td>
+                                    <td>jpg（png/gifなども可）</td>
+                                </tr>
+                                <tr>
+                                    <td>画像サイズ</td>
+                                    <td>221×311</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p>例）Anax, Hardened in the Forge1.jpg</p>
+                        <input type="file" id="card-upload-select" accept="image/*" multiple>
+                    </div>
+                    <div id="file-list"></div>
+                </div>
+                <div class="col s1">
+                    <a id="card-upload-info" class="btn tooltipped" data-position="bottom">
+                        <i class='material-icons'>info</i>
+                    </a>
+                </div>
+            </div>
+        </div>
         <div class="modal-footer">
-            <a class="modal-close waves-effect waves-green btn-flat">適用</a>
+            <a id="card-upload-cancel" class="modal-close waves-effect waves-green btn-flat">キャンセル</a>
+            <a id="card-upload-execute" class="modal-close waves-effect waves-green btn-flat">アップロード</a>
         </div>
     </div>
 </body>

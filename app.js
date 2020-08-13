@@ -5,6 +5,7 @@ var http = require('http').Server(app);
 id = 0;
 const io = require('socket.io')(http);
 const PORT = process.env.PORT || 7000;
+app.use(express.urlencoded({ extended: true }));
 
 app.set("view engine", "ejs");
 
@@ -24,12 +25,32 @@ const shuffle = (array) => {
 const fs = require("fs");
 const tower = { all: [], current: [] };
 const cardImgDirPath = "public/images/cards";
-const cardImgDirents = fs.readdirSync(cardImgDirPath, { withFileTypes: true });
+let cardImgDirents = fs.readdirSync(cardImgDirPath, { withFileTypes: true });
 tower.all = cardImgDirents.filter(dirent => dirent.isFile()).map(({ name }) => name);
 const banListPath = "./banList.json";
 let banList = JSON.parse(fs.readFileSync(banListPath)).cards;
 tower.current = tower.all.filter(card => !banList.includes(card));
 tower.current = shuffle([...tower.current]);
+
+// カード画像アップロード
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/images/cards');
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
+    }
+})
+const upload = multer({ storage: storage });
+
+app.post('/api/cards', upload.array('files'), function (req, res, next) {
+    cardImgDirents = fs.readdirSync(cardImgDirPath, { withFileTypes: true });
+    tower.all = cardImgDirents.filter(dirent =>
+        dirent.isFile()
+    ).map(({ name }) => name);
+    res.send('upload success');
+});
 
 io.on('connection', function (socket) {
     id++;
