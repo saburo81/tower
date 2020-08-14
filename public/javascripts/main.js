@@ -655,14 +655,14 @@ window.onload = function () {
         const modalElems = document.querySelectorAll('.modal');
         M.Modal.init(modalElems);
 
-        // ツールチップ初期化
-        const toolTipElems = document.querySelectorAll('.tooltipped');
-        const toolTipHtml = '許可：要タワー再構築<br>' +
+        // ツールチップ初期化（禁止カード）
+        const banToolTipElems = document.getElementById('ban-list-info');
+        const banToolTipHtml = '許可：要タワー再構築<br>' +
             '禁止：即時反映<br>' +
             'Searchで「禁止/ 許可」絞り込み可能<br>' +
             '変になったら一旦モーダルを閉じて<br>' +
             '開き直すと上手くいったりする'
-        M.Tooltip.init(toolTipElems, { 'html': toolTipHtml });
+        M.Tooltip.init(banToolTipElems, { 'html': banToolTipHtml });
 
         // 禁止カードリスト取得
         // DataTable表示中に他プレイヤーが禁止カードリストを更新した際に
@@ -764,6 +764,62 @@ window.onload = function () {
 
         // 禁止リスト初回取得リクエスト
         socket.emit('banList', { 'type': 'get' });
+
+        // ツールチップ初期化（カードアップロード）
+        const uploadToolTipElems = document.getElementById('card-upload-info');
+        const uploadToolTipHtml = '同名ファイルが存在する場合は上書きされる<br>' +
+            '設定反映には下記操作が必要<br>' +
+            '- タワー再構築<br>' +
+            '- 全プレイヤーページ更新'
+        M.Tooltip.init(uploadToolTipElems, { 'html': uploadToolTipHtml });
+
+        // アップロードファイル選択
+        const fileSelect = document.getElementById("card-upload-select");
+        const fileList = document.getElementById("file-list");
+        fileSelect.addEventListener("change", function (e) {
+            fileList.innerHTML = "";
+            const list = document.createElement("ul");
+            fileList.appendChild(list);
+            for (let i = 0; i < e.target.files.length; i++) {
+                const li = document.createElement("li");
+                list.appendChild(li);
+                const info = document.createElement("span");
+                info.innerHTML = e.target.files[i].name;
+                li.appendChild(info);
+            }
+        });
+
+        // ファイルアップロード
+        const fileUpload = document.getElementById("card-upload-execute");
+        fileUpload.addEventListener("click", function (e) {
+            const files = fileSelect.files;
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+
+            $.ajax({
+                url: '/api/cards',
+                method: 'post',
+                data: formData,
+                processData: false,
+                contentType: false
+            }).done(function (res) {
+                M.toast({ html: res, classes: 'rounded teal lighten-2' });
+            }).fail(function (err) {
+                M.toast({ html: err, classes: 'rounded red lighten-2' });
+            })
+
+            fileList.innerHTML = "";
+            fileSelect.value = "";
+        })
+
+        // アップロードキャンセル
+        const fileCancel = document.getElementById("card-upload-cancel");
+        fileCancel.addEventListener("click", function (e) {
+            fileList.innerHTML = "";
+            fileSelect.value = "";
+        });
     };
     core.start();
 };
