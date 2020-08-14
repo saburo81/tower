@@ -809,6 +809,9 @@ window.onload = function () {
             }).fail(function (err) {
                 M.toast({ html: err, classes: 'rounded red lighten-2' });
             })
+
+            fileList.innerHTML = "";
+            fileSelect.value = "";
         })
 
         // アップロードキャンセル
