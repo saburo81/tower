@@ -416,7 +416,7 @@ window.onload = function () {
             const isFaceDown = cardList.field.isFaceDown[targetCardIdx];
             const operation = [
                 'discard', 'tap', 'cancel', 'plus', 'minus', 'left', 'right',
-                'up', 'reHand', 'reTower', 'zoom', 'faceUpDown'
+                'up', 'reHand', 'reTower', 'zoom', 'faceUpDown', 'memo'
             ];
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
@@ -499,6 +499,13 @@ window.onload = function () {
                 if (isFaceDown) { socket.emit('play', targetCardName); };
             });
 
+            operationSprite.memo.addEventListener('touchstart', function () {
+                const memoModalElem = document.getElementById('memo-modal');
+                const memoModal = M.Modal.getInstance(memoModalElem);
+                memoModal.open();
+                touchRemoveFunc();
+            });
+
             touchRemoveFunc();
             for (const op of operation) {
                 core.currentScene.addChild(operationSprite[op]);
@@ -510,7 +517,7 @@ window.onload = function () {
         var touchFuncPlayToken = function () {
             const targetCard = this;
             const targetCardIdx = cardList.field.sprite.findIndex((card) => card === targetCard);
-            const operation = ['discard', 'tap', 'cancel', 'plus', 'minus', 'left', 'right'];
+            const operation = ['discard', 'tap', 'cancel', 'plus', 'minus', 'left', 'right', 'memo'];
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
             operationSprite.discard.addEventListener('touchstart', function () {
@@ -561,6 +568,13 @@ window.onload = function () {
                 touchRemoveFunc();
             });
 
+            operationSprite.memo.addEventListener('touchstart', function () {
+                const memoModalElem = document.getElementById('memo-modal');
+                const memoModal = M.Modal.getInstance(memoModalElem);
+                memoModal.open();
+                touchRemoveFunc();
+            });
+
             touchRemoveFunc();
             for (const op of operation) {
                 core.currentScene.addChild(operationSprite[op]);
@@ -575,7 +589,7 @@ window.onload = function () {
             const targetCardName = cardList.upField.name[targetCardIdx];
             const isFaceDown = cardList.upField.isFaceDown[targetCardIdx];
             const operation = [
-                'discard', 'tap', 'cancel', 'reHand', 'reTower', 'zoom', 'faceUpDown'
+                'discard', 'tap', 'cancel', 'reHand', 'reTower', 'zoom', 'faceUpDown', 'memo'
             ];
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
@@ -617,6 +631,13 @@ window.onload = function () {
                 faceUpDown(targetCardIdx, cardList.upField, cardProperties.imagePath, componentProp, core);
                 touchRemoveFunc();
                 if (isFaceDown) { socket.emit('play', targetCardName); }
+            });
+
+            operationSprite.memo.addEventListener('touchstart', function () {
+                const memoModalElem = document.getElementById('memo-modal');
+                const memoModal = M.Modal.getInstance(memoModalElem);
+                memoModal.open();
+                touchRemoveFunc();
             });
 
             touchRemoveFunc();
