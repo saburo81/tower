@@ -72,7 +72,8 @@ window.onload = function () {
             reHand: { imgName: 'return_hand.jpg', width: 180, height: 70, offset: { x: 167, y: 150 }, scale: 0.95 },
             reTower: { imgName: 'return_tower.jpg', width: 186, height: 72, offset: { x: -105, y: 150 }, scale: 0.9 },
             zoom: { imgName: 'zoom.jpg', width: 184, height: 74, offset: { x: -104, y: 85 }, scale: 0.9 },
-            up: { imgName: 'up.jpg', width: 61, height: 59, offset: { x: -32, y: 20 }, scale: 1.0 }
+            up: { imgName: 'up.jpg', width: 61, height: 59, offset: { x: -32, y: 20 }, scale: 1.0 },
+            memo: { imgName: 'memo.jpg', width: 256, height: 256, offset: { x: 175, y: -68 }, scale: 0.23 }
         },
         field: {
             cardBack: { imgName: 'back_image.jpg', x: SCREEN_WIDTH / 2 - 50, y: -70, scale: 0.7, rotation: 90 },
