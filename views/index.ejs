@@ -92,12 +92,13 @@
     <div id="memo-modal" class="modal">
         <div class="modal-content">
             <div class="input-field">
-                <input placeholder="カードメモ" id="memo-input" type="text">
+                <textarea id="memo-input" class="materialize-textarea"></textarea>
+                <label for="memo-input">カードメモ</label>
             </div>
         </div>
         <div class="modal-footer">
-            <a id="memo-modal-cancel" class="modal-close waves-effect waves-green btn-flat">キャンセル</a>
-            <a id="memo-modal-execute" class="modal-close waves-effect waves-green btn-flat">決定</a>
+            <a id="memo-cancel" class="modal-close waves-effect waves-green btn-flat">キャンセル</a>
+            <a id="memo-execute" class="modal-close waves-effect waves-green btn-flat">決定</a>
         </div>
     </div>
 </body>
