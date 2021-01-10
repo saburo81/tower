@@ -214,8 +214,8 @@ window.onload = function () {
         domComponent.menu._element = menuElement;
 
         // 盤面リセット (サイドバー操作)
-        const resetElement = document.getElementById('field-reset');
-        resetElement.addEventListener('click', function () {
+        const resetExecuteButton = document.getElementById('field-reset-execute');
+        resetExecuteButton.addEventListener('click', function () {
             for (const type of Object.values(cardList)) {
                 // 描画の削除
                 for (const card of type.sprite) {
