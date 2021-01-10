@@ -1,8 +1,8 @@
 enchant(); // enchantjs おまじない
 import {
-    setCard, removeCard, swapCard, tapCard, untapCard, faceUpDown, destroyLand,
-    setCounter, setCounterNum, removeCounter, swapCounter, zoomCard, setMemo,
-    setMemoText, removeMemo, swapMemo, addMemoExecuteHandler,
+    setCard, removeCard, swapCard, tapCard, untapCard, faceUpDown, rotateTokenImg,
+    destroyLand, setCounter, setCounterNum, removeCounter, swapCounter, zoomCard,
+    setMemo, setMemoText, removeMemo, swapMemo, addMemoExecuteHandler,
     removeMemoExecuteHandler
 } from './modules/action.js';
 
@@ -88,7 +88,14 @@ window.onload = function () {
         },
         card: {
             land: { imgName: 'tower_land.jpg' },
-            token: { imgName: 'maotoken.jpg' }
+            token: [
+                { imgName: 'token_mao.jpg' },
+                { imgName: 'token_shion.jpg' },
+                { imgName: 'token_megu.jpg' },
+                { imgName: 'token_kirara.jpg' },
+                { imgName: 'token_tama.jpg' },
+                { imgName: 'token_kyoro.jpg' }
+            ]
         }, 
         dom: {
             playOrder: { width: 56, height: 56, x: 5, y: 10 },
@@ -104,9 +111,13 @@ window.onload = function () {
     // コンポーネント画像のロード
     for (const category of Object.values(componentProp)) {
         for (const prop of Object.values(category)) {
-            if (prop.hasOwnProperty('imgName')) {
+             if (prop.hasOwnProperty('imgName')) {
                 core.preload(`${cardProperties.imagePath.component}${prop.imgName}`);
-            }
+             } else if (Array.isArray(prop)) {
+                 for (let i = 0; i < prop.length; i++) {
+                     core.preload(`${cardProperties.imagePath.component}${prop[i].imgName}`);
+                 }
+             }
         }
     }
 
@@ -538,7 +549,7 @@ window.onload = function () {
         var touchFuncPlayToken = function () {
             const targetCard = this;
             const targetCardIdx = cardList.field.sprite.findIndex((card) => card === targetCard);
-            const operation = ['discard', 'tap', 'cancel', 'plus', 'minus', 'left', 'right', 'memo'];
+            const operation = ['discard', 'tap', 'cancel', 'plus', 'minus', 'left', 'right', 'faceUpDown', 'memo'];
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
             operationSprite.discard.addEventListener('touchstart', function () {
@@ -589,6 +600,11 @@ window.onload = function () {
             operationSprite.minus.addEventListener('touchstart', function () {
                 const counterList = cardList.counter;
                 setCounterNum(counterList.sprite[targetCardIdx], counterList.number[targetCardIdx] - 1, counterList);
+                touchRemoveFunc();
+            });
+
+            operationSprite.faceUpDown.addEventListener('touchstart', function () {
+                rotateTokenImg(targetCardIdx, cardList.field, cardProperties.imagePath, componentProp, core);
                 touchRemoveFunc();
             });
 

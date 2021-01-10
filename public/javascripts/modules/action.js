@@ -11,7 +11,7 @@ export const setCard = (cardName, dstCardList, dstCardProp, imagePath, core,
     touchFunc, isFaceDown = false) => {
     // カードを生成
     const cardMap = {
-        'token': { type: 'token', name: `${imagePath.component}maotoken.jpg` },
+        'token': { type: 'token', name: `${imagePath.component}token_mao.jpg` },
         'land': { type: 'land', name: `${imagePath.component}tower_land.jpg` }
     };
     const cardInfo = cardMap[cardName] || { type: 'card', name: `${imagePath.card}${cardName}` };
@@ -31,7 +31,7 @@ export const setCard = (cardName, dstCardList, dstCardProp, imagePath, core,
     // カードリストの更新
     dstCardList.sprite.push(card);
     if (cardInfo.type !== 'land') {
-        dstCardList.name.push(cardName);
+        dstCardList.name.push(cardInfo.type === 'token' ? cardInfo.name : cardName);
         dstCardList.isFaceDown.push(isFaceDown);
     }
 }
@@ -109,6 +109,25 @@ export const faceUpDown = (cardIdx, cardList, imagePath, cmpntProp, core) => {
         core.assets[`${imagePath.card}${cardName}`] :
         core.assets[`${imagePath.component}${cmpntProp.field.cardBack.imgName}`];
     cardList.isFaceDown[cardIdx] = !isFaceDown;
+}
+
+// トークンの画像を入れ替える
+//   cardIdx: 対象とするトークンのcardListにおけるインデックス
+//   cardList: 対象とするトークンを含むカードリスト
+//   imagePath: カードのベースパス
+//   cmpntProp: コンポーネントのプロパティ
+export const rotateTokenImg = (cardIdx, cardList, imagePath, cmpntProp, core) => {
+    const cardName = cardList.name[cardIdx];
+    const tokenIdx = cmpntProp.card.token.findIndex(
+        (name) => `${imagePath.component}${name.imgName}` === cardName
+    );
+    const nextTokenImgName = cmpntProp.card.token[
+        tokenIdx === cmpntProp.card.token.length - 1 ? 0 : tokenIdx + 1
+    ].imgName;
+    cardList.name[cardIdx] = `${imagePath.component}${nextTokenImgName}`;
+    cardList.sprite[cardIdx].image = core.assets[
+        `${imagePath.component}${nextTokenImgName}`
+    ];
 }
 
 // 一番右の土地を破壊する
