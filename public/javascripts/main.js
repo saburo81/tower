@@ -2,7 +2,8 @@ enchant(); // enchantjs おまじない
 import {
     setCard, removeCard, swapCard, tapCard, untapCard, faceUpDown, destroyLand,
     setCounter, setCounterNum, removeCounter, swapCounter, zoomCard, setMemo,
-    setMemoText, removeMemo, addMemoExecuteHandler, removeMemoExecuteHandler
+    setMemoText, removeMemo, swapMemo, addMemoExecuteHandler,
+    removeMemoExecuteHandler
 } from './modules/action.js';
 
 var socket = io();
@@ -458,6 +459,7 @@ window.onload = function () {
                 if (targetCardIdx > 0) {
                     swapCard(targetCard, cardList.field.sprite[targetCardIdx - 1], cardList.field);
                     swapCounter( counterList.sprite[targetCardIdx], counterList.sprite[targetCardIdx - 1], counterList );
+                    swapMemo(cardList.memo, targetCardIdx, targetCardIdx - 1);
                 };
                 touchRemoveFunc();
             });
@@ -467,6 +469,7 @@ window.onload = function () {
                 if (targetCardIdx < cardList.field.sprite.length - 1) {
                     swapCard(targetCard, cardList.field.sprite[targetCardIdx + 1], cardList.field);
                     swapCounter(counterList.sprite[targetCardIdx], counterList.sprite[targetCardIdx + 1], counterList);
+                    swapMemo(cardList.memo, targetCardIdx, targetCardIdx + 1);
                 };
                 touchRemoveFunc();
             });
@@ -557,6 +560,7 @@ window.onload = function () {
                 if (targetCardIdx > 0) {
                     swapCard(targetCard, cardList.field.sprite[targetCardIdx - 1], cardList.field);
                     swapCounter(counterList.sprite[targetCardIdx], counterList.sprite[targetCardIdx - 1], counterList);
+                    swapMemo(cardList.memo, targetCardIdx, targetCardIdx - 1);
                 };
                 touchRemoveFunc();
             });
@@ -566,6 +570,7 @@ window.onload = function () {
                 if (targetCardIdx < cardList.field.sprite.length - 1) {
                     swapCard(targetCard, cardList.field.sprite[targetCardIdx + 1], cardList.field);
                     swapCounter(counterList.sprite[targetCardIdx], counterList.sprite[targetCardIdx + 1], counterList);
+                    swapMemo(cardList.memo, targetCardIdx, targetCardIdx + 1);
                 };
                 touchRemoveFunc();
             });

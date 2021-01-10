@@ -267,6 +267,37 @@ export const removeMemo = (memoList, targetCardIdx, core) => {
     memoList.backSprite.splice(targetCardIdx, 1);
 }
 
+// 同じ場の指定メモ位置を入れ替える
+//   memoList: 配置する場のメモリスト
+//   memoAIdx: 対象とするメモの配列インデックス
+//   memoBIdx: 対象とするメモの配列インデックス
+export const swapMemo = (memoList, memoAIdx, memoBIdx) => {
+    const memo = {
+        A: {
+            label: memoList.sprite[memoAIdx],
+            backSprite: memoList.backSprite[memoAIdx]
+        },
+        B: {
+            label: memoList.sprite[memoBIdx],
+            backSprite: memoList.backSprite[memoBIdx],
+        }
+    };
+    const memoACoord = {
+        label: { x: memo.A.label.x, y: memo.A.label.y },
+        backSprite: { x: memo.A.backSprite.x, y: memo.A.backSprite.y }
+    };
+
+    memo.A.label.moveTo(memo.B.label.x, memo.B.label.y);
+    memo.A.backSprite.moveTo(memo.B.backSprite.x, memo.B.backSprite.y);
+    memo.B.label.moveTo(memoACoord.label.x, memoACoord.label.y);
+    memo.B.backSprite.moveTo(memoACoord.backSprite.x, memoACoord.backSprite.y);
+
+    memoList.sprite[memoAIdx] = memo.B.label;
+    memoList.backSprite[memoAIdx] = memo.B.backSprite;
+    memoList.sprite[memoBIdx] = memo.A.label;
+    memoList.backSprite[memoBIdx] = memo.A.backSprite;
+}
+
 // メモ用モーダルの決定ボタン押下時にメモにテキストを反映する
 //   cardList: 各カードのオブジェクト
 //   targetCardIdx: メモの対象となるカードの配列インデックス
