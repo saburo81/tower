@@ -214,6 +214,72 @@ export const zoomCard = (cardImage, cardProp, core, label) => {
     core.currentScene.addChild(card);
 }
 
+// メモを配置する
+//   memoList: メモのリスト
+//   memoProp: メモのプロパティ
+//   card: メモを付与するカードのSpriteオブジェクト
+export const setMemo = (memoList, memoProp, card, core) => {
+    // メモ背景
+    const memoBack = new Sprite(memoProp.width, memoProp.height);
+    const memoBackSurface = new Surface(memoProp.width, memoProp.height);
+    memoBack.image = memoBackSurface;
+    memoBackSurface.context.fillStyle = "white";
+    memoBackSurface.context.fillRect(0, 0, memoProp.width, memoProp.height);;
+    memoBack.moveTo(card.x + memoProp.x, card.y + memoProp.y);
+    memoBack.visible = false;
+
+    // メモテキスト
+    const memo = new Label();
+    memo.font = "normal 25px/1.0 monospace";
+    memo.moveTo(card.x + memoProp.x, card.y + memoProp.y);
+
+    core.currentScene.addChild(memoBack);
+    core.currentScene.addChild(memo);
+    memoList.backSprite.push(memoBack);
+    memoList.sprite.push(memo);
+}
+
+// メモのテキストを設定する
+//   memo: メモのLabelオブジェクト
+//   memoText: 設定するの数値
+//   memoList: メモテキストのリスト
+export const setMemoText = (memo, memoBack, memoText) => {
+    memo.text = memoText;
+    memoBack.visible = !!memoText;
+}
+
+// メモ用モーダルの決定ボタン押下時にメモにテキストを反映する
+//   cardList: 各カードのオブジェクト
+//   targetCardIdx: メモの対象となるカードの配列インデックス
+export const addMemoExecuteHandler = (cardList, targetCardIdx) => {
+    const handlerObj = {
+        cardList: cardList,
+        targetCardIdx: targetCardIdx,
+        handleEvent: () => {
+            setMemoText(
+                cardList.memo.sprite[targetCardIdx],
+                cardList.memo.backSprite[targetCardIdx],
+                document.getElementById("memo-input").value
+            );
+        }
+    }
+    const memoExecute = document.getElementById("memo-execute");
+    memoExecute.addEventListener("click", handlerObj);
+    return handlerObj;
+}
+
+// メモ用モーダルを閉じた際に決定ボタンに紐付けたEventHandlerを削除する
+//   handlerObj: addMemoExecuteHandlerにて紐づけたEventHandlerオブジェクト
+export const removeMemoExecuteHandler = (handlerObj) => {
+    const memoExecute = document.getElementById("memo-execute");
+    const memoModalElem = document.getElementById('memo-modal');
+    M.Modal.init(memoModalElem, {
+        'onCloseStart': () => {
+            memoExecute.removeEventListener("click", handlerObj);
+        }
+    });
+}
+
 // 手札枚数表示の更新
 var setHandCardNum = function (element, handNum) {
     element.innerText = handNum + '枚';
