@@ -2,7 +2,7 @@ enchant(); // enchantjs おまじない
 import {
     setCard, removeCard, swapCard, tapCard, untapCard, faceUpDown, destroyLand,
     setCounter, setCounterNum, removeCounter, swapCounter, zoomCard, setMemo,
-    setMemoText, addMemoExecuteHandler, removeMemoExecuteHandler
+    setMemoText, removeMemo, addMemoExecuteHandler, removeMemoExecuteHandler
 } from './modules/action.js';
 
 var socket = io();
@@ -428,6 +428,7 @@ window.onload = function () {
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
+                removeMemo(cardList.memo, targetCardIdx, core);
                 playHistory.push({ type: 'discard', cardName: targetCardName, from: 'field', isFaceDown: isFaceDown });
             });
 
@@ -447,6 +448,7 @@ window.onload = function () {
             operationSprite.reHand.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
+                removeMemo(cardList.memo, targetCardIdx, core);
                 setCard(targetCardName, cardList.hand, cardProperties.hand, cardProperties.imagePath, core, touchFuncHand);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
@@ -472,6 +474,7 @@ window.onload = function () {
             operationSprite.up.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
+                removeMemo(cardList.memo, targetCardIdx, core);
                 setCard(targetCardName, cardList.upField, cardProperties.upField, cardProperties.imagePath, core, touchFuncPlayUp, isFaceDown);
             });
 
@@ -495,6 +498,7 @@ window.onload = function () {
             operationSprite.reTower.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
+                removeMemo(cardList.memo, targetCardIdx, core);
                 socket.emit('return', targetCardName);
             });
 
@@ -532,6 +536,7 @@ window.onload = function () {
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
+                removeMemo(cardList.memo, targetCardIdx, core);
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {

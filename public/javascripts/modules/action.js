@@ -248,6 +248,25 @@ export const setMemoText = (memo, memoBack, memoText) => {
     memoBack.visible = !!memoText;
 }
 
+// メモを取り除く
+//   memoList: メモのリスト
+//   targetCardIdx: メモの対象となるカードの配列インデックス
+//   core: EnchantJSオブジェクト
+export const removeMemo = (memoList, targetCardIdx, core) => {
+    core.rootScene.removeChild(memoList.sprite[targetCardIdx]);
+    core.rootScene.removeChild(memoList.backSprite[targetCardIdx]);
+    for (let i = memoList.sprite.length - 1; i > targetCardIdx; i--) {
+        const rightLabel = memoList.sprite[i];
+        const leftLabel = memoList.sprite[i - 1];
+        const rightBackSprite = memoList.backSprite[i];
+        const leftBackSprite = memoList.backSprite[i - 1];
+        rightLabel.moveTo(leftLabel.x, leftLabel.y);
+        rightBackSprite.moveTo(leftBackSprite.x, leftBackSprite.y);
+    };
+    memoList.sprite.splice(targetCardIdx, 1);
+    memoList.backSprite.splice(targetCardIdx, 1);
+}
+
 // メモ用モーダルの決定ボタン押下時にメモにテキストを反映する
 //   cardList: 各カードのオブジェクト
 //   targetCardIdx: メモの対象となるカードの配列インデックス
