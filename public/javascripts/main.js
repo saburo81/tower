@@ -476,7 +476,7 @@ window.onload = function () {
             });
 
             operationSprite.up.addEventListener('touchstart', function () {
-                const memoTxt = cardList.memo.sprite[targetCardIdx].text;
+                const memoTxt = cardList.memo.sprite[targetCardIdx].text.replace(/<br>/g, "\n");
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
                 removeMemo(cardList.memo, targetCardIdx, core);
@@ -522,7 +522,7 @@ window.onload = function () {
 
                 const memoModal = M.Modal.getInstance(document.getElementById('memo-modal'));
                 const memoInput = document.getElementById("memo-input");
-                memoInput.value = cardList.memo.sprite[targetCardIdx].text;
+                memoInput.value = cardList.memo.sprite[targetCardIdx].text.replace(/<br>/g, "\n");
                 memoModal.open();
                 touchRemoveFunc();
             });
@@ -598,7 +598,7 @@ window.onload = function () {
 
                 const memoModal = M.Modal.getInstance(document.getElementById('memo-modal'));
                 const memoInput = document.getElementById("memo-input");
-                memoInput.value = cardList.memo.sprite[targetCardIdx].text;
+                memoInput.value = cardList.memo.sprite[targetCardIdx].text.replace(/<br>/g, "\n");
                 memoModal.open();
                 touchRemoveFunc();
             });
@@ -670,7 +670,7 @@ window.onload = function () {
 
                 const memoModal = M.Modal.getInstance(document.getElementById('memo-modal'));
                 const memoInput = document.getElementById("memo-input");
-                memoInput.value = cardList.upMemo.sprite[targetCardIdx].text;
+                memoInput.value = cardList.upMemo.sprite[targetCardIdx].text.replace(/<br>/g, "\n");
                 memoModal.open();
                 touchRemoveFunc();
             });

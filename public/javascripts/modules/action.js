@@ -244,7 +244,7 @@ export const setMemo = (memoList, memoProp, card, core) => {
 //   memoText: 設定するの数値
 //   memoList: メモテキストのリスト
 export const setMemoText = (memo, memoBack, memoText) => {
-    memo.text = memoText;
+    memo.text = memoText.replace(/\r?\n/g, "<br>");
     memoBack.visible = !!memoText;
 }
 
