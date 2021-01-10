@@ -22,7 +22,8 @@ window.onload = function () {
         field: { sprite: [], name: [], isFaceDown: [] },
         upField: { sprite: [], name: [], isFaceDown: [] },
         counter: { sprite: [], number: [] },  // spriteに格納されるのはLabelオブジェクト
-        memo: { sprite: [], backSprite: [] }  // spriteに格納されるのはLabelオブジェクト
+        memo: { sprite: [], backSprite: [] },  // spriteに格納されるのはLabelオブジェクト
+        upMemo: { sprite: [], backSprite: [] }  // spriteに格納されるのはLabelオブジェクト
     }
 
     // 禁止カードリスト
@@ -475,10 +476,14 @@ window.onload = function () {
             });
 
             operationSprite.up.addEventListener('touchstart', function () {
+                const memoTxt = cardList.memo.sprite[targetCardIdx].text;
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
                 removeMemo(cardList.memo, targetCardIdx, core);
                 setCard(targetCardName, cardList.upField, cardProperties.upField, cardProperties.imagePath, core, touchFuncPlayUp, isFaceDown);
+                const memoIdx = cardList.upField.sprite.length - 1;
+                setMemo(cardList.upMemo, cardProperties.memo, cardList.upField.sprite[memoIdx], core);
+                setMemoText(cardList.upMemo.sprite[memoIdx], cardList.upMemo.backSprite[memoIdx], memoTxt);
             });
 
             operationSprite.plus.addEventListener('touchstart', function () {
@@ -512,7 +517,7 @@ window.onload = function () {
             });
 
             operationSprite.memo.addEventListener('touchstart', function () {
-                const handlerObj = addMemoExecuteHandler(cardList, targetCardIdx);
+                const handlerObj = addMemoExecuteHandler(cardList.memo, targetCardIdx);
                 removeMemoExecuteHandler(handlerObj);
 
                 const memoModal = M.Modal.getInstance(document.getElementById('memo-modal'));
@@ -588,7 +593,7 @@ window.onload = function () {
             });
 
             operationSprite.memo.addEventListener('touchstart', function () {
-                const handlerObj = addMemoExecuteHandler(cardList, targetCardIdx);
+                const handlerObj = addMemoExecuteHandler(cardList.memo, targetCardIdx);
                 removeMemoExecuteHandler(handlerObj);
 
                 const memoModal = M.Modal.getInstance(document.getElementById('memo-modal'));
@@ -618,6 +623,7 @@ window.onload = function () {
 
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFunc);
+                removeMemo(cardList.upMemo, targetCardIdx, core);
                 playHistory.push({ type: 'discard', cardName: targetCardName, from: 'upField', isFaceDown: isFaceDown });
             });
 
@@ -636,6 +642,7 @@ window.onload = function () {
 
             operationSprite.reHand.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFunc);
+                removeMemo(cardList.upMemo, targetCardIdx, core);
                 setCard(targetCardName, cardList.hand, cardProperties.hand, cardProperties.imagePath, core, touchFuncHand);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
@@ -647,6 +654,7 @@ window.onload = function () {
 
             operationSprite.reTower.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFunc);
+                removeMemo(cardList.upMemo, targetCardIdx, core);
                 socket.emit('return', targetCardName);
             });
 
@@ -657,19 +665,14 @@ window.onload = function () {
             });
 
             operationSprite.memo.addEventListener('touchstart', function () {
-                const memoModalElem = document.getElementById('memo-modal');
-                const memoModal = M.Modal.getInstance(memoModalElem);
+                const handlerObj = addMemoExecuteHandler(cardList.upMemo, targetCardIdx);
+                removeMemoExecuteHandler(handlerObj);
+
+                const memoModal = M.Modal.getInstance(document.getElementById('memo-modal'));
                 const memoInput = document.getElementById("memo-input");
-                memoInput.value = cardList.memo.sprite[targetCardIdx].text;
+                memoInput.value = cardList.upMemo.sprite[targetCardIdx].text;
                 memoModal.open();
                 touchRemoveFunc();
-            });
-
-            const memoExecute = document.getElementById("memo-execute");
-            memoExecute.addEventListener("click", function memoHandler (e) {
-                const memoInput = document.getElementById("memo-input");
-                setMemoText(cardList.memo.sprite[targetCardIdx], cardList.memo.backSprite[targetCardIdx], memoInput.value);
-                this.removeEventListener("click", memoHandler);
             });
 
             touchRemoveFunc();

@@ -299,16 +299,16 @@ export const swapMemo = (memoList, memoAIdx, memoBIdx) => {
 }
 
 // メモ用モーダルの決定ボタン押下時にメモにテキストを反映する
-//   cardList: 各カードのオブジェクト
+//   memoList: 配置する場のメモリスト
 //   targetCardIdx: メモの対象となるカードの配列インデックス
-export const addMemoExecuteHandler = (cardList, targetCardIdx) => {
+export const addMemoExecuteHandler = (memoList, targetCardIdx) => {
     const handlerObj = {
-        cardList: cardList,
+        memoList: memoList,
         targetCardIdx: targetCardIdx,
         handleEvent: () => {
             setMemoText(
-                cardList.memo.sprite[targetCardIdx],
-                cardList.memo.backSprite[targetCardIdx],
+                memoList.sprite[targetCardIdx],
+                memoList.backSprite[targetCardIdx],
                 document.getElementById("memo-input").value
             );
         }
