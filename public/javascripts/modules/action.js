@@ -214,6 +214,122 @@ export const zoomCard = (cardImage, cardProp, core, label) => {
     core.currentScene.addChild(card);
 }
 
+// メモを配置する
+//   memoList: メモのリスト
+//   memoProp: メモのプロパティ
+//   card: メモを付与するカードのSpriteオブジェクト
+export const setMemo = (memoList, memoProp, card, core) => {
+    // メモ背景
+    const memoBack = new Sprite(memoProp.width, memoProp.height);
+    const memoBackSurface = new Surface(memoProp.width, memoProp.height);
+    memoBack.image = memoBackSurface;
+    memoBackSurface.context.fillStyle = "white";
+    memoBackSurface.context.fillRect(0, 0, memoProp.width, memoProp.height);;
+    memoBack.moveTo(card.x + memoProp.x, card.y + memoProp.y);
+    memoBack.visible = false;
+
+    // メモテキスト
+    const memo = new Label();
+    memo.font = "normal 25px/1.0 monospace";
+    memo.moveTo(card.x + memoProp.x, card.y + memoProp.y);
+
+    core.currentScene.addChild(memoBack);
+    core.currentScene.addChild(memo);
+    memoList.backSprite.push(memoBack);
+    memoList.sprite.push(memo);
+}
+
+// メモのテキストを設定する
+//   memo: メモのLabelオブジェクト
+//   memoText: 設定するの数値
+//   memoList: メモテキストのリスト
+export const setMemoText = (memo, memoBack, memoText) => {
+    memo.text = memoText.replace(/\r?\n/g, "<br>");
+    memoBack.visible = !!memoText;
+}
+
+// メモを取り除く
+//   memoList: メモのリスト
+//   targetCardIdx: メモの対象となるカードの配列インデックス
+//   core: EnchantJSオブジェクト
+export const removeMemo = (memoList, targetCardIdx, core) => {
+    core.rootScene.removeChild(memoList.sprite[targetCardIdx]);
+    core.rootScene.removeChild(memoList.backSprite[targetCardIdx]);
+    for (let i = memoList.sprite.length - 1; i > targetCardIdx; i--) {
+        const rightLabel = memoList.sprite[i];
+        const leftLabel = memoList.sprite[i - 1];
+        const rightBackSprite = memoList.backSprite[i];
+        const leftBackSprite = memoList.backSprite[i - 1];
+        rightLabel.moveTo(leftLabel.x, leftLabel.y);
+        rightBackSprite.moveTo(leftBackSprite.x, leftBackSprite.y);
+    };
+    memoList.sprite.splice(targetCardIdx, 1);
+    memoList.backSprite.splice(targetCardIdx, 1);
+}
+
+// 同じ場の指定メモ位置を入れ替える
+//   memoList: 配置する場のメモリスト
+//   memoAIdx: 対象とするメモの配列インデックス
+//   memoBIdx: 対象とするメモの配列インデックス
+export const swapMemo = (memoList, memoAIdx, memoBIdx) => {
+    const memo = {
+        A: {
+            label: memoList.sprite[memoAIdx],
+            backSprite: memoList.backSprite[memoAIdx]
+        },
+        B: {
+            label: memoList.sprite[memoBIdx],
+            backSprite: memoList.backSprite[memoBIdx],
+        }
+    };
+    const memoACoord = {
+        label: { x: memo.A.label.x, y: memo.A.label.y },
+        backSprite: { x: memo.A.backSprite.x, y: memo.A.backSprite.y }
+    };
+
+    memo.A.label.moveTo(memo.B.label.x, memo.B.label.y);
+    memo.A.backSprite.moveTo(memo.B.backSprite.x, memo.B.backSprite.y);
+    memo.B.label.moveTo(memoACoord.label.x, memoACoord.label.y);
+    memo.B.backSprite.moveTo(memoACoord.backSprite.x, memoACoord.backSprite.y);
+
+    memoList.sprite[memoAIdx] = memo.B.label;
+    memoList.backSprite[memoAIdx] = memo.B.backSprite;
+    memoList.sprite[memoBIdx] = memo.A.label;
+    memoList.backSprite[memoBIdx] = memo.A.backSprite;
+}
+
+// メモ用モーダルの決定ボタン押下時にメモにテキストを反映する
+//   memoList: 配置する場のメモリスト
+//   targetCardIdx: メモの対象となるカードの配列インデックス
+export const addMemoExecuteHandler = (memoList, targetCardIdx) => {
+    const handlerObj = {
+        memoList: memoList,
+        targetCardIdx: targetCardIdx,
+        handleEvent: () => {
+            setMemoText(
+                memoList.sprite[targetCardIdx],
+                memoList.backSprite[targetCardIdx],
+                document.getElementById("memo-input").value
+            );
+        }
+    }
+    const memoExecute = document.getElementById("memo-execute");
+    memoExecute.addEventListener("click", handlerObj);
+    return handlerObj;
+}
+
+// メモ用モーダルを閉じた際に決定ボタンに紐付けたEventHandlerを削除する
+//   handlerObj: addMemoExecuteHandlerにて紐づけたEventHandlerオブジェクト
+export const removeMemoExecuteHandler = (handlerObj) => {
+    const memoExecute = document.getElementById("memo-execute");
+    const memoModalElem = document.getElementById('memo-modal');
+    M.Modal.init(memoModalElem, {
+        'onCloseStart': () => {
+            memoExecute.removeEventListener("click", handlerObj);
+        }
+    });
+}
+
 // 手札枚数表示の更新
 var setHandCardNum = function (element, handNum) {
     element.innerText = handNum + '枚';
