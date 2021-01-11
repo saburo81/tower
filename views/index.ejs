@@ -28,7 +28,9 @@
         </a></li>
         <li><div class="divider"></div></li>
         <li><a class="subheader">タワー管理</a></li>
-        <li><a id="make-tower" class="waves-effect sidenav-close">タワー再構築</a></li>
+        <li><a id="make-tower" class="waves-effect modal-trigger sidenav-close" href="#make-tower-modal">
+            タワー再構築
+        </a></li>
         <li><a id="ban-list-sidenav" class="waves-effect modal-trigger sidenav-close" href="#ban-list-modal">
             禁止カードリスト
         </a></li>
@@ -112,6 +114,17 @@
         <div class="modal-footer">
             <a id="field-reset-cancel" class="modal-close waves-effect waves-green btn-flat">キャンセル</a>
             <a id="field-reset-execute" class="modal-close waves-effect waves-green btn-flat">実行</a>
+        </div>
+    </div>
+    <!-- Modal Structure -->
+    <div id="make-tower-modal" class="modal">
+        <div class="modal-content">
+            <h5>タワー再構築</h5>
+            <p>この操作はやり直せません。</p>
+        </div>
+        <div class="modal-footer">
+            <a id="make-tower-cancel" class="modal-close waves-effect waves-green btn-flat">キャンセル</a>
+            <a id="make-tower-execute" class="modal-close waves-effect waves-green btn-flat">実行</a>
         </div>
     </div>
 </body>

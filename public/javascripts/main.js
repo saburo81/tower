@@ -231,8 +231,8 @@ window.onload = function () {
         });
 
         // タワー再構築 (サイドバー操作)
-        const makeTowerElement = document.getElementById('make-tower');
-        makeTowerElement.addEventListener('click', function () {
+        const makeTowerExexuteButton = document.getElementById('make-tower-execute');
+        makeTowerExexuteButton.addEventListener('click', function () {
             socket.emit('maketower');
         });
 
