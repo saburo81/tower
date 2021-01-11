@@ -221,6 +221,11 @@ window.onload = function () {
                 for (const card of type.sprite) {
                     core.rootScene.removeChild(card);
                 }
+                if ('backSprite' in type) {
+                    for (const sprite of type.backSprite) {
+                        core.rootScene.removeChild(sprite);
+                    }
+                }
                 // リストの初期化
                 for (const val of Object.values(type)) {
                     val.splice(0);
