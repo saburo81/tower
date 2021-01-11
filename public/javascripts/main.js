@@ -890,3 +890,8 @@ window.onload = function () {
 var setHandCardNum = function (element, handNum) {
     element.innerText = handNum + '枚';
 };
+
+window.addEventListener('beforeunload', (event) => {
+    event.preventDefault();
+    event.returnValue = '';
+});
