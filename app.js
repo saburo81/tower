@@ -10,11 +10,10 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 app.get('/', function (req, res) {
-    const doubleFaceCardList = JSON.parse(fs.readFileSync(doubleFaceCardListPath)).cards;
     res.render('index', {
         "cardImages": {
             "front": tower.all,
-            "back": doubleFaceCardList.map(card => card.back)
+            "back": backCardImages
         }
     });
 });
@@ -27,12 +26,20 @@ const shuffle = (array) => {
     return array;
 }
 
+const loadImages = (imagePath) => {
+    const cardImgDirents = fs.readdirSync(imagePath, { withFileTypes: true });
+    return cardImgDirents.filter(dirent => dirent.isFile()).map(({ name }) => name);
+}
+
 // タワー構築
 const fs = require("fs");
 const tower = { all: [], current: [] };
-const cardImgDirPath = "public/images/cards";
-let cardImgDirents = fs.readdirSync(cardImgDirPath, { withFileTypes: true });
-tower.all = cardImgDirents.filter(dirent => dirent.isFile()).map(({ name }) => name);
+const cardImagePath = {
+    "frontFaceCardImages": 'public/images/cards/',
+    "backFaceCardImages": 'public/images/cards/back-face/',
+}
+tower.all = loadImages(cardImagePath.frontFaceCardImages)
+let backCardImages = loadImages(cardImagePath.backFaceCardImages)
 const banListPath = "./banList.json";
 let banList = JSON.parse(fs.readFileSync(banListPath)).cards;
 const doubleFaceCardListPath = "./doubleFaceCardList.json";
@@ -45,10 +52,6 @@ const path = require('path');
 const saveImage = async (req, res, next) => {
     // 画像保存
     const invalidFile = [];
-    const basePath = {
-        "frontFaceCardImages": 'public/images/cards/',
-        "backFaceCardImages": 'public/images/cards/back-face/',
-    }
 
     for (const face in req.files) {
         for (let i = 0; i < req.files[face].length; i++) {
@@ -71,7 +74,7 @@ const saveImage = async (req, res, next) => {
                     // 画像リサイズ＆保存
                     await sharp(file.buffer)
                         .resize(221, 311, { fit: 'contain' })
-                        .toFile(basePath[face] + file.originalname)
+                        .toFile(cardImagePath[face] + file.originalname)
                         .catch(err => {
                             invalidFile.push({
                                 'name': file.originalname,
@@ -120,10 +123,8 @@ const saveImage = async (req, res, next) => {
     fs.writeFileSync(doubleFaceCardListPath, JSON.stringify({ 'cards': doubleFaceCardList }));
 
     // カード画像読み込み
-    cardImgDirents = fs.readdirSync(cardImgDirPath, { withFileTypes: true });
-    tower.all = cardImgDirents.filter(dirent =>
-        dirent.isFile()
-    ).map(({ name }) => name);
+    tower.all = loadImages(cardImagePath.frontFaceCardImages)
+    backCardImages = loadImages(cardImagePath.backFaceCardImages)
 
     let resHTML = `完了: ${req.files['frontFaceCardImages'].length - invalidFile.length}件<br>`;
     if (invalidFile.length) {
