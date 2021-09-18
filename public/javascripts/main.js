@@ -935,10 +935,6 @@ window.onload = function () {
                     'data': 'backFace',
                     'title': 'Back Face Card Name',
                     'render': function (data, type, row, meta) {
-                        // const backFaceInputHTML = '<div class="backFaceInput">' +
-                        //     `<input type="file" id=back-face-card-upload-${meta.row} accept="image/*" style="width: 100%;">` +
-                        //     '</div>';
-                        // return backFaceInputHTML;
                         return `<input type="file" id=back-face-card-upload-${meta.row} ` +
                             'accept="image/*" style="width: 100%;">'
                     }
@@ -953,7 +949,6 @@ window.onload = function () {
         datatableWrapper.hidden = true;
 
         // アップロードファイル選択
-        // const datatable = $('#upload-file-list').DataTable();
         const frontFaceFileInput = document.getElementById("front-face-card-upload");
         frontFaceFileInput.addEventListener("change", function (e) {
             const data = Array.from(e.target.files).map(file => {
