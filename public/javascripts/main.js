@@ -1,9 +1,9 @@
 enchant(); // enchantjs おまじない
 import {
-    setCard, removeCard, swapCard, tapCard, untapCard, faceUpDown, rotateTokenImg,
-    destroyLand, setCounter, setCounterNum, removeCounter, swapCounter, zoomCard,
-    setMemo, setMemoText, removeMemo, swapMemo, addMemoExecuteHandler,
-    removeMemoExecuteHandler
+    setCard, removeCard, swapCard, tapCard, untapCard, faceUpDown, faceFrontBack,
+    rotateTokenImg, destroyLand, setCounter, setCounterNum, removeCounter,
+    swapCounter, zoomCard, setMemo, setMemoText, removeMemo, swapMemo,
+    addMemoExecuteHandler, removeMemoExecuteHandler
 } from './modules/action.js';
 
 var socket = io();
@@ -17,10 +17,10 @@ window.onload = function () {
     const playHistory = [];
 
     const cardList = {
-        hand: { sprite: [], name: [], isFaceDown: [] },
+        hand: { sprite: [], name: [], backName: [], isFaceBack: [], isFaceDown: [] },
         land: { sprite: [], name: [] },
-        field: { sprite: [], name: [], isFaceDown: [] },
-        upField: { sprite: [], name: [], isFaceDown: [] },
+        field: { sprite: [], name: [], backName: [], isFaceBack: [], isFaceDown: [] },
+        upField: { sprite: [], name: [], backName: [], isFaceBack: [], isFaceDown: [] },
         counter: { sprite: [], number: [] },  // spriteに格納されるのはLabelオブジェクト
         memo: { sprite: [], backSprite: [] },  // spriteに格納されるのはLabelオブジェクト
         upMemo: { sprite: [], backSprite: [] }  // spriteに格納されるのはLabelオブジェクト
@@ -58,7 +58,11 @@ window.onload = function () {
         },
         counter: { x: 70, y: 30 },
         memo: { width: 115, height: 51, x: 53, y: 181 },
-        imagePath: { card: 'images/cards/', component: 'images/components/' }
+        imagePath: {
+            card: 'images/cards/',
+            backFace: 'images/cards/back-face/',
+            component: 'images/components/'
+        }
     }
 
     // コンポーネントのプロパティ
@@ -122,8 +126,12 @@ window.onload = function () {
     }
 
     // カード画像のロード
-    for (let i = 0; i < cardImages.length; i++) {
-        const precard = `${cardProperties.imagePath.card}${cardImages[i]}`;
+    for (let i = 0; i < cardImages.front.length; i++) {
+        const precard = `${cardProperties.imagePath.card}${cardImages.front[i]}`;
+        core.preload(precard);
+    };
+    for (let i = 0; i < cardImages.back.length; i++) {
+        const precard = `${cardProperties.imagePath.backFace}${cardImages.back[i]}`;
         core.preload(precard);
     };
 
@@ -271,19 +279,19 @@ window.onload = function () {
                 'upField': touchFuncPlayUp
             }
             const undoFunc = {
-                'setLand': (cardName, from, isFaceDown) => {
+                'setLand': (cardName, backName, from, isFaceBack, isFaceDown) => {
                     destroyLand(core, cardList.land.sprite);
                     setCard(
                         cardName, cardList[from], cardProperties[from],
                         cardProperties.imagePath, core, touchFunc[from],
-                        isFaceDown
+                        isFaceDown, isFaceBack, backName,
                     );
                 },
-                'discard': (cardName, from, isFaceDown) => {
+                'discard': (cardName, backName, from, isFaceBack, isFaceDown) => {
                     setCard(
                         cardName, cardList[from], cardProperties[from],
                         cardProperties.imagePath, core, touchFunc[from],
-                        isFaceDown
+                        isFaceDown, isFaceBack, backName,
                     );
                     if (from === 'field') {
                         setCounter(
@@ -293,7 +301,7 @@ window.onload = function () {
                     }
                 }
             };
-            undoFunc[action.type](action.cardName, action.from, action.isFaceDown);
+            undoFunc[action.type](action.cardName, action.backName, action.from, action.isFaceBack, action.isFaceDown);
             setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
         };
 
@@ -358,13 +366,18 @@ window.onload = function () {
             destroyLand(core, cardList.land.sprite);
         });
 
-        socket.on('draw', function (data) {
-            setCard(data, cardList.hand, cardProperties.hand, cardProperties.imagePath, core, touchFuncHand);
+        socket.on('draw', function (card) {
+            setCard(
+                card.front, cardList.hand, cardProperties.hand, cardProperties.imagePath,
+                core, touchFuncHand, false, false, card.back
+            );
             setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
         });
 
-        socket.on('opplay', function (data) {
-            const opplayName = `${cardProperties.imagePath.card}${data}`;
+        socket.on('opplay', function (card) {
+            const opplayName = (card.face === 'front') ?
+                `${cardProperties.imagePath.card}${card.name}` :
+                `${cardProperties.imagePath.backFace}${card.name}`;
             const opLabel = new Label('opponent play');
             opLabel.x = cardProperties.opCard.zoom.x;
             opLabel.y = cardProperties.opCard.zoom.y + 350;
@@ -377,22 +390,38 @@ window.onload = function () {
             const targetCard = this;
             const targetCardIdx = cardList.hand.sprite.findIndex((card) => card === targetCard);
             const targetCardName = cardList.hand.name[targetCardIdx];
+            const targetBackName = cardList.hand.backName[targetCardIdx];
+            const isFaceBack = cardList.hand.isFaceBack[targetCardIdx];
             const isFaceDown = cardList.hand.isFaceDown[targetCardIdx];
             const operation = ['setLand', 'discard', 'play', 'cancel', 'reTower', 'zoom', 'faceUpDown'];
             const operationSprite = createOperationSprite(targetCard, operation, componentProp.operation);
 
             operationSprite.play.addEventListener('touchstart', function () {
                 const fieldList = cardList.field;
-                setCard(targetCardName, fieldList, cardProperties.field, cardProperties.imagePath, core, touchFuncPlay, isFaceDown);
+                setCard(
+                    targetCardName, fieldList, cardProperties.field, cardProperties.imagePath, core, touchFuncPlay,
+                    isFaceDown, isFaceBack, targetBackName
+                );
                 setCounter(cardList.counter, cardProperties.counter, fieldList.sprite[fieldList.sprite.length - 1], core);
                 setMemo(cardList.memo, cardProperties.memo, fieldList.sprite[fieldList.sprite.length - 1], core);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFunc);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
-                if (!isFaceDown) { socket.emit('play', targetCardName); };
+                if (!isFaceDown) {
+                    if (!isFaceBack) {
+                        socket.emit('play', {'face': 'front', 'name': targetCardName});
+                    } else {
+                        socket.emit('play', {'face': 'back', 'name': targetBackName});
+                    }
+                }
             });
 
             operationSprite.faceUpDown.addEventListener('touchstart', function () {
-                faceUpDown(targetCardIdx, cardList.hand, cardProperties.imagePath, componentProp, core);
+                if (isFaceBack || !targetBackName) {
+                    faceUpDown(targetCardIdx, cardList.hand, cardProperties.imagePath, componentProp, core);
+                }
+                if (isFaceBack === isFaceDown && targetBackName) {
+                    faceFrontBack(targetCardIdx, cardList.hand, cardProperties.imagePath, core);
+                }
                 touchRemoveFunc();
             });
 
@@ -400,13 +429,19 @@ window.onload = function () {
                 setCard('land', cardList.land, cardProperties.land, cardProperties.imagePath, core, touchFuncLand);
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFunc);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
-                playHistory.push({ type: 'setLand', cardName: targetCardName, from: 'hand', isFaceDown: isFaceDown });
+                playHistory.push({
+                    type: 'setLand', cardName: targetCardName, backName: targetBackName,
+                    from: 'hand', isFaceBack: isFaceBack, isFaceDown: isFaceDown
+                });
             });
 
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.hand, cardProperties.hand, core, touchRemoveFunc);
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
-                playHistory.push({ type: 'discard', cardName: targetCardName, from: 'hand', isFaceDown: isFaceDown });
+                playHistory.push({
+                    type: 'discard', cardName: targetCardName, backName: targetBackName,
+                    from: 'hand', isFaceBack: isFaceBack, isFaceDown: isFaceDown
+                });
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {
@@ -436,6 +471,8 @@ window.onload = function () {
             const targetCard = this;
             const targetCardIdx = cardList.field.sprite.findIndex((card) => card === targetCard);
             const targetCardName = cardList.field.name[targetCardIdx];
+            const targetBackName = cardList.field.backName[targetCardIdx];
+            const isFaceBack = cardList.field.isFaceBack[targetCardIdx];
             const isFaceDown = cardList.field.isFaceDown[targetCardIdx];
             const operation = [
                 'discard', 'tap', 'cancel', 'plus', 'minus', 'left', 'right',
@@ -447,7 +484,10 @@ window.onload = function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
                 removeMemo(cardList.memo, targetCardIdx, core);
-                playHistory.push({ type: 'discard', cardName: targetCardName, from: 'field', isFaceDown: isFaceDown });
+                playHistory.push({
+                    type: 'discard', cardName: targetCardName, backName: targetBackName,
+                    from: 'field', isFaceBack: isFaceBack, isFaceDown: isFaceDown
+                });
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {
@@ -467,7 +507,10 @@ window.onload = function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
                 removeMemo(cardList.memo, targetCardIdx, core);
-                setCard(targetCardName, cardList.hand, cardProperties.hand, cardProperties.imagePath, core, touchFuncHand);
+                setCard(
+                    targetCardName, cardList.hand, cardProperties.hand, cardProperties.imagePath, core, touchFuncHand,
+                    isFaceDown, isFaceBack, targetBackName
+                );
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
 
@@ -496,7 +539,10 @@ window.onload = function () {
                 removeCard(targetCard, cardList.field, cardProperties.field, core, touchRemoveFunc);
                 removeCounter(cardList.counter.sprite[targetCardIdx], cardList.counter, core);
                 removeMemo(cardList.memo, targetCardIdx, core);
-                setCard(targetCardName, cardList.upField, cardProperties.upField, cardProperties.imagePath, core, touchFuncPlayUp, isFaceDown);
+                setCard(
+                    targetCardName, cardList.upField, cardProperties.upField, cardProperties.imagePath, core, touchFuncPlayUp,
+                    isFaceDown, isFaceBack, targetBackName
+                );
                 const memoIdx = cardList.upField.sprite.length - 1;
                 setMemo(cardList.upMemo, cardProperties.memo, cardList.upField.sprite[memoIdx], core);
                 setMemoText(cardList.upMemo.sprite[memoIdx], cardList.upMemo.backSprite[memoIdx], memoTxt);
@@ -527,9 +573,18 @@ window.onload = function () {
             });
 
             operationSprite.faceUpDown.addEventListener('touchstart', function () {
-                faceUpDown(targetCardIdx, cardList.field, cardProperties.imagePath, componentProp, core);
+                if (isFaceBack || !targetBackName) {
+                    faceUpDown(targetCardIdx, cardList.field, cardProperties.imagePath, componentProp, core);
+                }
+                if (targetBackName && isFaceBack === isFaceDown) {
+                    faceFrontBack(targetCardIdx, cardList.field, cardProperties.imagePath, core);
+                }
                 touchRemoveFunc();
-                if (isFaceDown) { socket.emit('play', targetCardName); };
+                if (isFaceDown) {
+                    socket.emit('play', {'face': 'front', 'name': targetCardName});
+                } else if (targetBackName && !isFaceBack) {
+                    socket.emit('play', {'face': 'back', 'name': targetBackName});
+                }
             });
 
             operationSprite.memo.addEventListener('touchstart', function () {
@@ -636,6 +691,8 @@ window.onload = function () {
             const targetCard = this;
             const targetCardIdx = cardList.upField.sprite.findIndex((card) => card === targetCard);
             const targetCardName = cardList.upField.name[targetCardIdx];
+            const targetBackName = cardList.upField.backName[targetCardIdx];
+            const isFaceBack = cardList.upField.isFaceBack[targetCardIdx];
             const isFaceDown = cardList.upField.isFaceDown[targetCardIdx];
             const operation = [
                 'discard', 'tap', 'cancel', 'reHand', 'reTower', 'zoom', 'faceUpDown', 'memo'
@@ -645,7 +702,10 @@ window.onload = function () {
             operationSprite.discard.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFunc);
                 removeMemo(cardList.upMemo, targetCardIdx, core);
-                playHistory.push({ type: 'discard', cardName: targetCardName, from: 'upField', isFaceDown: isFaceDown });
+                playHistory.push({
+                    type: 'discard', cardName: targetCardName, backName: targetBackName,
+                    from: 'upField', isFaceBack: isFaceBack, isFaceDown: isFaceDown
+                });
             });
 
             operationSprite.cancel.addEventListener('touchstart', function () {
@@ -664,7 +724,10 @@ window.onload = function () {
             operationSprite.reHand.addEventListener('touchstart', function () {
                 removeCard(targetCard, cardList.upField, cardProperties.upField, core, touchRemoveFunc);
                 removeMemo(cardList.upMemo, targetCardIdx, core);
-                setCard(targetCardName, cardList.hand, cardProperties.hand, cardProperties.imagePath, core, touchFuncHand);
+                setCard(
+                    targetCardName, cardList.hand, cardProperties.hand, cardProperties.imagePath, core, touchFuncHand,
+                    isFaceDown, isFaceBack, targetBackName
+                );
                 setHandCardNum(handCardNumElement, cardList.hand.sprite.length);
             });
 
@@ -680,9 +743,18 @@ window.onload = function () {
             });
 
             operationSprite.faceUpDown.addEventListener('touchstart', function () {
-                faceUpDown(targetCardIdx, cardList.upField, cardProperties.imagePath, componentProp, core);
+                if (isFaceBack || !targetBackName) {
+                    faceUpDown(targetCardIdx, cardList.upField, cardProperties.imagePath, componentProp, core);
+                }
+                if (targetBackName && isFaceBack === isFaceDown) {
+                    faceFrontBack(targetCardIdx, cardList.upField, cardProperties.imagePath, core);
+                }
                 touchRemoveFunc();
-                if (isFaceDown) { socket.emit('play', targetCardName); }
+                if (isFaceDown) {
+                    socket.emit('play', {'face': 'front', 'name': targetCardName});
+                } else if (targetBackName && !isFaceBack) {
+                    socket.emit('play', {'face': 'back', 'name': targetBackName});
+                }
             });
 
             operationSprite.memo.addEventListener('touchstart', function () {
@@ -800,7 +872,7 @@ window.onload = function () {
         }
 
         // DataTable初期化
-        const dataTableData = cardImages.map(card => {
+        const dataTableData = cardImages.front.map(card => {
             return {
                 'banned': banList.includes(card),
                 'name': card,

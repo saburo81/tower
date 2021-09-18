@@ -10,7 +10,13 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 app.get('/', function (req, res) {
-    res.render('index', { "cardImages": tower.all });
+    const doubleFaceCardList = JSON.parse(fs.readFileSync(doubleFaceCardListPath)).cards;
+    res.render('index', {
+        "cardImages": {
+            "front": tower.all,
+            "back": doubleFaceCardList.map(card => card.back)
+        }
+    });
 });
 
 const shuffle = (array) => {
@@ -147,7 +153,14 @@ io.on('connection', function (socket) {
         if (tower.current.length == 0) {
             console.log("tower over");
         } else {
-            socket.emit('draw', tower.current.shift());
+            const doubleFaceCardList = JSON.parse(fs.readFileSync(doubleFaceCardListPath)).cards;
+            frontName = tower.current.shift()
+            doubleFace = doubleFaceCardList.find(card => card.front === frontName)
+            card = {
+                front: frontName,
+                back: (doubleFace) ? doubleFace.back : null
+            }
+            socket.emit('draw', card);
         };
     });
  
