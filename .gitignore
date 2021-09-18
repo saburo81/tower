@@ -5,4 +5,8 @@
 node_modules/
 
 # Card images
-public/images/cards/*.jpg
+public/images/cards/*
+public/images/cards/back-face/*
+
+!public/images/cards/back-face
+!.gitkeep
