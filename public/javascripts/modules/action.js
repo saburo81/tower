@@ -8,13 +8,20 @@
 //   core: EnchantJSオブジェクト
 //   touchFunc: カードクリック時に呼び出す関数
 export const setCard = (cardName, dstCardList, dstCardProp, imagePath, core,
-    touchFunc, isFaceDown = false) => {
+    touchFunc, isFaceDown = false, isFaceBack = false, backName = null) => {
     // カードを生成
     const cardMap = {
         'token': { type: 'token', name: `${imagePath.component}token_mao.jpg` },
         'land': { type: 'land', name: `${imagePath.component}tower_land.jpg` }
     };
-    const cardInfo = cardMap[cardName] || { type: 'card', name: `${imagePath.card}${cardName}` };
+    let cardInfo = {}
+    if (['token', 'land'].includes(cardName)) {
+        cardInfo = cardMap[cardName]
+    } else {
+        cardInfo.type = 'card'
+        cardInfo.name = (isFaceBack) ? 
+            `${imagePath.backFace}${backName}` : `${imagePath.card}${cardName}`;
+    }
     const card = new Sprite(dstCardProp.image.width, dstCardProp.image.height);
     card.image = (isFaceDown) ?
         core.assets[`${imagePath.component}back_image.jpg`] :
@@ -32,6 +39,8 @@ export const setCard = (cardName, dstCardList, dstCardProp, imagePath, core,
     dstCardList.sprite.push(card);
     if (cardInfo.type !== 'land') {
         dstCardList.name.push(cardInfo.type === 'token' ? cardInfo.name : cardName);
+        dstCardList.backName.push(backName);
+        dstCardList.isFaceBack.push(isFaceBack);
         dstCardList.isFaceDown.push(isFaceDown);
     }
 }
@@ -56,6 +65,8 @@ export const removeCard = (targetCard, targetCardList, targetCardProp, core,
     };
     targetCardList.sprite.splice(discardIdx, 1);
     targetCardList.name.splice(discardIdx, 1);
+    targetCardList.backName.splice(discardIdx, 1);
+    targetCardList.isFaceBack.splice(discardIdx, 1);
     targetCardList.isFaceDown.splice(discardIdx, 1);
     touchRemoveFunc();
 }
@@ -67,11 +78,15 @@ export const removeCard = (targetCard, targetCardList, targetCardProp, core,
 export const swapCard = (cardA, cardB, targetCardList) => {
     const cardAIdx = targetCardList.sprite.findIndex((card) => card === cardA);
     const cardAName = targetCardList.name[cardAIdx];
+    const cardABack = targetCardList.backName[cardAIdx];
     const cardACoord = { x: cardA.x, y: cardA.y };
+    const cardAisFaceBack = targetCardList.isFaceBack[cardAIdx];
     const cardAisFaceDown = targetCardList.isFaceDown[cardAIdx];
     const cardBIdx = targetCardList.sprite.findIndex((card) => card === cardB);
     const cardBName = targetCardList.name[cardBIdx];
+    const cardBBack = targetCardList.backName[cardBIdx];
     const cardBCoord = { x: cardB.x, y: cardB.y };
+    const cardBisFaceBack = targetCardList.isFaceBack[cardBIdx];
     const cardBisFaceDown = targetCardList.isFaceDown[cardBIdx];
 
     cardA.moveTo(cardBCoord.x, cardBCoord.y);
@@ -81,6 +96,10 @@ export const swapCard = (cardA, cardB, targetCardList) => {
     targetCardList.sprite[cardBIdx] = cardA;
     targetCardList.name[cardAIdx] = cardBName;
     targetCardList.name[cardBIdx] = cardAName;
+    targetCardList.backName[cardAIdx] = cardBBack;
+    targetCardList.backName[cardBIdx] = cardABack;
+    targetCardList.isFaceBack[cardAIdx] = cardBisFaceBack;
+    targetCardList.isFaceBack[cardBIdx] = cardAisFaceBack;
     targetCardList.isFaceDown[cardAIdx] = cardBisFaceDown;
     targetCardList.isFaceDown[cardBIdx] = cardAisFaceDown;
 }
@@ -95,6 +114,21 @@ export const tapCard = (card) => {
 //   card: 対象とするカードのSpriteオブジェクト
 export const untapCard = (card) => {
     card.rotation = 0;
+}
+
+// カードの第一面第二面を入れ替える
+//   cardIdx: 対象とするカードのカードリストにおけるインデックス
+//   cardList: 対象とするカードのカードリスト
+//   imagePath: カードのベースパス
+//   cmpntProp: コンポーネントのプロパティ
+export const faceFrontBack = (cardIdx, cardList, imagePath, core) => {
+    const cardName = cardList.name[cardIdx];
+    const backName = cardList.backName[cardIdx];
+    const isFaceBack = cardList.isFaceBack[cardIdx];
+    cardList.sprite[cardIdx].image = (isFaceBack) ?
+        core.assets[imagePath.card + cardName] :
+        core.assets[imagePath.backFace + backName];
+    cardList.isFaceBack[cardIdx] = !isFaceBack;
 }
 
 // カードの裏表を入れ替える
