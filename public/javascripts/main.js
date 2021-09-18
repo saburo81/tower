@@ -290,6 +290,10 @@ window.onload = function () {
                             cardList.counter, cardProperties.counter,
                             cardList[from].sprite[cardList[from].sprite.length - 1], core
                         );
+                        setMemo(
+                            cardList.memo, cardProperties.memo,
+                            cardList[from].sprite[cardList[from].sprite.length - 1], core
+                        );
                     }
                 }
             };
