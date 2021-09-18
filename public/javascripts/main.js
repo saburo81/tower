@@ -851,29 +851,67 @@ window.onload = function () {
             '- 全プレイヤーページ更新'
         M.Tooltip.init(uploadToolTipElems, { 'html': uploadToolTipHtml });
 
+        // DataTable初期化
+        const datatable = $('#upload-file-list').DataTable({
+            'data': [],
+            'columns': [
+                {
+                    'data': 'frontFace',
+                    'title': 'Front Face Card Name'
+                },
+                {
+                    'data': 'backFace',
+                    'title': 'Back Face Card Name',
+                    'render': function (data, type, row, meta) {
+                        // const backFaceInputHTML = '<div class="backFaceInput">' +
+                        //     `<input type="file" id=back-face-card-upload-${meta.row} accept="image/*" style="width: 100%;">` +
+                        //     '</div>';
+                        // return backFaceInputHTML;
+                        return `<input type="file" id=back-face-card-upload-${meta.row} ` +
+                            'accept="image/*" style="width: 100%;">'
+                    }
+                }
+            ],
+            'order': [1, 'asc'],
+            'paging': false,
+            'searching': false,
+            'info': false
+        });
+        const datatableWrapper = document.getElementById("upload-file-list_wrapper");
+        datatableWrapper.hidden = true;
+
         // アップロードファイル選択
-        const fileSelect = document.getElementById("card-upload-select");
-        const fileList = document.getElementById("file-list");
-        fileSelect.addEventListener("change", function (e) {
-            fileList.innerHTML = "";
-            const list = document.createElement("ul");
-            fileList.appendChild(list);
-            for (let i = 0; i < e.target.files.length; i++) {
-                const li = document.createElement("li");
-                list.appendChild(li);
-                const info = document.createElement("span");
-                info.innerHTML = e.target.files[i].name;
-                li.appendChild(info);
-            }
+        // const datatable = $('#upload-file-list').DataTable();
+        const frontFaceFileInput = document.getElementById("front-face-card-upload");
+        frontFaceFileInput.addEventListener("change", function (e) {
+            const data = Array.from(e.target.files).map(file => {
+                return {
+                    'frontFace': file['name'],
+                    'backFace': ""
+                }
+            })
+            datatable.clear().rows.add(data).draw();
+            datatableWrapper.hidden = false;
         });
 
         // ファイルアップロード
         const fileUpload = document.getElementById("card-upload-execute");
         fileUpload.addEventListener("click", function (e) {
-            const files = fileSelect.files;
-            const formData = new FormData();
-            for (let i = 0; i < files.length; i++) {
-                formData.append('files', files[i]);
+            const frontFaceCards = frontFaceFileInput.files;
+            let formData = new FormData();
+            for (let i = 0; i < frontFaceCards.length; i++) {
+                const backFaceFileInput = document.getElementById(`back-face-card-upload-${i}`);
+                const backFaceCard = (backFaceFileInput.files) ? backFaceFileInput.files[0] : null;
+                formData.append('frontFaceCardImages', frontFaceCards[i]);
+                if (backFaceCard) {
+                    formData.append('backFaceCardImages', backFaceCard);
+                }
+                formData.append('doubleFaceCardList', JSON.stringify(
+                    {
+                        "front": frontFaceCards[i].name,
+                        "back": (backFaceCard) ? backFaceCard.name : null
+                    }
+                ));
             }
 
             $.ajax({
@@ -887,16 +925,17 @@ window.onload = function () {
             }).fail(function (err) {
                 M.toast({ html: err, classes: 'rounded red lighten-2' });
             })
-
-            fileList.innerHTML = "";
-            fileSelect.value = "";
+            frontFaceFileInput.value = "";
+            datatable.clear().draw();
+            datatableWrapper.hidden = true;
         })
 
         // アップロードキャンセル
         const fileCancel = document.getElementById("card-upload-cancel");
         fileCancel.addEventListener("click", function (e) {
-            fileList.innerHTML = "";
-            fileSelect.value = "";
+            frontFaceFileInput.value = "";
+            datatable.clear().draw();
+            datatableWrapper.hidden = true;
         });
     };
     core.start();

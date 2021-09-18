@@ -29,6 +29,7 @@ let cardImgDirents = fs.readdirSync(cardImgDirPath, { withFileTypes: true });
 tower.all = cardImgDirents.filter(dirent => dirent.isFile()).map(({ name }) => name);
 const banListPath = "./banList.json";
 let banList = JSON.parse(fs.readFileSync(banListPath)).cards;
+const doubleFaceCardListPath = "./doubleFaceCardList.json";
 tower.current = tower.all.filter(card => !banList.includes(card));
 tower.current = shuffle([...tower.current]);
 
@@ -36,42 +37,81 @@ tower.current = shuffle([...tower.current]);
 const sharp = require('sharp');
 const path = require('path');
 const saveImage = async (req, res, next) => {
+    // 画像保存
     const invalidFile = [];
-    for (let i = 0; i < req.files.length; i++) {
-        const file = req.files[i];
+    const basePath = {
+        "frontFaceCardImages": 'public/images/cards/',
+        "backFaceCardImages": 'public/images/cards/back-face/',
+    }
 
-        // 拡張子確認
-        const extension = path.extname(file.originalname).toLowerCase();
-        if (!extension.match(/\.(jpg|jpeg|png|gif)$/)) {
-            invalidFile.push({
-                'name': file.originalname,
-                'err': '対応していない拡張子'
-            });
-            continue;
-        }
+    for (const face in req.files) {
+        for (let i = 0; i < req.files[face].length; i++) {
+            const file = req.files[face][i];
 
-        // 中身が画像ファイルであることの確認
-        await sharp(file.buffer)
-            .toBuffer()
-            .then(async () => {
-                // 画像リサイズ＆保存
-                await sharp(file.buffer)
-                    .resize(221, 311, { fit: 'contain' })
-                    .toFile(`public/images/cards/${file.originalname}`)
-                    .catch(err => {
-                        invalidFile.push({
-                            'name': file.originalname,
-                            'err': err
-                        });
-                    });
-            })
-            .catch(err => {
+            // 拡張子確認
+            const extension = path.extname(file.originalname).toLowerCase();
+            if (!extension.match(/\.(jpg|jpeg|png|gif)$/)) {
                 invalidFile.push({
                     'name': file.originalname,
-                    'err': err
+                    'err': '対応していない拡張子'
                 });
-            });
+                continue;
+            }
+
+            // 中身が画像ファイルであることの確認
+            await sharp(file.buffer)
+                .toBuffer()
+                .then(async () => {
+                    // 画像リサイズ＆保存
+                    await sharp(file.buffer)
+                        .resize(221, 311, { fit: 'contain' })
+                        .toFile(basePath[face] + file.originalname)
+                        .catch(err => {
+                            invalidFile.push({
+                                'name': file.originalname,
+                                'err': err
+                            });
+                        });
+                })
+                .catch(err => {
+                    invalidFile.push({
+                        'name': file.originalname,
+                        'err': err
+                    });
+                });
+        }
     };
+
+    // 表裏面関連付けデータ保存
+    let doubleFaceCardList = JSON.parse(fs.readFileSync(doubleFaceCardListPath)).cards;
+    const reqBody = req.body['doubleFaceCardList'];
+    const reqDoubleFaceCardList = [];
+    if (Array.isArray(reqBody)) {
+        for (let i = 0; i < reqBody.length; i++) {
+            reqDoubleFaceCardList.push(JSON.parse(reqBody[i]));
+        }
+    } else {
+        reqDoubleFaceCardList.push(JSON.parse(reqBody));
+    }
+    for (let i = 0; i < reqDoubleFaceCardList.length; i++) {
+        existingRelation = doubleFaceCardList.find(
+            card => card.front === reqDoubleFaceCardList[i].front
+        );
+        if (existingRelation) {
+            if (reqDoubleFaceCardList[i].back) {
+                existingRelation.back = reqDoubleFaceCardList[i].back;
+            } else {
+                doubleFaceCardList = doubleFaceCardList.filter((card) => {
+                    return card.front != reqDoubleFaceCardList[i].front;
+                }); 
+            }
+        } else {
+            if (reqDoubleFaceCardList[i].back) {
+                doubleFaceCardList.push(reqDoubleFaceCardList[i]);
+            }
+        }
+    }
+    fs.writeFileSync(doubleFaceCardListPath, JSON.stringify({ 'cards': doubleFaceCardList }));
 
     // カード画像読み込み
     cardImgDirents = fs.readdirSync(cardImgDirPath, { withFileTypes: true });
@@ -79,7 +119,7 @@ const saveImage = async (req, res, next) => {
         dirent.isFile()
     ).map(({ name }) => name);
 
-    let resHTML = `完了: ${req.files.length - invalidFile.length}件<br>`;
+    let resHTML = `完了: ${req.files['frontFaceCardImages'].length - invalidFile.length}件<br>`;
     if (invalidFile.length) {
         resHTML += `失敗: ${invalidFile.length}件<br>`
         for (let i = 0; i < invalidFile.length; i++) {
@@ -93,7 +133,11 @@ const saveImage = async (req, res, next) => {
 const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-app.post('/api/cards', upload.array('files'), saveImage);
+app.post('/api/cards', upload.fields([
+    { name: 'frontFaceCardImages' },
+    { name: 'backFaceCardImages' },
+    { name: 'doubleFaceCardList' }
+]), saveImage);
 
 io.on('connection', function (socket) {
     id++;
