@@ -104,6 +104,7 @@ window.onload = function () {
         dom: {
             playOrder: { width: 56, height: 56, x: 5, y: 10 },
             playerName: { width: 150, height: 50, x: 75, y: 10 },
+            daybound: { width: 56, height: 56, x: 5, y: 70 },
             handCardNum: { width: 125, height: 50, x: 1100, y: 10 },
             lifeCounter: { width: 100, height: 50, x: 1250, y: 10 },
             menu: { width: 100, height: 50, x: SCREEN_WIDTH - 300, y: 10 },
@@ -174,6 +175,7 @@ window.onload = function () {
         const domComponent = {
             playOrder: new Entity(),
             playerName: new Entity(),
+            daybound: new Entity(),
             handCardNum: new Entity(),
             lifeCounter: new Entity(),
             menu: new Entity(),
@@ -210,6 +212,41 @@ window.onload = function () {
         playerNameElement.setAttribute('id', 'name');
         playerNameElement.setAttribute('placeholder', 'Name');
         domComponent.playerName._element = playerNameElement;
+
+        // 日暮&夜明
+        const statusInfo = {
+            'none': {
+                'buttonIcon': 'cached',
+                'buttonColor': 'grey',
+                'nextStatus': 'day'
+            },
+            'day': {
+                'buttonIcon': 'brightness_5',
+                'buttonColor': 'orange',
+                'nextStatus': 'night'
+            },
+            'night': {
+                'buttonIcon': 'brightness_3',
+                'buttonColor': 'indigo',
+                'nextStatus': 'none'
+            },
+        }
+        const setDaybound = (dayboundElement, dayboudStatus) => {
+            dayboundElement.setAttribute('status', dayboudStatus);
+            dayboundElement.setAttribute('class', `btn ${statusInfo[dayboudStatus]['buttonColor']} material-icons`);
+            dayboundElement.innerText = statusInfo[dayboudStatus]['buttonIcon'];
+        }
+        const dayboundElement = document.createElement('i');
+        dayboundElement.setAttribute('id', 'daybound');
+        dayboundElement.setAttribute('style', 'padding: 5px 0px; font-size: 45px;');
+        setDaybound(dayboundElement, 'none');
+        dayboundElement.onclick = function () {
+            const currentStatus = this.getAttribute('status')
+            const nextStatus = statusInfo[currentStatus]['nextStatus']
+            setDaybound(this, nextStatus);
+            socket.emit('daybound', nextStatus);
+        };
+        domComponent.daybound._element = dayboundElement;
 
         // 手札枚数
         const handCardNumElement = document.createElement('p');
@@ -388,6 +425,11 @@ window.onload = function () {
             opLabel.color = "red";
             opLabel.font = "normal normal 30px/1.0 monospace";
             zoomCard(core.assets[opplayName], cardProperties.opCard, core, opLabel);
+        });
+
+        socket.on('daybound', function (dayboudStatus) {
+            const dayboundElement = document.getElementById("daybound");
+            setDaybound(dayboundElement, dayboudStatus);
         });
 
         var touchFuncHand = function () {
