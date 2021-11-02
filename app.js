@@ -164,19 +164,23 @@ io.on('connection', function (socket) {
             socket.emit('draw', card);
         };
     });
- 
+
     socket.on('maketower', function () {
         console.log("make tower");
         tower.current = tower.all.filter(card => !banList.includes(card));
         tower.current = shuffle([...tower.current]);
     });
- 
+
     socket.on('play', function (msg) {
         socket.broadcast.emit('opplay', msg);
     });
 
     socket.on('return', function (data) {
         tower.current.unshift(data);
+    });
+
+    socket.on('daybound', function (dayboudStatus) {
+        socket.broadcast.emit('daybound', dayboudStatus);
     });
 
     socket.on('banList', function (data) {
