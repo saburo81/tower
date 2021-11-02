@@ -28,7 +28,10 @@ const shuffle = (array) => {
 
 const loadImages = (imagePath) => {
     const cardImgDirents = fs.readdirSync(imagePath, { withFileTypes: true });
-    return cardImgDirents.filter(dirent => dirent.isFile()).map(({ name }) => name);
+    const cardImgNames = cardImgDirents.filter(
+        dirent => dirent.isFile() && dirent.name != '.gitkeep'
+    ).map(({ name }) => name);
+    return cardImgNames
 }
 
 // タワー構築
