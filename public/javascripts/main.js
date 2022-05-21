@@ -713,7 +713,6 @@ window.onload = function () {
 
             operationSprite.faceUpDown.addEventListener('touchstart', function () {
                 rotateTokenImg(targetCardIdx, cardList.field, cardProperties.imagePath, componentProp, core);
-                touchRemoveFunc();
             });
 
             operationSprite.memo.addEventListener('touchstart', function () {
