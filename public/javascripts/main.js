@@ -98,7 +98,9 @@ window.onload = function () {
                 { imgName: 'token_megu.jpg' },
                 { imgName: 'token_kirara.jpg' },
                 { imgName: 'token_tama.jpg' },
-                { imgName: 'token_kyoro.jpg' }
+                { imgName: 'token_kyoro.jpg' },
+                { imgName: 'token_clue.jpg' },
+                { imgName: 'token_treasure.jpg' },
             ]
         }, 
         dom: {
