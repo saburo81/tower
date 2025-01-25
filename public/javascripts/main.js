@@ -101,6 +101,7 @@ window.onload = function () {
                 { imgName: 'token_clue.jpg' },
                 { imgName: 'token_treasure.jpg' },
                 { imgName: 'token_food.jpg' },
+                { imgName: 'token_blood.jpg' },
             ]
         }, 
         dom: {
